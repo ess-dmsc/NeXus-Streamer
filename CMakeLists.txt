@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(isis_nexus_streamer)
+project(isis_nexus_streamer_for_mantid)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
@@ -89,7 +89,6 @@ endif()
 
 add_subdirectory("${PROJECT_SOURCE_DIR}/event_data")
 add_subdirectory("${PROJECT_SOURCE_DIR}/nexus_producer")
-add_subdirectory("${PROJECT_SOURCE_DIR}/nexus_consumer")
 add_subdirectory("${PROJECT_SOURCE_DIR}/nexus_file_reader")
 
 ####################
@@ -99,13 +98,11 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/nexus_file_reader")
 include_directories(
         ${HDF5_INCLUDE_DIRS}
         ${LibRDKafka_INCLUDE_DIR}
-        ${PROJECT_SOURCE_DIR}/nexus_consumer/include
         ${PROJECT_SOURCE_DIR}/nexus_producer/include
         ${PROJECT_SOURCE_DIR}/event_data/include
         ${PROJECT_SOURCE_DIR}/nexus_file_reader/include)
 
 file(GLOB TEST_SRC_FILES
-        ${PROJECT_SOURCE_DIR}/nexus_consumer/test/*.cpp
         ${PROJECT_SOURCE_DIR}/nexus_producer/test/*.cpp
         ${PROJECT_SOURCE_DIR}/event_data/test/*.cpp
         ${PROJECT_SOURCE_DIR}/nexus_file_reader/test/*.cpp
@@ -117,7 +114,6 @@ target_link_libraries(unitTests
         gtest
         gmock
         producerUnitTests
-        consumerUnitTests
         eventDataUnitTests
         fileReaderUnitTests)
 
@@ -144,30 +140,3 @@ if (COVERALLS)
             ON
             "${PROJECT_SOURCE_DIR}/cmake")
 endif ()
-
-#####################
-## System tests    ##
-#####################
-
-file(COPY ${PROJECT_SOURCE_DIR}/system_tests DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-# Download jmxterm and kafka binaries to use for collecting metrics
-# if the file already exists with the correct checksum then it won't be redownloaded
-file(DOWNLOAD http://downloads.sourceforge.net/cyclops-group/jmxterm-1.0-alpha-4-uber.jar
-        ${CMAKE_CURRENT_BINARY_DIR}/system_tests/jmxterm.jar
-        TIMEOUT 30
-        EXPECTED_MD5 f3c307163673d9f70c27b3f440df9dd4)
-file(DOWNLOAD http://mirror.ox.ac.uk/sites/rsync.apache.org/kafka/0.9.0.1/kafka_2.11-0.9.0.1.tgz
-        ${CMAKE_CURRENT_BINARY_DIR}/system_tests/kafka_2.11-0.9.0.1.tgz
-        TIMEOUT 30
-        EXPECTED_MD5 b71e5cbc78165c1ca483279c27402663)
-execute_process(
-        COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_CURRENT_BINARY_DIR}/system_tests/kafka_2.11-0.9.0.1.tgz
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/system_tests
-)
-
-find_package(PythonInterp REQUIRED)
-set(system_test_args )
-add_custom_target(system_test COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/system_tests/test.py ${PROJECT_SOURCE_DIR}/data -p -j 9997
-        COMMENT "Executing system tests..." VERBATIM)
-add_custom_target(system_test_virtual COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/system_tests/test.py ${PROJECT_SOURCE_DIR}/data
-        COMMENT "Executing system tests..." VERBATIM)

@@ -1,7 +1,7 @@
-[![Build Status](https://travis-ci.org/ScreamingUdder/isis_nexus_streamer.svg?branch=master)](https://travis-ci.org/ScreamingUdder/isis_nexus_streamer) [![Coverage Status](https://coveralls.io/repos/github/ScreamingUdder/isis_nexus_streamer/badge.svg?branch=master)](https://coveralls.io/github/ScreamingUdder/isis_nexus_streamer?branch=master) [![License (2-Clause BSD)](https://img.shields.io/badge/license-BSD%202--Clause-blue.svg)](https://github.com/ScreamingUdder/isis_nexus_streamer/blob/master/LICENSE)
+[![Build Status](https://travis-ci.org/ScreamingUdder/isis_nexus_streamer_for_mantid.svg?branch=master)](https://travis-ci.org/ScreamingUdder/isis_nexus_streamer_for_mantid) [![Coverage Status](https://coveralls.io/repos/github/ScreamingUdder/isis_nexus_streamer_for_mantid/badge.svg?branch=master)](https://coveralls.io/github/ScreamingUdder/isis_nexus_streamer_for_mantid?branch=master) [![License (2-Clause BSD)](https://img.shields.io/badge/license-BSD%202--Clause-blue.svg)](https://github.com/ScreamingUdder/isis_nexus_streamer_for_mantid/blob/master/LICENSE)
 
-# ISIS NeXus Streamer
-Stream event data from a NeXus file from RAL/ISIS using Apache Kafka. A producer and a consumer client are included. Each message sent over the wire consists of a single frame of event mode data.
+# ISIS NeXus Streamer for Mantid
+Stream event data from a NeXus file from RAL/ISIS using Apache Kafka for the purposes of development of live data streaming in Mantid.
 
 ## Dependencies
 Currently requires having `librdkafka` and the HDF5 C++ library installed. If `tcmalloc` is available then it will be used, but it is not a requirement.
@@ -18,14 +18,3 @@ Alternatively, run all units tests using ctest with
 ctest -VV
 ```
 from the build directory.
-
-## System tests
-The CMake target for the system tests is `system_test`. Running the tests has the following dependencies:
-- Vagrant (`apt-get install vagrant`)
-- Ansible (`apt-get install ansible`)
-- Python 2.7
-- JRE (`apt-get install default-jre`)
-- gitpython (`pip install gitpython`)
-- python-vagrant (`pip install python-vagrant`)
-- numpy (`pip install numpy`)
-- matplotlib (`pip install matplotlib`)
