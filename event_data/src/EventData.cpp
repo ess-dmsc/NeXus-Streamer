@@ -1,7 +1,7 @@
 #include "EventData.h"
 
 EventData::EventData()
-    : m_bufferSize(0), m_frameNumber(0), m_numberOfFrames(0), m_totalCounts(0){};
+    : m_bufferSize(0), m_frameNumber(0), m_numberOfFrames(0), m_totalCounts(0){}
 
 EventData::EventData(const uint8_t *buf) {
   decodeMessage(buf);
