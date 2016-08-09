@@ -70,3 +70,9 @@ TEST(NexusFileReaderTest, get_event_tofs_too_high_frame_number) {
   std::vector<uint64_t> eventTofs;
   EXPECT_FALSE(fileReader.getEventTofs(eventTofs, 3000000));
 }
+
+TEST(NexusFileReaderTest, get_period_number) {
+  extern std::string testDataPath;
+  auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs");
+  EXPECT_EQ(1, fileReader.getPeriodNumber());
+}

@@ -12,10 +12,9 @@ using namespace H5;
 NexusFileReader::NexusFileReader(const std::string &filename)
     : m_file(new H5File(filename, H5F_ACC_RDONLY)) {
   DataSet dataset = m_file->openDataSet("/raw_data_1/good_frames");
-  size_t *numOfFrames = new size_t[1];
-  dataset.read(numOfFrames, PredType::NATIVE_UINT64);
-  m_numberOfFrames = *numOfFrames;
-  delete[] numOfFrames;
+  size_t numOfFrames;
+  dataset.read(&numOfFrames, PredType::NATIVE_UINT64);
+  m_numberOfFrames = numOfFrames;
 }
 
 /**
@@ -25,13 +24,32 @@ NexusFileReader::NexusFileReader(const std::string &filename)
  */
 hsize_t NexusFileReader::getFileSize() { return m_file->getFileSize(); }
 
+/**
+ * Get the total number of events in the file
+ *
+ * @return - total number of events
+ */
 uint64_t NexusFileReader::getTotalEventCount() {
   DataSet dataset =
       m_file->openDataSet("/raw_data_1/detector_1_events/total_counts");
-  uint64_t *totalCount = new uint64_t[1];
-  dataset.read(totalCount, PredType::NATIVE_UINT64);
+  uint64_t totalCount;
+  dataset.read(&totalCount, PredType::NATIVE_UINT64);
 
-  return *totalCount;
+  return totalCount;
+}
+
+/**
+ * Get the DAE period number
+ *
+ * @return - the DAE period number
+ */
+int32_t NexusFileReader::getPeriodNumber() {
+  DataSet dataset =
+      m_file->openDataSet("/raw_data_1/periods/number");
+  int32_t periodNumber;
+  dataset.read(&periodNumber, PredType::NATIVE_INT32);
+
+  return periodNumber;
 }
 
 /**
@@ -43,24 +61,22 @@ uint64_t NexusFileReader::getTotalEventCount() {
 hsize_t NexusFileReader::getFrameStart(hsize_t frameNumber) {
   auto dataset =
       m_file->openDataSet("/raw_data_1/detector_1_events/event_index");
-  uint64_t *frameStart = new uint64_t[1];
+  uint64_t frameStart;
 
-  hsize_t count[1], offset[1], stride[1], block[1];
-  count[0] = 1;
-  offset[0] = frameNumber;
-  stride[0] = 1;
-  block[0] = 1;
+  hsize_t count = 1;
+  hsize_t offset = frameNumber;
+  hsize_t stride = 1;
+  hsize_t block = 1;
 
   auto dataspace = dataset.getSpace();
-  dataspace.selectHyperslab(H5S_SELECT_SET, count, offset, stride, block);
+  dataspace.selectHyperslab(H5S_SELECT_SET, &count, &offset, &stride, &block);
 
-  hsize_t dimsm[1];
-  dimsm[0] = 1;
-  DataSpace memspace(1, dimsm);
+  hsize_t dimsm = 1;
+  DataSpace memspace(1, &dimsm);
 
-  dataset.read(frameStart, PredType::NATIVE_UINT64, memspace, dataspace);
+  dataset.read(&frameStart, PredType::NATIVE_UINT64, memspace, dataspace);
 
-  return *frameStart;
+  return frameStart;
 }
 
 /**
@@ -94,21 +110,19 @@ bool NexusFileReader::getEventDetIds(std::vector<uint32_t> &detIds,
 
   auto numberOfEventsInFrame = getNumberOfEventsInFrame(frameNumber);
 
-  hsize_t count[1], offset[1], stride[1], block[1];
-  count[0] = numberOfEventsInFrame;
-  offset[0] = getFrameStart(frameNumber);
-  stride[0] = 1;
-  block[0] = 1;
+  hsize_t count = numberOfEventsInFrame;
+  hsize_t offset = getFrameStart(frameNumber);
+  hsize_t stride = 1;
+  hsize_t block = 1;
 
   auto dataspace = dataset.getSpace();
-  dataspace.selectHyperslab(H5S_SELECT_SET, count, offset, stride, block);
+  dataspace.selectHyperslab(H5S_SELECT_SET, &count, &offset, &stride, &block);
 
   // resize detIds to the correct size to put the new data in
   detIds.resize(numberOfEventsInFrame);
 
-  hsize_t dimsm[1];
-  dimsm[0] = numberOfEventsInFrame;
-  DataSpace memspace(1, dimsm);
+  hsize_t dimsm = numberOfEventsInFrame;
+  DataSpace memspace(1, &dimsm);
 
   dataset.read(detIds.data(), PredType::NATIVE_UINT32, memspace, dataspace);
 
@@ -131,20 +145,18 @@ bool NexusFileReader::getEventTofs(std::vector<uint64_t> &tofs,
 
   auto numberOfEventsInFrame = getNumberOfEventsInFrame(frameNumber);
 
-  hsize_t count[1], offset[1], stride[1], block[1];
-  count[0] = numberOfEventsInFrame;
-  offset[0] = getFrameStart(frameNumber);
-  stride[0] = 1;
-  block[0] = 1;
+  hsize_t count = numberOfEventsInFrame;
+  hsize_t offset = getFrameStart(frameNumber);
+  hsize_t stride = 1;
+  hsize_t block = 1;
 
   auto dataspace = dataset.getSpace();
-  dataspace.selectHyperslab(H5S_SELECT_SET, count, offset, stride, block);
+  dataspace.selectHyperslab(H5S_SELECT_SET, &count, &offset, &stride, &block);
 
   std::vector<double> timeOffsetArray(numberOfEventsInFrame);
 
-  hsize_t dimsm[1];
-  dimsm[0] = numberOfEventsInFrame;
-  DataSpace memspace(1, dimsm);
+  hsize_t dimsm = numberOfEventsInFrame;
+  DataSpace memspace(1, &dimsm);
 
   dataset.read(timeOffsetArray.data(), PredType::NATIVE_DOUBLE, memspace, dataspace);
 
