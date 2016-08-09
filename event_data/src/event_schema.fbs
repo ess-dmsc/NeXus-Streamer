@@ -1,4 +1,4 @@
-// scheam for ISIS data streaming test
+// schema for ISIS data streaming test
 
 namespace ISISDAE;
 
@@ -20,24 +20,24 @@ table StringValue {
     value : string;
 }
 
-/// For storing a sample environment log value
+// for storing a sample environment log value
 union SEValue { IntValue, LongValue, DoubleValue, StringValue }
 
-/// isis neutron events list
+// isis neutron events list
 table NEvents {
     tof : [float];
 	spec : [int];
 }
 
-/// Sample Environment events log
+// sample environment events log
 table SEEvent {
     name : string; // name of seci block / NXlog entry
     time_offset : float; // from start of run
 	value : SEValue;
 }
 
-/// (part of) an ISIS pulse/frame, there may be several of these
-/// per frame to keep kafka packets to optimum size
+// (part of) an ISIS pulse/frame, there may be several of these
+// per frame to keep kafka packets to optimum size
 table FramePart {
     frame_number : int;
 	frame_time : float;
@@ -62,7 +62,7 @@ table RunInfo {
 }
 
 // this will be used in a separate kafka topic, used to pick up relevant wiring tables
-// this stream will have a larger than normal message size to accomodate data
+// this stream will have a larger than normal message size to accommodate data
 table SpectraDetectorMapping {
     spec : [int];
     det : [int];
