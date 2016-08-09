@@ -42,7 +42,7 @@ TEST(NexusFileReaderTest, nexus_read_number_frames) {
 TEST(NexusFileReaderTest, get_detIds_first_frame) {
   extern std::string testDataPath;
   auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs");
-  std::vector<uint32_t> detIds;
+  std::vector<int32_t> detIds;
   EXPECT_TRUE(fileReader.getEventDetIds(detIds, 0));
   EXPECT_FLOAT_EQ(99406, detIds[0]);
   EXPECT_FLOAT_EQ(87829, detIds[150]);
@@ -51,23 +51,23 @@ TEST(NexusFileReaderTest, get_detIds_first_frame) {
 TEST(NexusFileReaderTest, get_event_tofs) {
   extern std::string testDataPath;
   auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs");
-  std::vector<uint64_t> eventTofs;
+  std::vector<float> eventTofs;
   EXPECT_TRUE(fileReader.getEventTofs(eventTofs, 0));
-  EXPECT_FLOAT_EQ(11660505, eventTofs[0]);
-  EXPECT_FLOAT_EQ(46247304, eventTofs[150]);
+  EXPECT_FLOAT_EQ(11660.505, eventTofs[0]);
+  EXPECT_FLOAT_EQ(46247.304, eventTofs[150]);
 }
 
 TEST(NexusFileReaderTest, get_detIds_too_high_frame_number) {
   extern std::string testDataPath;
   auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs");
-  std::vector<uint32_t> detIds;
+  std::vector<int32_t> detIds;
   EXPECT_FALSE(fileReader.getEventDetIds(detIds, 3000000));
 }
 
 TEST(NexusFileReaderTest, get_event_tofs_too_high_frame_number) {
   extern std::string testDataPath;
   auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs");
-  std::vector<uint64_t> eventTofs;
+  std::vector<float> eventTofs;
   EXPECT_FALSE(fileReader.getEventTofs(eventTofs, 3000000));
 }
 
@@ -80,7 +80,8 @@ TEST(NexusFileReaderTest, get_period_number) {
 TEST(NexusFileReaderTest, get_proton_charge) {
   extern std::string testDataPath;
   auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs");
-  EXPECT_FLOAT_EQ(20.005527, fileReader.getProtonCharge());
+  EXPECT_FLOAT_EQ(0.001105368, fileReader.getProtonCharge(0));
+  EXPECT_FLOAT_EQ(0.001105368, fileReader.getProtonCharge(7));
 }
 
 TEST(NexusFileReaderTest, get_number_of_events_in_frame) {

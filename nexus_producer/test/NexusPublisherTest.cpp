@@ -1,5 +1,4 @@
 #include <gmock/gmock.h>
-#include <gtest/gtest.h>
 #include <memory>
 
 #include "MockEventPublisher.h"
@@ -56,7 +55,6 @@ TEST(NexusPublisherTest, test_create_message_data) {
   auto receivedEventData =
       EventData(reinterpret_cast<const uint8_t *>(rawbuf.c_str()));
   EXPECT_EQ(770, receivedEventData.getNumberOfEvents());
-  EXPECT_EQ(300, receivedEventData.getNumberOfFrames());
   EXPECT_EQ(1, receivedEventData.getFrameNumber());
 }
 
@@ -81,7 +79,6 @@ TEST(NexusPublisherTest, test_create_message_data_3_message_per_frame) {
       EventData(reinterpret_cast<const uint8_t *>(rawbuf.c_str()));
   // First message should have ceil(770/3) events
   EXPECT_EQ(257, receivedEventData.getNumberOfEvents());
-  EXPECT_EQ(300, receivedEventData.getNumberOfFrames());
   EXPECT_EQ(1, receivedEventData.getFrameNumber());
 
   eventData[2]->getBufferPointer(rawbuf);

@@ -56,10 +56,11 @@ int32_t NexusFileReader::getPeriodNumber() {
  *
  * @return - the proton charge
  */
-float NexusFileReader::getProtonCharge() {
-  DataSet dataset = m_file->openDataSet("/raw_data_1/proton_charge");
-  float protonCharge;
-  dataset.read(&protonCharge, PredType::NATIVE_FLOAT);
+float NexusFileReader::getProtonCharge(hsize_t frameNumber) {
+  std::string datasetName = "/raw_data_1/framelog/proton_charge/value";
+
+  auto protonCharge = getSingleValueFromDataset<float>(
+      datasetName, PredType::NATIVE_FLOAT, frameNumber);
 
   return protonCharge;
 }
@@ -141,7 +142,7 @@ hsize_t NexusFileReader::getNumberOfEventsInFrame(hsize_t frameNumber) {
  * @return - false if the specified frame number is not the data range, true
  * otherwise
  */
-bool NexusFileReader::getEventDetIds(std::vector<uint32_t> &detIds,
+bool NexusFileReader::getEventDetIds(std::vector<int32_t> &detIds,
                                      hsize_t frameNumber) {
   if (frameNumber >= m_numberOfFrames)
     return false;
@@ -163,7 +164,7 @@ bool NexusFileReader::getEventDetIds(std::vector<uint32_t> &detIds,
   hsize_t dimsm = numberOfEventsInFrame;
   DataSpace memspace(1, &dimsm);
 
-  dataset.read(detIds.data(), PredType::NATIVE_UINT32, memspace, dataspace);
+  dataset.read(detIds.data(), PredType::NATIVE_INT32, memspace, dataspace);
 
   return true;
 }
@@ -177,7 +178,7 @@ bool NexusFileReader::getEventDetIds(std::vector<uint32_t> &detIds,
  * @return - false if the specified frame number is not the data range, true
  * otherwise
  */
-bool NexusFileReader::getEventTofs(std::vector<uint64_t> &tofs,
+bool NexusFileReader::getEventTofs(std::vector<float> &tofs,
                                    hsize_t frameNumber) {
   if (frameNumber >= m_numberOfFrames)
     return false;
@@ -194,19 +195,12 @@ bool NexusFileReader::getEventTofs(std::vector<uint64_t> &tofs,
   auto dataspace = dataset.getSpace();
   dataspace.selectHyperslab(H5S_SELECT_SET, &count, &offset, &stride, &block);
 
-  std::vector<double> timeOffsetArray(numberOfEventsInFrame);
+  tofs.resize(numberOfEventsInFrame);
 
   hsize_t dimsm = numberOfEventsInFrame;
   DataSpace memspace(1, &dimsm);
 
-  dataset.read(timeOffsetArray.data(), PredType::NATIVE_DOUBLE, memspace,
-               dataspace);
-
-  tofs.resize(numberOfEventsInFrame);
-
-  for (size_t tofIndex = 0; tofIndex < numberOfEventsInFrame; tofIndex++) {
-    tofs[tofIndex] = static_cast<uint64_t>((timeOffsetArray[tofIndex] * 1e3));
-  }
+  dataset.read(tofs.data(), PredType::NATIVE_FLOAT, memspace, dataspace);
 
   return true;
 }
