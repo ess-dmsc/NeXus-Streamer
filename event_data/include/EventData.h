@@ -22,6 +22,8 @@ public:
   void setTof(std::vector<float> tofs) { m_tof = tofs; };
   void setFrameNumber(int32_t frameNumber) { m_frameNumber = frameNumber; };
   void setTotalCounts(uint64_t totalCounts) { m_totalCounts = totalCounts; };
+  void setEndOfFrame(bool lastInFrame) {m_endOfFrame = lastInFrame; };
+  void setEndOfRun(bool lastInRun) {m_endOfRun = lastInRun; };
 
   // Getters
   std::vector<int32_t> getDetId() { return m_detId; };
@@ -29,6 +31,8 @@ public:
   uint32_t getFrameNumber() { return m_frameNumber; };
   uint32_t getNumberOfEvents() { return m_tof.size(); };
   uint64_t getTotalCounts() { return m_totalCounts; };
+  bool getEndOfFrame() { return m_endOfFrame; };
+  bool getEndOfRun() { return m_endOfRun; };
 
   flatbuffers::unique_ptr_t getBufferPointer(std::string &buffer);
 

@@ -21,6 +21,8 @@ TEST(EventDataTest, get_buffer_pointer) {
   EXPECT_NO_THROW(events.setDetId(detIds));
   EXPECT_NO_THROW(events.setTof(tofs));
   EXPECT_NO_THROW(events.setFrameNumber(frameNumber));
+  EXPECT_NO_THROW(events.setEndOfRun(true));
+  EXPECT_NO_THROW(events.setEndOfFrame(true));
 
   std::string rawbuf;
   EXPECT_NO_THROW(events.getBufferPointer(rawbuf));
@@ -31,6 +33,8 @@ TEST(EventDataTest, get_buffer_pointer) {
   EXPECT_EQ(detIds, receivedEventData.getDetId());
   EXPECT_EQ(tofs, receivedEventData.getTof());
   EXPECT_EQ(frameNumber, receivedEventData.getFrameNumber());
+  EXPECT_TRUE(receivedEventData.getEndOfRun());
+  EXPECT_TRUE(receivedEventData.getEndOfFrame());
 }
 
 TEST(EventDataTest, get_buffer_size) {
