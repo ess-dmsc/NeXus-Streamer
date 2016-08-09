@@ -76,3 +76,9 @@ TEST(NexusFileReaderTest, get_period_number) {
   auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs");
   EXPECT_EQ(1, fileReader.getPeriodNumber());
 }
+
+TEST(NexusFileReaderTest, get_proton_charge) {
+  extern std::string testDataPath;
+  auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs");
+  EXPECT_FLOAT_EQ(20.005527, fileReader.getProtonCharge());
+}

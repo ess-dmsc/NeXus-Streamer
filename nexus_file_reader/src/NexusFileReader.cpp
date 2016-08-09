@@ -53,6 +53,20 @@ int32_t NexusFileReader::getPeriodNumber() {
 }
 
 /**
+ * Get the proton charge
+ *
+ * @return - the proton charge
+ */
+float NexusFileReader::getProtonCharge() {
+  DataSet dataset =
+      m_file->openDataSet("/raw_data_1/proton_charge");
+  float protonCharge;
+  dataset.read(&protonCharge, PredType::NATIVE_FLOAT);
+
+  return protonCharge;
+}
+
+/**
  * Gets the event index of the start of the specified frame
  *
  * @param frameNumber - find the event index for the start of this frame

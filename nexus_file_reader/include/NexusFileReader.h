@@ -15,6 +15,7 @@ public:
   hsize_t getFileSize();
   uint64_t getTotalEventCount();
   int32_t getPeriodNumber();
+  float getProtonCharge();
   bool getEventDetIds(std::vector<uint32_t> &detIds, hsize_t frameNumber);
   bool getEventTofs(std::vector<uint64_t> &tofs, hsize_t frameNumber);
   size_t getNumberOfFrames() { return m_numberOfFrames; };
