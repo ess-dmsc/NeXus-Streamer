@@ -63,6 +63,7 @@ TEST(NexusPublisherTest, test_create_message_data_3_message_per_frame) {
 
   const std::string broker = "broker_name";
   const std::string topic = "topic_name";
+  int frameNumber = 1;
 
   auto publisher = std::make_shared<MockEventPublisher>();
 
@@ -70,7 +71,7 @@ TEST(NexusPublisherTest, test_create_message_data_3_message_per_frame) {
 
   NexusPublisher streamer(publisher, broker, topic,
                           testDataPath + "SANS_test_reduced.hdf5", true);
-  auto eventData = streamer.createMessageData(static_cast<hsize_t>(1), 3);
+  auto eventData = streamer.createMessageData(static_cast<hsize_t>(frameNumber), 3);
 
   std::string rawbuf;
   eventData[0]->getBufferPointer(rawbuf);
@@ -79,13 +80,53 @@ TEST(NexusPublisherTest, test_create_message_data_3_message_per_frame) {
       EventData(reinterpret_cast<const uint8_t *>(rawbuf.c_str()));
   // First message should have ceil(770/3) events
   EXPECT_EQ(257, receivedEventData.getNumberOfEvents());
-  EXPECT_EQ(1, receivedEventData.getFrameNumber());
+  EXPECT_EQ(frameNumber, receivedEventData.getFrameNumber());
+  // and should not be the last message in the frame or in the run
+  EXPECT_FALSE(receivedEventData.getEndOfFrame());
+  EXPECT_FALSE(receivedEventData.getEndOfRun());
 
   eventData[2]->getBufferPointer(rawbuf);
   receivedEventData =
       EventData(reinterpret_cast<const uint8_t *>(rawbuf.c_str()));
-  // Last message should have remaining 256 events
+  // Last message in frame should have remaining 256 events
   EXPECT_EQ(256, receivedEventData.getNumberOfEvents());
+  // and should be the last message in the frame but not in the run
+  EXPECT_TRUE(receivedEventData.getEndOfFrame());
+  EXPECT_FALSE(receivedEventData.getEndOfRun());
+}
+
+TEST(NexusPublisherTest, test_create_message_data_3_message_per_frame_end_of_run) {
+  extern std::string testDataPath;
+
+  const std::string broker = "broker_name";
+  const std::string topic = "topic_name";
+  int frameNumber = 299;
+
+  auto publisher = std::make_shared<MockEventPublisher>();
+
+  EXPECT_CALL(*publisher.get(), setUp(broker, topic)).Times(AtLeast(1));
+
+  NexusPublisher streamer(publisher, broker, topic,
+                          testDataPath + "SANS_test_reduced.hdf5", true);
+  auto eventData = streamer.createMessageData(static_cast<hsize_t>(frameNumber), 3);
+
+  std::string rawbuf;
+  eventData[0]->getBufferPointer(rawbuf);
+
+  auto receivedEventData =
+      EventData(reinterpret_cast<const uint8_t *>(rawbuf.c_str()));
+  // First message of frame
+  EXPECT_EQ(frameNumber, receivedEventData.getFrameNumber());
+  // should not be the last message in the frame or in the run
+  EXPECT_FALSE(receivedEventData.getEndOfFrame());
+  EXPECT_FALSE(receivedEventData.getEndOfRun());
+
+  eventData[2]->getBufferPointer(rawbuf);
+  receivedEventData =
+      EventData(reinterpret_cast<const uint8_t *>(rawbuf.c_str()));
+  // Last message should be the last message in the frame and in the run
+  EXPECT_TRUE(receivedEventData.getEndOfFrame());
+  EXPECT_TRUE(receivedEventData.getEndOfRun());
 }
 
 TEST(NexusPublisherTest, test_stream_data) {

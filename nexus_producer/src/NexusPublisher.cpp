@@ -49,6 +49,7 @@ NexusPublisher::createMessageData(hsize_t frameNumber,
                                  static_cast<double>(messagesPerFrame)));
   for (int messageNumber = 0; messageNumber < messagesPerFrame;
        messageNumber++) {
+    auto eventData = std::make_shared<EventData>();
 
     auto upToDetId = detIds.begin() + ((messageNumber + 1) * eventsPerMessage);
     auto upToTof = tofs.begin() + ((messageNumber + 1) * eventsPerMessage);
@@ -57,6 +58,10 @@ NexusPublisher::createMessageData(hsize_t frameNumber,
     if (messageNumber == (messagesPerFrame - 1)) {
       upToDetId = detIds.end();
       upToTof = tofs.end();
+      eventData->setEndOfFrame(true);
+      if (frameNumber == (m_fileReader->getNumberOfFrames() - 1)) {
+        eventData->setEndOfRun(true);
+      }
     }
 
     std::vector<int32_t> detIdsCurrentMessage(
@@ -64,7 +69,6 @@ NexusPublisher::createMessageData(hsize_t frameNumber,
     std::vector<float> tofsCurrentMessage(
         tofs.begin() + (messageNumber * eventsPerMessage), upToTof);
 
-    auto eventData = std::make_shared<EventData>();
     eventData->setDetId(detIdsCurrentMessage);
     eventData->setTof(tofsCurrentMessage);
     eventData->setFrameNumber(static_cast<uint32_t>(frameNumber));
