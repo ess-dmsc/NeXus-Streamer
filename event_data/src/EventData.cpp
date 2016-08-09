@@ -19,6 +19,8 @@ void EventData::decodeMessage(const uint8_t *buf) {
   setEndOfFrame(frameData->end_of_frame());
   setEndOfRun(frameData->end_of_run());
   setProtonCharge(frameData->proton_charge());
+  setFrameTime(frameData->frame_time());
+  setPeriod(frameData->period());
 }
 
 flatbuffers::unique_ptr_t EventData::getBufferPointer(std::string &buffer) {

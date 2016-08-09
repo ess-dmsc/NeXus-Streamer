@@ -25,6 +25,8 @@ public:
   void setEndOfFrame(bool lastInFrame) { m_endOfFrame = lastInFrame; };
   void setEndOfRun(bool lastInRun) { m_endOfRun = lastInRun; };
   void setProtonCharge(float protonCharge) { m_protonCharge = protonCharge; };
+  void setPeriod(int32_t period) { m_period = period; };
+  void setFrameTime(float frameTime) { m_frameTime = frameTime; };
 
   // Getters
   std::vector<int32_t> getDetId() { return m_detId; };
@@ -35,6 +37,8 @@ public:
   bool getEndOfFrame() { return m_endOfFrame; };
   bool getEndOfRun() { return m_endOfRun; };
   float getProtonCharge() { return m_protonCharge; };
+  int32_t getPeriod() { return m_period; };
+  float getFrameTime() { return m_frameTime; };
 
   flatbuffers::unique_ptr_t getBufferPointer(std::string &buffer);
 
