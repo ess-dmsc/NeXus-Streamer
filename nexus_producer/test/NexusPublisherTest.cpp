@@ -56,6 +56,9 @@ TEST(NexusPublisherTest, test_create_message_data) {
       EventData(reinterpret_cast<const uint8_t *>(rawbuf.c_str()));
   EXPECT_EQ(770, receivedEventData.getNumberOfEvents());
   EXPECT_EQ(1, receivedEventData.getFrameNumber());
+  EXPECT_FLOAT_EQ(0.001105368, receivedEventData.getProtonCharge());
+  EXPECT_EQ(1, receivedEventData.getPeriod());
+  EXPECT_FLOAT_EQ(3.0399999618530273, receivedEventData.getFrameTime());
 }
 
 TEST(NexusPublisherTest, test_create_message_data_3_message_per_frame) {
