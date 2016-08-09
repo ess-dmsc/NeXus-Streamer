@@ -82,3 +82,17 @@ TEST(NexusFileReaderTest, get_proton_charge) {
   auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs");
   EXPECT_FLOAT_EQ(20.005527, fileReader.getProtonCharge());
 }
+
+TEST(NexusFileReaderTest, get_number_of_events_in_frame) {
+  extern std::string testDataPath;
+  auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs");
+  EXPECT_EQ(794, fileReader.getNumberOfEventsInFrame(0));
+  EXPECT_EQ(781, fileReader.getNumberOfEventsInFrame(7));
+}
+
+TEST(NexusFileReaderTest, get_frame_time) {
+  extern std::string testDataPath;
+  auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs");
+  EXPECT_FLOAT_EQ(2.940000057220459, fileReader.getFrameTime(0));
+  EXPECT_FLOAT_EQ(3.6389999389648438, fileReader.getFrameTime(7));
+}

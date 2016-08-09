@@ -19,10 +19,14 @@ public:
   bool getEventDetIds(std::vector<uint32_t> &detIds, hsize_t frameNumber);
   bool getEventTofs(std::vector<uint64_t> &tofs, hsize_t frameNumber);
   size_t getNumberOfFrames() { return m_numberOfFrames; };
+  hsize_t getNumberOfEventsInFrame(hsize_t frameNumber);
+  double getFrameTime(hsize_t frameNumber);
 
 private:
+  template <typename T>
+  T getSingleValueFromDataset(const std::string &dataset, H5::PredType datatype,
+                              hsize_t offset);
   hsize_t getFrameStart(hsize_t frameNumber);
-  hsize_t getNumberOfEventsInFrame(hsize_t frameNumber);
   H5FilePtr m_file = nullptr;
   size_t m_numberOfFrames;
 };
