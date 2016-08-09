@@ -17,12 +17,14 @@ TEST(EventDataTest, get_buffer_pointer) {
   std::vector<int32_t> detIds = {1, 2, 3, 4};
   std::vector<float> tofs = {4, 3, 2, 1};
   uint32_t frameNumber = 2;
+  float protonCharge = 0.001142;
 
   EXPECT_NO_THROW(events.setDetId(detIds));
   EXPECT_NO_THROW(events.setTof(tofs));
   EXPECT_NO_THROW(events.setFrameNumber(frameNumber));
   EXPECT_NO_THROW(events.setEndOfRun(true));
   EXPECT_NO_THROW(events.setEndOfFrame(true));
+  EXPECT_NO_THROW(events.setProtonCharge(protonCharge));
 
   std::string rawbuf;
   EXPECT_NO_THROW(events.getBufferPointer(rawbuf));
@@ -35,6 +37,7 @@ TEST(EventDataTest, get_buffer_pointer) {
   EXPECT_EQ(frameNumber, receivedEventData.getFrameNumber());
   EXPECT_TRUE(receivedEventData.getEndOfRun());
   EXPECT_TRUE(receivedEventData.getEndOfFrame());
+  EXPECT_FLOAT_EQ(protonCharge, receivedEventData.getProtonCharge());
 }
 
 TEST(EventDataTest, get_buffer_size) {

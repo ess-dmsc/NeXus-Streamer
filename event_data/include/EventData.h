@@ -22,8 +22,9 @@ public:
   void setTof(std::vector<float> tofs) { m_tof = tofs; };
   void setFrameNumber(int32_t frameNumber) { m_frameNumber = frameNumber; };
   void setTotalCounts(uint64_t totalCounts) { m_totalCounts = totalCounts; };
-  void setEndOfFrame(bool lastInFrame) {m_endOfFrame = lastInFrame; };
-  void setEndOfRun(bool lastInRun) {m_endOfRun = lastInRun; };
+  void setEndOfFrame(bool lastInFrame) { m_endOfFrame = lastInFrame; };
+  void setEndOfRun(bool lastInRun) { m_endOfRun = lastInRun; };
+  void setProtonCharge(float protonCharge) { m_protonCharge = protonCharge; };
 
   // Getters
   std::vector<int32_t> getDetId() { return m_detId; };
@@ -33,13 +34,13 @@ public:
   uint64_t getTotalCounts() { return m_totalCounts; };
   bool getEndOfFrame() { return m_endOfFrame; };
   bool getEndOfRun() { return m_endOfRun; };
+  float getProtonCharge() { return m_protonCharge; };
 
   flatbuffers::unique_ptr_t getBufferPointer(std::string &buffer);
 
   size_t getBufferSize() { return m_bufferSize; };
 
 private:
-
   // Default values here should match default values in the schema
   // if the values are then used to create the buffer they are omitted by
   // flatbuffers to reduce the message size
