@@ -20,6 +20,8 @@ datasets_frames = [
 
 datasets_unchange = [
     '/raw_data_1/periods/number',
+    '/raw_data_1/name',
+    '/raw_data_1/start_time'
 ]
 
 with h5py.File(uncompressed_file, 'w') as f_write:
