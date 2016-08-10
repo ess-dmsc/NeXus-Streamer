@@ -50,4 +50,18 @@ table FramePart {
 	se_events : [SEEvent];
 }
 
-root_type FramePart;
+// this will be used in a separate kafka topic, used to pick up where current run starts
+// if you join late
+table RunInfo {
+    start_time : ulong;
+	run_number : int;
+	inst_name : string;
+}
+
+union MessageTypes { FramePart, RunInfo }
+
+table EventMessage {
+    message : MessageTypes;
+}
+
+root_type EventMessage;

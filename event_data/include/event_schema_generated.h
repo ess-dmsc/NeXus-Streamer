@@ -15,6 +15,8 @@ struct StringValue;
 struct NEvents;
 struct SEEvent;
 struct FramePart;
+struct RunInfo;
+struct EventMessage;
 
 enum RunState {
   RunState_SETUP = 0,
@@ -48,6 +50,23 @@ inline const char **EnumNamesSEValue() {
 inline const char *EnumNameSEValue(SEValue e) { return EnumNamesSEValue()[static_cast<int>(e)]; }
 
 inline bool VerifySEValue(flatbuffers::Verifier &verifier, const void *union_obj, SEValue type);
+
+enum MessageTypes {
+  MessageTypes_NONE = 0,
+  MessageTypes_FramePart = 1,
+  MessageTypes_RunInfo = 2,
+  MessageTypes_MIN = MessageTypes_NONE,
+  MessageTypes_MAX = MessageTypes_RunInfo
+};
+
+inline const char **EnumNamesMessageTypes() {
+  static const char *names[] = { "NONE", "FramePart", "RunInfo", nullptr };
+  return names;
+}
+
+inline const char *EnumNameMessageTypes(MessageTypes e) { return EnumNamesMessageTypes()[static_cast<int>(e)]; }
+
+inline bool VerifyMessageTypes(flatbuffers::Verifier &verifier, const void *union_obj, MessageTypes type);
 
 struct IntValue FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
@@ -346,6 +365,88 @@ inline flatbuffers::Offset<FramePart> CreateFramePart(flatbuffers::FlatBufferBui
   return builder_.Finish();
 }
 
+struct RunInfo FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_START_TIME = 4,
+    VT_RUN_NUMBER = 6,
+    VT_INST_NAME = 8
+  };
+  uint64_t start_time() const { return GetField<uint64_t>(VT_START_TIME, 0); }
+  int32_t run_number() const { return GetField<int32_t>(VT_RUN_NUMBER, 0); }
+  const flatbuffers::String *inst_name() const { return GetPointer<const flatbuffers::String *>(VT_INST_NAME); }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint64_t>(verifier, VT_START_TIME) &&
+           VerifyField<int32_t>(verifier, VT_RUN_NUMBER) &&
+           VerifyField<flatbuffers::uoffset_t>(verifier, VT_INST_NAME) &&
+           verifier.Verify(inst_name()) &&
+           verifier.EndTable();
+  }
+};
+
+struct RunInfoBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_start_time(uint64_t start_time) { fbb_.AddElement<uint64_t>(RunInfo::VT_START_TIME, start_time, 0); }
+  void add_run_number(int32_t run_number) { fbb_.AddElement<int32_t>(RunInfo::VT_RUN_NUMBER, run_number, 0); }
+  void add_inst_name(flatbuffers::Offset<flatbuffers::String> inst_name) { fbb_.AddOffset(RunInfo::VT_INST_NAME, inst_name); }
+  RunInfoBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
+  RunInfoBuilder &operator=(const RunInfoBuilder &);
+  flatbuffers::Offset<RunInfo> Finish() {
+    auto o = flatbuffers::Offset<RunInfo>(fbb_.EndTable(start_, 3));
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<RunInfo> CreateRunInfo(flatbuffers::FlatBufferBuilder &_fbb,
+   uint64_t start_time = 0,
+   int32_t run_number = 0,
+   flatbuffers::Offset<flatbuffers::String> inst_name = 0) {
+  RunInfoBuilder builder_(_fbb);
+  builder_.add_start_time(start_time);
+  builder_.add_inst_name(inst_name);
+  builder_.add_run_number(run_number);
+  return builder_.Finish();
+}
+
+struct EventMessage FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+  enum {
+    VT_MESSAGE_TYPE = 4,
+    VT_MESSAGE = 6
+  };
+  MessageTypes message_type() const { return static_cast<MessageTypes>(GetField<uint8_t>(VT_MESSAGE_TYPE, 0)); }
+  const void *message() const { return GetPointer<const void *>(VT_MESSAGE); }
+  bool Verify(flatbuffers::Verifier &verifier) const {
+    return VerifyTableStart(verifier) &&
+           VerifyField<uint8_t>(verifier, VT_MESSAGE_TYPE) &&
+           VerifyField<flatbuffers::uoffset_t>(verifier, VT_MESSAGE) &&
+           VerifyMessageTypes(verifier, message(), message_type()) &&
+           verifier.EndTable();
+  }
+};
+
+struct EventMessageBuilder {
+  flatbuffers::FlatBufferBuilder &fbb_;
+  flatbuffers::uoffset_t start_;
+  void add_message_type(MessageTypes message_type) { fbb_.AddElement<uint8_t>(EventMessage::VT_MESSAGE_TYPE, static_cast<uint8_t>(message_type), 0); }
+  void add_message(flatbuffers::Offset<void> message) { fbb_.AddOffset(EventMessage::VT_MESSAGE, message); }
+  EventMessageBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
+  EventMessageBuilder &operator=(const EventMessageBuilder &);
+  flatbuffers::Offset<EventMessage> Finish() {
+    auto o = flatbuffers::Offset<EventMessage>(fbb_.EndTable(start_, 2));
+    return o;
+  }
+};
+
+inline flatbuffers::Offset<EventMessage> CreateEventMessage(flatbuffers::FlatBufferBuilder &_fbb,
+   MessageTypes message_type = MessageTypes_NONE,
+   flatbuffers::Offset<void> message = 0) {
+  EventMessageBuilder builder_(_fbb);
+  builder_.add_message(message);
+  builder_.add_message_type(message_type);
+  return builder_.Finish();
+}
+
 inline bool VerifySEValue(flatbuffers::Verifier &verifier, const void *union_obj, SEValue type) {
   switch (type) {
     case SEValue_NONE: return true;
@@ -357,11 +458,20 @@ inline bool VerifySEValue(flatbuffers::Verifier &verifier, const void *union_obj
   }
 }
 
-inline const ISISDAE::FramePart *GetFramePart(const void *buf) { return flatbuffers::GetRoot<ISISDAE::FramePart>(buf); }
+inline bool VerifyMessageTypes(flatbuffers::Verifier &verifier, const void *union_obj, MessageTypes type) {
+  switch (type) {
+    case MessageTypes_NONE: return true;
+    case MessageTypes_FramePart: return verifier.VerifyTable(reinterpret_cast<const FramePart *>(union_obj));
+    case MessageTypes_RunInfo: return verifier.VerifyTable(reinterpret_cast<const RunInfo *>(union_obj));
+    default: return false;
+  }
+}
 
-inline bool VerifyFramePartBuffer(flatbuffers::Verifier &verifier) { return verifier.VerifyBuffer<ISISDAE::FramePart>(); }
+inline const ISISDAE::EventMessage *GetEventMessage(const void *buf) { return flatbuffers::GetRoot<ISISDAE::EventMessage>(buf); }
 
-inline void FinishFramePartBuffer(flatbuffers::FlatBufferBuilder &fbb, flatbuffers::Offset<ISISDAE::FramePart> root) { fbb.Finish(root); }
+inline bool VerifyEventMessageBuffer(flatbuffers::Verifier &verifier) { return verifier.VerifyBuffer<ISISDAE::EventMessage>(); }
+
+inline void FinishEventMessageBuffer(flatbuffers::FlatBufferBuilder &fbb, flatbuffers::Offset<ISISDAE::EventMessage> root) { fbb.Finish(root); }
 
 }  // namespace ISISDAE
 
