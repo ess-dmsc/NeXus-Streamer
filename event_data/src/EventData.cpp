@@ -1,9 +1,7 @@
 #include "EventData.h"
 #include <iostream>
 
-EventData::EventData(const uint8_t *buf) { decodeMessage(buf); }
-
-void EventData::decodeMessage(const uint8_t *buf) {
+bool EventData::decodeMessage(const uint8_t *buf) {
   auto messageData = ISISDAE::GetEventMessage(buf);
   if (messageData->message_type() == ISISDAE::MessageTypes_FramePart) {
     auto frameData = static_cast<const ISISDAE::FramePart*>(messageData->message());
@@ -24,7 +22,9 @@ void EventData::decodeMessage(const uint8_t *buf) {
     setProtonCharge(frameData->proton_charge());
     setFrameTime(frameData->frame_time());
     setPeriod(frameData->period());
+    return true;
   }
+  return false; // this is not an EventData message
 }
 
 flatbuffers::unique_ptr_t EventData::getBufferPointer(std::string &buffer) {

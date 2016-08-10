@@ -33,8 +33,8 @@ TEST(EventDataTest, get_buffer_pointer) {
   std::string rawbuf;
   EXPECT_NO_THROW(events.getBufferPointer(rawbuf));
 
-  auto receivedEventData =
-      EventData(reinterpret_cast<const uint8_t *>(rawbuf.c_str()));
+  auto receivedEventData = EventData();
+  EXPECT_TRUE(receivedEventData.decodeMessage(reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
   EXPECT_EQ(4, receivedEventData.getNumberOfEvents());
   EXPECT_EQ(detIds, receivedEventData.getDetId());
   EXPECT_EQ(tofs, receivedEventData.getTof());
