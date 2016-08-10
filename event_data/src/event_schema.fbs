@@ -51,19 +51,3 @@ table FramePart {
 }
 
 root_type FramePart;
-
-// this will be used in a separate kafka topic, used to pick up where current run starts
-// if you join late 
-table RunInfo {
-    start_time : long;
-	run_number : int;
-	inst_name : string;
-	stream_offset : long;   // offset into kafka topic for start of current data collection run
-}
-
-// this will be used in a separate kafka topic, used to pick up relevant wiring tables
-// this stream will have a larger than normal message size to accommodate data
-table SpectraDetectorMapping {
-    spec : [int];
-    det : [int];
-}
