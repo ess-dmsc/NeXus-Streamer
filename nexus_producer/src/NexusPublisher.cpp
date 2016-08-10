@@ -39,16 +39,28 @@ NexusPublisher::createMessageData(hsize_t frameNumber,
                                   const int messagesPerFrame) {
   std::vector<std::shared_ptr<EventData>> eventDataVector;
 
-  std::vector<uint32_t> detIds;
+  std::vector<int32_t> detIds;
   m_fileReader->getEventDetIds(detIds, frameNumber);
-  std::vector<uint64_t> tofs;
+  std::vector<float> tofs;
   m_fileReader->getEventTofs(tofs, frameNumber);
+
+  auto numberOfFrames = m_fileReader->getNumberOfFrames();
+  // this assumes constant current during frame, which I think is all I can do
+  // with data in the nexus file
+  auto protonCharge =
+      m_fileReader->getProtonCharge(frameNumber) / messagesPerFrame;
+  auto period = m_fileReader->getPeriodNumber();
+  auto frameTime = m_fileReader->getFrameTime(frameNumber);
 
   uint32_t eventsPerMessage =
       static_cast<uint32_t>(ceil(static_cast<double>(detIds.size()) /
                                  static_cast<double>(messagesPerFrame)));
   for (int messageNumber = 0; messageNumber < messagesPerFrame;
        messageNumber++) {
+    auto eventData = std::make_shared<EventData>();
+    eventData->setProtonCharge(protonCharge);
+    eventData->setPeriod(period);
+    eventData->setFrameTime(frameTime);
 
     auto upToDetId = detIds.begin() + ((messageNumber + 1) * eventsPerMessage);
     auto upToTof = tofs.begin() + ((messageNumber + 1) * eventsPerMessage);
@@ -57,18 +69,19 @@ NexusPublisher::createMessageData(hsize_t frameNumber,
     if (messageNumber == (messagesPerFrame - 1)) {
       upToDetId = detIds.end();
       upToTof = tofs.end();
+      eventData->setEndOfFrame(true);
+      if (frameNumber == (numberOfFrames - 1)) {
+        eventData->setEndOfRun(true);
+      }
     }
 
-    std::vector<uint32_t> detIdsCurrentMessage(
+    std::vector<int32_t> detIdsCurrentMessage(
         detIds.begin() + (messageNumber * eventsPerMessage), upToDetId);
-    std::vector<uint64_t> tofsCurrentMessage(
+    std::vector<float> tofsCurrentMessage(
         tofs.begin() + (messageNumber * eventsPerMessage), upToTof);
 
-    auto eventData = std::make_shared<EventData>();
     eventData->setDetId(detIdsCurrentMessage);
     eventData->setTof(tofsCurrentMessage);
-    eventData->setNumberOfFrames(
-        static_cast<uint32_t>(m_fileReader->getNumberOfFrames()));
     eventData->setFrameNumber(static_cast<uint32_t>(frameNumber));
     eventData->setTotalCounts(m_fileReader->getTotalEventCount());
 
@@ -99,8 +112,7 @@ void NexusPublisher::streamData(const int messagesPerFrame) {
             << "Bytes sent: " << totalBytesSent << std::endl
             << "Average message size: "
             << totalBytesSent / (messagesPerFrame * numberOfFrames * 1000)
-            << " kB"
-            << std::endl;
+            << " kB" << std::endl;
 }
 
 /**

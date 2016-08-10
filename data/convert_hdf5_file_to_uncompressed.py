@@ -12,7 +12,10 @@ datasets = [
     '/raw_data_1/detector_1_events/total_counts',
     '/raw_data_1/detector_1_events/event_index',
     '/raw_data_1/good_frames',
-    '/raw_data_1/detector_1_events/event_time_offset'
+    '/raw_data_1/detector_1_events/event_time_offset',
+    'raw_data_1/framelog/proton_charge/value',
+    '/raw_data_1/periods/number',
+    '/raw_data_1/detector_1_events/event_time_zero'
 ]
 
 with h5py.File(uncompressed_file, 'w') as f_write:
