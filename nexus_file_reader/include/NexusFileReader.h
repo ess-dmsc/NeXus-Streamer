@@ -22,6 +22,7 @@ public:
   hsize_t getNumberOfEventsInFrame(hsize_t frameNumber);
   double getFrameTime(hsize_t frameNumber);
   int64_t getRunStartTime();
+  std::string getInstrumentName();
 
 private:
   template <typename T>
@@ -30,7 +31,7 @@ private:
   hsize_t getFrameStart(hsize_t frameNumber);
   H5FilePtr m_file = nullptr;
   size_t m_numberOfFrames;
-  int64_t convertStringToUnixTime(const std::string &inputTime);
+  int64_t convertStringToUnixTime(const std::string &timeString);
 };
 
 #endif // ISIS_NEXUS_STREAMER_NEXUSFILEREADER_H

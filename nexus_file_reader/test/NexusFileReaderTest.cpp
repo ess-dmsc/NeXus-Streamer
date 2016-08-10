@@ -103,3 +103,9 @@ TEST(NexusFileReaderTest, get_run_start_time) {
   auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs");
   EXPECT_EQ(1460429932, fileReader.getRunStartTime());
 }
+
+TEST(NexusFileReaderTest, get_instrument_name) {
+  extern std::string testDataPath;
+  auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs");
+  EXPECT_EQ("SANS2D", fileReader.getInstrumentName());
+}

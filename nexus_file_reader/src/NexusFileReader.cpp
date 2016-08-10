@@ -66,12 +66,24 @@ int64_t NexusFileReader::getRunStartTime() {
   return convertStringToUnixTime(startTime);
 }
 
-int64_t NexusFileReader::convertStringToUnixTime(const std::string &inputTime) {
-  std::istringstream ss(inputTime);
+int64_t NexusFileReader::convertStringToUnixTime(const std::string &timeString) {
+  std::istringstream ss(timeString);
   std::tm tmb = {};
   ss >> std::get_time(&tmb, "%Y-%m-%dT%H:%M:%S");
-  auto timeOut = std::mktime(&tmb);
-  return static_cast<int64_t>(timeOut);
+  auto timeUnix = std::mktime(&tmb);
+  return static_cast<int64_t>(timeUnix);
+}
+
+/**
+ * Get instrument name
+ *
+ * @return - instrument name
+ */
+std::string NexusFileReader::getInstrumentName() {
+  DataSet dataset = m_file->openDataSet("/raw_data_1/name");
+  std::string instrumentName;
+  dataset.read(instrumentName, dataset.getDataType(), dataset.getSpace());
+  return instrumentName;
 }
 
 /**
