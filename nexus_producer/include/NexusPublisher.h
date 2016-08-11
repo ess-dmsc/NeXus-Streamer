@@ -13,13 +13,12 @@ public:
   NexusPublisher(std::shared_ptr<EventPublisher> publisher,
                  const std::string &brokerAddress,
                  const std::string &streamName, const std::string &filename,
-                 const int runNumber,
                  const bool quietMode);
   std::vector<std::shared_ptr<EventData>>
   createMessageData(hsize_t frameNumber, const int messagesPerFrame);
   int64_t createAndSendRunMessage(std::string &rawbuf, int runNumber);
   std::shared_ptr<RunData> createRunMessageData(int runNumber);
-  void streamData(const int messagesPerFrame);
+  void streamData(const int messagesPerFrame, int runNumber, bool slow);
 
 private:
   int64_t createAndSendMessage(std::string &rawbuf, size_t frameNumber,
@@ -29,7 +28,6 @@ private:
   std::shared_ptr<EventPublisher> m_publisher;
   std::shared_ptr<NexusFileReader> m_fileReader;
   bool m_quietMode = false;
-  int m_runNumber = 0;
 };
 
 #endif // ISIS_NEXUS_STREAMER_NEXUSPUBLISHER_H

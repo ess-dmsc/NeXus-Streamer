@@ -19,7 +19,7 @@ TEST(NexusPublisherTest, test_create_streamer) {
   EXPECT_CALL(*publisher.get(), setUp(broker, topic)).Times(AtLeast(1));
 
   NexusPublisher streamer(publisher, broker, topic,
-                          testDataPath + "SANS_test_reduced.hdf5", 1, false);
+                          testDataPath + "SANS_test_reduced.hdf5", false);
 }
 
 TEST(NexusPublisherTest, test_create_streamer_quiet) {
@@ -32,7 +32,7 @@ TEST(NexusPublisherTest, test_create_streamer_quiet) {
   EXPECT_CALL(*publisher.get(), setUp(broker, topic)).Times(AtLeast(1));
 
   NexusPublisher streamer(publisher, broker, topic,
-                          testDataPath + "SANS_test_reduced.hdf5", 1, true);
+                          testDataPath + "SANS_test_reduced.hdf5", true);
 }
 
 TEST(NexusPublisherTest, test_create_message_data) {
@@ -46,7 +46,7 @@ TEST(NexusPublisherTest, test_create_message_data) {
   EXPECT_CALL(*publisher.get(), setUp(broker, topic)).Times(AtLeast(1));
 
   NexusPublisher streamer(publisher, broker, topic,
-                          testDataPath + "SANS_test_reduced.hdf5", 1, true);
+                          testDataPath + "SANS_test_reduced.hdf5", true);
   auto eventData = streamer.createMessageData(static_cast<hsize_t>(1), 1);
 
   std::string rawbuf;
@@ -74,7 +74,7 @@ TEST(NexusPublisherTest, test_create_message_data_3_message_per_frame) {
   EXPECT_CALL(*publisher.get(), setUp(broker, topic)).Times(AtLeast(1));
 
   NexusPublisher streamer(publisher, broker, topic,
-                          testDataPath + "SANS_test_reduced.hdf5", 1, true);
+                          testDataPath + "SANS_test_reduced.hdf5", true);
   auto eventData =
       streamer.createMessageData(static_cast<hsize_t>(frameNumber), 3);
 
@@ -114,7 +114,7 @@ TEST(NexusPublisherTest,
   EXPECT_CALL(*publisher.get(), setUp(broker, topic)).Times(AtLeast(1));
 
   NexusPublisher streamer(publisher, broker, topic,
-                          testDataPath + "SANS_test_reduced.hdf5", 1, true);
+                          testDataPath + "SANS_test_reduced.hdf5", true);
   auto eventData =
       streamer.createMessageData(static_cast<hsize_t>(frameNumber), 3);
 
@@ -161,8 +161,8 @@ TEST(NexusPublisherTest, test_stream_data) {
              1); // +1 for run metadata message
 
   NexusPublisher streamer(publisher, broker, topic,
-                          testDataPath + "SANS_test_reduced.hdf5", 1, false);
-  EXPECT_NO_THROW(streamer.streamData(messagesPerFrame));
+                          testDataPath + "SANS_test_reduced.hdf5", false);
+  EXPECT_NO_THROW(streamer.streamData(messagesPerFrame, 1, false));
 }
 
 TEST(NexusPublisherTest, test_stream_data_multiple_messages_per_frame) {
@@ -183,8 +183,8 @@ TEST(NexusPublisherTest, test_stream_data_multiple_messages_per_frame) {
              1); // +1 for run metadata message
 
   NexusPublisher streamer(publisher, broker, topic,
-                          testDataPath + "SANS_test_reduced.hdf5", 1, false);
-  EXPECT_NO_THROW(streamer.streamData(messagesPerFrame));
+                          testDataPath + "SANS_test_reduced.hdf5", false);
+  EXPECT_NO_THROW(streamer.streamData(messagesPerFrame, 1, false));
 }
 
 TEST(NexusPublisherTest, test_create_run_message_data) {
@@ -198,7 +198,7 @@ TEST(NexusPublisherTest, test_create_run_message_data) {
   EXPECT_CALL(*publisher.get(), setUp(broker, topic)).Times(AtLeast(1));
 
   NexusPublisher streamer(publisher, broker, topic,
-                          testDataPath + "SANS_test_reduced.hdf5", 1, true);
+                          testDataPath + "SANS_test_reduced.hdf5", true);
   int runNumber = 3;
   auto runData = streamer.createRunMessageData(runNumber);
 

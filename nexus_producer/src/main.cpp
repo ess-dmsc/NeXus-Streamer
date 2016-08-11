@@ -17,10 +17,11 @@ int main(int argc, char **argv) {
   std::string broker = "sakura";
   std::string topic = "test_topic";
   std::string compression = "";
+  bool slow = false;
   bool quietMode = false;
   int messagesPerFrame = 1;
 
-  while ((opt = getopt(argc, argv, "f:b:t:c:m:q")) != -1) {
+  while ((opt = getopt(argc, argv, "f:b:t:c:m:sq")) != -1) {
     switch (opt) {
 
     case 'f':
@@ -43,6 +44,10 @@ int main(int argc, char **argv) {
       messagesPerFrame = std::stoi(optarg);
       break;
 
+    case 's':
+      slow = true;
+      break;
+
     case 'q':
       quietMode = true;
       break;
@@ -58,6 +63,7 @@ int main(int argc, char **argv) {
                     "[-b <host:port>] "
                     "[-t <topic_name>] "
                     "[-m <messages_per_frame>] "
+                    "[-s]"
                     "[-q] "
                     "\n",
             argv[0]);
@@ -66,8 +72,13 @@ int main(int argc, char **argv) {
 
   auto publisher = std::make_shared<KafkaEventPublisher>(compression);
   int runNumber = 1;
-  NexusPublisher streamer(publisher, broker, topic, filename, runNumber, quietMode);
-  streamer.streamData(messagesPerFrame);
+  NexusPublisher streamer(publisher, broker, topic, filename, quietMode);
+
+  // Publish the same data repeatedly, with incrementing run numbers
+  while (true) {
+    streamer.streamData(messagesPerFrame, runNumber, slow);
+    runNumber++;
+  }
 
   return 0;
 }

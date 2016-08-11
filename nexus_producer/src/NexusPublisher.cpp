@@ -1,3 +1,4 @@
+#include <thread>
 #include <chrono>
 #include <iostream>
 
@@ -21,11 +22,9 @@ NexusPublisher::NexusPublisher(std::shared_ptr<EventPublisher> publisher,
                                const std::string &brokerAddress,
                                const std::string &streamName,
                                const std::string &filename,
-                               const int runNumber,
                                const bool quietMode)
     : m_publisher(publisher),
       m_fileReader(std::make_shared<NexusFileReader>(filename)),
-      m_runNumber(runNumber),
       m_quietMode(quietMode) {
   publisher->setUp(brokerAddress, streamName);
 }
@@ -113,20 +112,25 @@ std::shared_ptr<RunData> NexusPublisher::createRunMessageData(int runNumber) {
 /**
  * Start streaming all the data from the file
  */
-void NexusPublisher::streamData(const int messagesPerFrame) {
+void NexusPublisher::streamData(const int messagesPerFrame, int runNumber, bool slow) {
   std::string rawbuf;
   // frame numbers run from 0 to numberOfFrames-1
   reportProgress(0.0);
   int64_t totalBytesSent = 0;
   const auto numberOfFrames = m_fileReader->getNumberOfFrames();
 
-  totalBytesSent += createAndSendRunMessage(rawbuf, m_runNumber);
+  totalBytesSent += createAndSendRunMessage(rawbuf, runNumber);
 
   for (size_t frameNumber = 0; frameNumber < numberOfFrames; frameNumber++) {
     totalBytesSent +=
         createAndSendMessage(rawbuf, frameNumber, messagesPerFrame);
     reportProgress(static_cast<float>(frameNumber) /
                    static_cast<float>(numberOfFrames));
+
+    // Publish messages at roughly realistic messsage rate (~10 frames per second)
+    if (slow) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
   }
   reportProgress(1.0);
   std::cout << std::endl
