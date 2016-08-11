@@ -28,6 +28,7 @@ private:
   int32_t m_runNumber = 0;
   std::string m_instrumentName = "";
   size_t m_bufferSize = 0;
+  uint64_t m_streamOffset = 0;
 };
 
 #endif // ISIS_NEXUS_STREAMER_FOR_MANTID_RUNDATA_H

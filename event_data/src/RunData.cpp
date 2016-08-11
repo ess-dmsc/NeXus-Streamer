@@ -31,8 +31,8 @@ flatbuffers::unique_ptr_t RunData::getBufferPointer(std::string &buffer) {
   flatbuffers::FlatBufferBuilder builder;
 
   auto instrumentName = builder.CreateString(m_instrumentName);
-  auto messageRunInfo =
-      ISISDAE::CreateRunInfo(builder, m_startTime, m_runNumber, instrumentName);
+  auto messageRunInfo = ISISDAE::CreateRunInfo(
+      builder, m_startTime, m_runNumber, instrumentName, m_streamOffset);
 
   auto messageFlatbuf = ISISDAE::CreateEventMessage(
       builder, ISISDAE::MessageTypes_RunInfo, messageRunInfo.Union());

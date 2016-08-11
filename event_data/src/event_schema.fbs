@@ -1,5 +1,7 @@
 // schema for ISIS data streaming test
 
+include "run_info_schema.fbs";
+
 namespace ISISDAE;
 
 enum RunState : byte { SETUP=0, RUNNING=1 }
@@ -48,14 +50,6 @@ table FramePart {
 	end_of_run : bool = false; // true when final frame of data collection run
 	n_events : NEvents;
 	se_events : [SEEvent];
-}
-
-// this will be used in a separate kafka topic, used to pick up where current run starts
-// if you join late
-table RunInfo {
-    start_time : ulong;
-	run_number : int;
-	inst_name : string;
 }
 
 union MessageTypes { FramePart, RunInfo }

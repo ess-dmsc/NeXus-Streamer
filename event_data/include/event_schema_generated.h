@@ -5,6 +5,11 @@
 
 #include "flatbuffers/flatbuffers.h"
 
+#include "run_info_schema_generated.h"
+
+namespace ISISDAE {
+struct RunInfo;
+}  // namespace ISISDAE
 
 namespace ISISDAE {
 
@@ -15,7 +20,6 @@ struct StringValue;
 struct NEvents;
 struct SEEvent;
 struct FramePart;
-struct RunInfo;
 struct EventMessage;
 
 enum RunState {
@@ -365,50 +369,6 @@ inline flatbuffers::Offset<FramePart> CreateFramePart(flatbuffers::FlatBufferBui
   return builder_.Finish();
 }
 
-struct RunInfo FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
-    VT_START_TIME = 4,
-    VT_RUN_NUMBER = 6,
-    VT_INST_NAME = 8
-  };
-  uint64_t start_time() const { return GetField<uint64_t>(VT_START_TIME, 0); }
-  int32_t run_number() const { return GetField<int32_t>(VT_RUN_NUMBER, 0); }
-  const flatbuffers::String *inst_name() const { return GetPointer<const flatbuffers::String *>(VT_INST_NAME); }
-  bool Verify(flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<uint64_t>(verifier, VT_START_TIME) &&
-           VerifyField<int32_t>(verifier, VT_RUN_NUMBER) &&
-           VerifyField<flatbuffers::uoffset_t>(verifier, VT_INST_NAME) &&
-           verifier.Verify(inst_name()) &&
-           verifier.EndTable();
-  }
-};
-
-struct RunInfoBuilder {
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_start_time(uint64_t start_time) { fbb_.AddElement<uint64_t>(RunInfo::VT_START_TIME, start_time, 0); }
-  void add_run_number(int32_t run_number) { fbb_.AddElement<int32_t>(RunInfo::VT_RUN_NUMBER, run_number, 0); }
-  void add_inst_name(flatbuffers::Offset<flatbuffers::String> inst_name) { fbb_.AddOffset(RunInfo::VT_INST_NAME, inst_name); }
-  RunInfoBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
-  RunInfoBuilder &operator=(const RunInfoBuilder &);
-  flatbuffers::Offset<RunInfo> Finish() {
-    auto o = flatbuffers::Offset<RunInfo>(fbb_.EndTable(start_, 3));
-    return o;
-  }
-};
-
-inline flatbuffers::Offset<RunInfo> CreateRunInfo(flatbuffers::FlatBufferBuilder &_fbb,
-   uint64_t start_time = 0,
-   int32_t run_number = 0,
-   flatbuffers::Offset<flatbuffers::String> inst_name = 0) {
-  RunInfoBuilder builder_(_fbb);
-  builder_.add_start_time(start_time);
-  builder_.add_inst_name(inst_name);
-  builder_.add_run_number(run_number);
-  return builder_.Finish();
-}
-
 struct EventMessage FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_MESSAGE_TYPE = 4,
@@ -462,7 +422,7 @@ inline bool VerifyMessageTypes(flatbuffers::Verifier &verifier, const void *unio
   switch (type) {
     case MessageTypes_NONE: return true;
     case MessageTypes_FramePart: return verifier.VerifyTable(reinterpret_cast<const FramePart *>(union_obj));
-    case MessageTypes_RunInfo: return verifier.VerifyTable(reinterpret_cast<const RunInfo *>(union_obj));
+    case MessageTypes_RunInfo: return verifier.VerifyTable(reinterpret_cast<const ISISDAE::RunInfo *>(union_obj));
     default: return false;
   }
 }
