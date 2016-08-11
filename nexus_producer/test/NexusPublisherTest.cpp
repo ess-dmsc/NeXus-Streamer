@@ -156,9 +156,10 @@ TEST(NexusPublisherTest, test_stream_data) {
   const int messagesPerFrame = 1;
 
   EXPECT_CALL(*publisher.get(), setUp(broker, topic)).Times(1);
-  EXPECT_CALL(*publisher.get(), sendMessage(_, _))
-      .Times(numberOfFrames * messagesPerFrame +
-             1); // +1 for run metadata message
+  EXPECT_CALL(*publisher.get(), sendEventMessage(_, _))
+      .Times(numberOfFrames * messagesPerFrame + 1); // +1 for run metadata message
+  EXPECT_CALL(*publisher.get(), sendRunMessage(_, _))
+      .Times(1);
   EXPECT_CALL(*publisher.get(), getCurrentOffset()).Times(1);
 
   NexusPublisher streamer(publisher, broker, topic,
@@ -179,9 +180,11 @@ TEST(NexusPublisherTest, test_stream_data_multiple_messages_per_frame) {
   const int messagesPerFrame = 10;
 
   EXPECT_CALL(*publisher.get(), setUp(broker, topic)).Times(1);
-  EXPECT_CALL(*publisher.get(), sendMessage(_, _))
+  EXPECT_CALL(*publisher.get(), sendEventMessage(_, _))
       .Times(numberOfFrames * messagesPerFrame +
              1); // +1 for run metadata message
+  EXPECT_CALL(*publisher.get(), sendRunMessage(_, _))
+      .Times(1);
   EXPECT_CALL(*publisher.get(), getCurrentOffset()).Times(1);
 
   NexusPublisher streamer(publisher, broker, topic,

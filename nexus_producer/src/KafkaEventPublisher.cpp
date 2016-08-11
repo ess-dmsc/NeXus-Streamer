@@ -32,7 +32,7 @@ void KafkaEventPublisher::setUp(const std::string &broker_str,
   }
 
   // Create producer
-  m_producer_ptr = std::unique_ptr<RdKafka::Producer>(
+  m_producer_ptr = std::shared_ptr<RdKafka::Producer>(
       RdKafka::Producer::create(conf, error_str));
   if (!m_producer_ptr.get()) {
     std::cerr << "Failed to create producer: " << error_str << std::endl;
@@ -40,9 +40,25 @@ void KafkaEventPublisher::setUp(const std::string &broker_str,
   }
 
   // Create topic handle
-  m_topic_ptr = std::unique_ptr<RdKafka::Topic>(RdKafka::Topic::create(
+  m_topic_ptr = std::shared_ptr<RdKafka::Topic>(RdKafka::Topic::create(
       m_producer_ptr.get(), topic_str, tconf, error_str));
   if (!m_topic_ptr.get()) {
+    std::cerr << "Failed to create topic: " << error_str << std::endl;
+    exit(1);
+  }
+
+  // Create run message producer
+  m_runProducer_ptr = std::shared_ptr<RdKafka::Producer>(
+      RdKafka::Producer::create(conf, error_str));
+  if (!m_runProducer_ptr.get()) {
+    std::cerr << "Failed to create producer: " << error_str << std::endl;
+    exit(1);
+  }
+
+  // Create run topic handle
+  m_runTopic_ptr = std::shared_ptr<RdKafka::Topic>(RdKafka::Topic::create(
+      m_runProducer_ptr.get(), "runInfo_dev", tconf, error_str));
+  if (!m_runTopic_ptr.get()) {
     std::cerr << "Failed to create topic: " << error_str << std::endl;
     exit(1);
   }
@@ -54,14 +70,23 @@ void KafkaEventPublisher::setUp(const std::string &broker_str,
  * @param buf - pointer to the message buffer
  * @param messageSize - the size of the message in bytes
  */
-void KafkaEventPublisher::sendMessage(char *buf, size_t messageSize) {
+void KafkaEventPublisher::sendEventMessage(char *buf, size_t messageSize) {
+  sendMessage(buf, messageSize, m_producer_ptr, m_topic_ptr);
+}
 
+void KafkaEventPublisher::sendRunMessage(char *buf, size_t messageSize) {
+  sendMessage(buf, messageSize, m_runProducer_ptr, m_runTopic_ptr);
+}
+
+void KafkaEventPublisher::sendMessage(
+    char *buf, size_t messageSize, std::shared_ptr<RdKafka::Producer> producer,
+    std::shared_ptr<RdKafka::Topic> topic) {
   RdKafka::ErrorCode resp;
   do {
 
-    resp = m_producer_ptr->produce(m_topic_ptr.get(), m_partitionNumber,
-                                   RdKafka::Producer::RK_MSG_COPY, buf,
-                                   messageSize, NULL, NULL);
+    resp = producer->produce(topic.get(), m_partitionNumber,
+                             RdKafka::Producer::RK_MSG_COPY, buf, messageSize,
+                             NULL, NULL);
 
     if (resp != RdKafka::ERR_NO_ERROR) {
       if (resp != RdKafka::ERR__QUEUE_FULL) {
@@ -72,9 +97,9 @@ void KafkaEventPublisher::sendMessage(char *buf, size_t messageSize) {
       // This blocking poll call should give Kafka some time for the problem to
       // be resolved
       // for example for messages to leave the queue if it is full
-      m_producer_ptr->poll(1000);
+      producer->poll(1000);
     } else {
-      m_producer_ptr->poll(0);
+      producer->poll(0);
     }
   } while (resp == RdKafka::ERR__QUEUE_FULL);
 }

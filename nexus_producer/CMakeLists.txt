@@ -27,7 +27,8 @@ target_link_libraries(eventPublisher_lib
         ${LibRDKafka_LIBRARIES})
 target_link_libraries(nexusPublisher_lib
         nexusFileReader_lib
-        eventdata_lib)
+        eventdata_lib
+        rundata_lib)
 
 set(core_libraries
         eventdata_lib

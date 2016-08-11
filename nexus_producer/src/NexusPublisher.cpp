@@ -1,6 +1,6 @@
-#include <thread>
 #include <chrono>
 #include <iostream>
+#include <thread>
 
 #include "NexusPublisher.h"
 
@@ -112,7 +112,8 @@ std::shared_ptr<RunData> NexusPublisher::createRunMessageData(int runNumber) {
 /**
  * Start streaming all the data from the file
  */
-void NexusPublisher::streamData(const int messagesPerFrame, int runNumber, bool slow) {
+void NexusPublisher::streamData(const int messagesPerFrame, int runNumber,
+                                bool slow) {
   std::string rawbuf;
   // frame numbers run from 0 to numberOfFrames-1
   reportProgress(0.0);
@@ -127,7 +128,8 @@ void NexusPublisher::streamData(const int messagesPerFrame, int runNumber, bool 
     reportProgress(static_cast<float>(frameNumber) /
                    static_cast<float>(numberOfFrames));
 
-    // Publish messages at roughly realistic messsage rate (~10 frames per second)
+    // Publish messages at roughly realistic messsage rate (~10 frames per
+    // second)
     if (slow) {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
@@ -155,8 +157,8 @@ int64_t NexusPublisher::createAndSendMessage(std::string &rawbuf,
   int64_t dataSize = 0;
   for (const auto &message : messageData) {
     auto buffer_uptr = message->getBufferPointer(rawbuf);
-    m_publisher->sendMessage(reinterpret_cast<char *>(buffer_uptr.get()),
-                             message->getBufferSize());
+    m_publisher->sendEventMessage(reinterpret_cast<char *>(buffer_uptr.get()),
+                                  message->getBufferSize());
     dataSize += rawbuf.size();
   }
   return dataSize;
@@ -174,8 +176,13 @@ int64_t NexusPublisher::createAndSendRunMessage(std::string &rawbuf,
   auto messageData = createRunMessageData(runNumber);
   messageData->setStreamOffset(m_publisher->getCurrentOffset());
   auto buffer_uptr = messageData->getBufferPointer(rawbuf);
-  m_publisher->sendMessage(reinterpret_cast<char *>(buffer_uptr.get()),
-                           messageData->getBufferSize());
+  // publish to both topics
+  m_publisher->sendRunMessage(reinterpret_cast<char *>(buffer_uptr.get()),
+                              messageData->getBufferSize());
+  m_publisher->sendEventMessage(reinterpret_cast<char *>(buffer_uptr.get()),
+                              messageData->getBufferSize());
+  std::cout << "Publishing new run:" << std::endl;
+  std::cout << messageData->runInfo() << std::endl;
   return rawbuf.size();
 }
 
