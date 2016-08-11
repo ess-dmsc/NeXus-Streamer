@@ -1,3 +1,4 @@
+#include <chrono>
 #include <iostream>
 
 #include "NexusPublisher.h"
@@ -20,9 +21,11 @@ NexusPublisher::NexusPublisher(std::shared_ptr<EventPublisher> publisher,
                                const std::string &brokerAddress,
                                const std::string &streamName,
                                const std::string &filename,
+                               const int runNumber,
                                const bool quietMode)
     : m_publisher(publisher),
       m_fileReader(std::make_shared<NexusFileReader>(filename)),
+      m_runNumber(runNumber),
       m_quietMode(quietMode) {
   publisher->setUp(brokerAddress, streamName);
 }
@@ -101,7 +104,9 @@ std::shared_ptr<RunData> NexusPublisher::createRunMessageData(int runNumber) {
   auto runData = std::make_shared<RunData>();
   runData->setInstrumentName(m_fileReader->getInstrumentName());
   runData->setRunNumber(runNumber);
-  runData->setStartTime(static_cast<uint64_t>(m_fileReader->getRunStartTime()));
+  auto now = std::chrono::system_clock::now();
+  auto now_c = std::chrono::system_clock::to_time_t(now);
+  runData->setStartTime(static_cast<uint64_t>(now_c));
   return runData;
 }
 
@@ -114,6 +119,9 @@ void NexusPublisher::streamData(const int messagesPerFrame) {
   reportProgress(0.0);
   int64_t totalBytesSent = 0;
   const auto numberOfFrames = m_fileReader->getNumberOfFrames();
+
+  totalBytesSent += createAndSendRunMessage(rawbuf, m_runNumber);
+
   for (size_t frameNumber = 0; frameNumber < numberOfFrames; frameNumber++) {
     totalBytesSent +=
         createAndSendMessage(rawbuf, frameNumber, messagesPerFrame);
@@ -130,11 +138,11 @@ void NexusPublisher::streamData(const int messagesPerFrame) {
 }
 
 /**
- * Using Google Flatbuffers, create a message for the specifed frame and store
- * it in the provided buffer
+ * Using Google Flatbuffers, create a message for the specifed frame and send it
  *
  * @param rawbuf - a buffer for the message
  * @param frameNumber - the number of the frame for which data will be sent
+ * @return - size of the buffer
  */
 int64_t NexusPublisher::createAndSendMessage(std::string &rawbuf,
                                              size_t frameNumber,
@@ -148,6 +156,22 @@ int64_t NexusPublisher::createAndSendMessage(std::string &rawbuf,
     dataSize += rawbuf.size();
   }
   return dataSize;
+}
+
+/**
+ * Create a message containing run metadata and send it
+ *
+ * @param rawbuf - a buffer for the message
+ * @param runNumber - integer to identify the run
+ * @return - size of the buffer
+ */
+int64_t NexusPublisher::createAndSendRunMessage(std::string &rawbuf,
+                                                int runNumber) {
+  auto messageData = createRunMessageData(runNumber);
+  auto buffer_uptr = messageData->getBufferPointer(rawbuf);
+  m_publisher->sendMessage(reinterpret_cast<char *>(buffer_uptr.get()),
+                           messageData->getBufferSize());
+  return rawbuf.size();
 }
 
 /**

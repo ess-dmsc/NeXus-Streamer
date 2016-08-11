@@ -65,7 +65,8 @@ int main(int argc, char **argv) {
   }
 
   auto publisher = std::make_shared<KafkaEventPublisher>(compression);
-  NexusPublisher streamer(publisher, broker, topic, filename, quietMode);
+  int runNumber = 1;
+  NexusPublisher streamer(publisher, broker, topic, filename, runNumber, quietMode);
   streamer.streamData(messagesPerFrame);
 
   return 0;
