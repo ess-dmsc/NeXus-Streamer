@@ -5,8 +5,8 @@ class RunDataTest : public ::testing::Test {};
 
 TEST(RunDataTest, set_and_get_start_time) {
   auto rundata = RunData();
-  EXPECT_NO_THROW(rundata.setStartTime(1470901818));
-  EXPECT_EQ("2016-08-11T08:50:18", rundata.getStartTime());
+  EXPECT_NO_THROW(rundata.setStartTime("2016-08-11T08:50:18"));
+  EXPECT_EQ(1470905418, rundata.getStartTime());
 }
 
 TEST(RunDataTest, set_and_get_run_number) {
@@ -19,4 +19,21 @@ TEST(RunDataTest, set_and_get_instrument_name) {
   auto rundata = RunData();
   EXPECT_NO_THROW(rundata.setInstrumentName("SANS2D"));
   EXPECT_EQ("SANS2D", rundata.getInstrumentName());
+}
+
+TEST(RunDataTest, encode_and_decode_RunData) {
+  auto rundata = RunData();
+  EXPECT_NO_THROW(rundata.setInstrumentName("SANS2D"));
+  EXPECT_NO_THROW(rundata.setRunNumber(42));
+  EXPECT_NO_THROW(rundata.setStartTime("2016-08-11T08:50:18"));
+
+  std::string rawbuf;
+  EXPECT_NO_THROW(rundata.getBufferPointer(rawbuf));
+
+  auto receivedRunData = RunData();
+  EXPECT_TRUE(receivedRunData.decodeMessage(
+      reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
+  EXPECT_EQ(42, receivedRunData.getRunNumber());
+  EXPECT_EQ("SANS2D", receivedRunData.getInstrumentName());
+  EXPECT_EQ(1470905418, receivedRunData.getStartTime());
 }
