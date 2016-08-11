@@ -1,13 +1,16 @@
 project(isis_nexus_streamer)
 
 set( SRC_FILES
-        src/EventData.cpp)
+        src/EventData.cpp
+        src/RunData.cpp)
 
 set( INC_FILES
-        include/EventData.h)
+        include/EventData.h
+        include/RunData.h)
 
 set( TEST_FILES
-        test/EventDataTest.cpp)
+        test/EventDataTest.cpp
+        test/RunDataTest.cpp)
 
 #####################
 ## Libraries       ##
@@ -17,6 +20,7 @@ include_directories(
         ${PROJECT_SOURCE_DIR}/include)
 
 add_library(eventdata_lib ${PROJECT_SOURCE_DIR}/src/EventData.cpp)
+add_library(rundata_lib ${PROJECT_SOURCE_DIR}/src/RunData.cpp)
 
 #####################
 ## Unit Tests      ##
@@ -25,7 +29,8 @@ add_library(eventdata_lib ${PROJECT_SOURCE_DIR}/src/EventData.cpp)
 set(eventData_tests_LINK_LIBRARIES
         gtest
         gmock
-        eventdata_lib)
+        eventdata_lib
+        rundata_lib)
 if(UNIX)
     list(APPEND tests_LINK_LIBRARIES pthread)
 endif()
