@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "../../event_data/include/EventData.h"
+#include "../../event_data/include/RunData.h"
 #include "EventPublisher.h"
 #include "../../nexus_file_reader/include/NexusFileReader.h"
 
@@ -15,6 +16,7 @@ public:
                  const bool quietMode);
   std::vector<std::shared_ptr<EventData>>
   createMessageData(hsize_t frameNumber, const int messagesPerFrame);
+  std::shared_ptr<RunData> createRunMessageData(int runNumber);
   void streamData(const int messagesPerFrame);
 
 private:

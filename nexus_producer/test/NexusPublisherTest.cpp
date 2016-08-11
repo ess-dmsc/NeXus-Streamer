@@ -115,6 +115,10 @@ TEST(NexusPublisherTest, test_create_message_data_3_message_per_frame_end_of_run
   std::string rawbuf;
   eventData[0]->getBufferPointer(rawbuf);
 
+  auto receivedData = RunData();
+  // Should return false as this is not run data
+  EXPECT_FALSE(receivedData.decodeMessage(reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
+
   auto receivedEventData = EventData();
   EXPECT_TRUE(receivedEventData.decodeMessage(reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
   // First message of frame
@@ -170,4 +174,31 @@ TEST(NexusPublisherTest, test_stream_data_multiple_messages_per_frame) {
   NexusPublisher streamer(publisher, broker, topic,
                           testDataPath + "SANS_test_reduced.hdf5", false);
   EXPECT_NO_THROW(streamer.streamData(messagesPerFrame));
+}
+
+TEST(NexusPublisherTest, test_create_run_message_data) {
+  extern std::string testDataPath;
+
+  const std::string broker = "broker_name";
+  const std::string topic = "topic_name";
+
+  auto publisher = std::make_shared<MockEventPublisher>();
+
+  EXPECT_CALL(*publisher.get(), setUp(broker, topic)).Times(AtLeast(1));
+
+  NexusPublisher streamer(publisher, broker, topic,
+                          testDataPath + "SANS_test_reduced.hdf5", true);
+  int runNumber = 3;
+  auto runData = streamer.createRunMessageData(runNumber);
+
+  std::string rawbuf;
+  runData->getBufferPointer(rawbuf);
+
+  auto receivedData = EventData();
+  // Should return false as this is not event data
+  EXPECT_FALSE(receivedData.decodeMessage(reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
+
+  auto receivedRunData = RunData();
+  EXPECT_TRUE(receivedRunData.decodeMessage(reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
+  EXPECT_EQ(runNumber, receivedRunData.getRunNumber());
 }

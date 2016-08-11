@@ -92,6 +92,20 @@ NexusPublisher::createMessageData(hsize_t frameNumber,
 }
 
 /**
+ * Create runData to send from information in the file
+ *
+ * @param runNumber - number identifying the current run
+ * @return runData
+ */
+std::shared_ptr<RunData> NexusPublisher::createRunMessageData(int runNumber) {
+  auto runData = std::make_shared<RunData>();
+  runData->setInstrumentName(m_fileReader->getInstrumentName());
+  runData->setRunNumber(runNumber);
+  runData->setStartTime(static_cast<uint64_t>(m_fileReader->getRunStartTime()));
+  return runData;
+}
+
+/**
  * Start streaming all the data from the file
  */
 void NexusPublisher::streamData(const int messagesPerFrame) {
