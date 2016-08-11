@@ -21,12 +21,13 @@
 NexusPublisher::NexusPublisher(std::shared_ptr<EventPublisher> publisher,
                                const std::string &brokerAddress,
                                const std::string &streamName,
+                               const std::string &runTopicName,
                                const std::string &filename,
                                const bool quietMode)
     : m_publisher(publisher),
       m_fileReader(std::make_shared<NexusFileReader>(filename)),
       m_quietMode(quietMode) {
-  publisher->setUp(brokerAddress, streamName);
+  publisher->setUp(brokerAddress, streamName, runTopicName);
 }
 
 /**

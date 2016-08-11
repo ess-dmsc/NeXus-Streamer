@@ -9,7 +9,8 @@
  * @param topic_str - the name of the datastream (topic) to publish the data to
  */
 void KafkaEventPublisher::setUp(const std::string &broker_str,
-                                const std::string &topic_str) {
+                                const std::string &topic_str,
+                                const std::string &runTopic_str) {
 
   std::cout << "Setting up Kafka producer" << std::endl;
 
@@ -57,7 +58,7 @@ void KafkaEventPublisher::setUp(const std::string &broker_str,
 
   // Create run topic handle
   m_runTopic_ptr = std::shared_ptr<RdKafka::Topic>(RdKafka::Topic::create(
-      m_runProducer_ptr.get(), "runInfo_dev", tconf, error_str));
+      m_runProducer_ptr.get(), runTopic_str, tconf, error_str));
   if (!m_runTopic_ptr.get()) {
     std::cerr << "Failed to create topic: " << error_str << std::endl;
     exit(1);

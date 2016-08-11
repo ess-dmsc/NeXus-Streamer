@@ -13,7 +13,7 @@ public:
       : m_compression(compression){};
   ~KafkaEventPublisher() { RdKafka::wait_destroyed(5000); };
 
-  void setUp(const std::string &broker, const std::string &topic) override;
+  void setUp(const std::string &broker_str, const std::string &topic_str, const std::string &runTopic_str) override;
   void sendEventMessage(char *buf, size_t messageSize) override;
   void sendRunMessage(char *buf, size_t messageSize) override;
   int64_t getCurrentOffset() override;

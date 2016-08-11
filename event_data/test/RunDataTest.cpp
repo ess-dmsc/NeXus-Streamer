@@ -48,7 +48,7 @@ TEST(RunDataTest, encode_and_decode_RunData) {
   EXPECT_NO_THROW(rundata.setStartTime("2016-08-11T08:50:18"));
 
   std::string rawbuf;
-  EXPECT_NO_THROW(rundata.getBufferPointer(rawbuf));
+  EXPECT_NO_THROW(rundata.getEventBufferPointer(rawbuf));
 
   auto receivedRunData = RunData();
   EXPECT_TRUE(receivedRunData.decodeMessage(

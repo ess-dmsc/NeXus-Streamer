@@ -5,15 +5,15 @@
 
 #include "../../event_data/include/EventData.h"
 #include "../../event_data/include/RunData.h"
-#include "EventPublisher.h"
 #include "../../nexus_file_reader/include/NexusFileReader.h"
+#include "EventPublisher.h"
 
 class NexusPublisher {
 public:
   NexusPublisher(std::shared_ptr<EventPublisher> publisher,
                  const std::string &brokerAddress,
-                 const std::string &streamName, const std::string &filename,
-                 const bool quietMode);
+                 const std::string &streamName, const std::string &runTopicName,
+                 const std::string &filename, const bool quietMode);
   std::vector<std::shared_ptr<EventData>>
   createMessageData(hsize_t frameNumber, const int messagesPerFrame);
   int64_t createAndSendRunMessage(std::string &rawbuf, int runNumber);
@@ -22,7 +22,7 @@ public:
 
 private:
   int64_t createAndSendMessage(std::string &rawbuf, size_t frameNumber,
-                            const int messagesPerFrame);
+                               const int messagesPerFrame);
   void reportProgress(const float progress);
 
   std::shared_ptr<EventPublisher> m_publisher;
