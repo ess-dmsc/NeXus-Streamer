@@ -37,7 +37,7 @@ TEST(RunDataTest, get_RunInfo) {
   EXPECT_NO_THROW(rundata.setStartTime("2016-08-11T08:50:18"));
 
   EXPECT_EQ("Run number: 42, Instrument name: SANS2D, Start time: "
-            "2016-08-11T09:50:18",
+            "2016-08-11T09:50:18, Run offset: 0",
             rundata.runInfo());
 }
 
