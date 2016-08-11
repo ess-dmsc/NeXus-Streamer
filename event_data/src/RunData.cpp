@@ -27,7 +27,7 @@ bool RunData::decodeMessage(const uint8_t *buf) {
   return false; // this is not a RunData message
 }
 
-flatbuffers::unique_ptr_t RunData::getBufferPointer(std::string &buffer) {
+flatbuffers::unique_ptr_t RunData::getEventBufferPointer(std::string &buffer) {
   flatbuffers::FlatBufferBuilder builder;
 
   auto instrumentName = builder.CreateString(m_instrumentName);
@@ -37,6 +37,24 @@ flatbuffers::unique_ptr_t RunData::getBufferPointer(std::string &buffer) {
   auto messageFlatbuf = ISISDAE::CreateEventMessage(
       builder, ISISDAE::MessageTypes_RunInfo, messageRunInfo.Union());
   builder.Finish(messageFlatbuf);
+
+  auto bufferpointer =
+      reinterpret_cast<const char *>(builder.GetBufferPointer());
+  buffer.assign(bufferpointer, bufferpointer + builder.GetSize());
+
+  m_bufferSize = builder.GetSize();
+
+  return builder.ReleaseBufferPointer();
+}
+
+flatbuffers::unique_ptr_t RunData::getRunBufferPointer(std::string &buffer) {
+  flatbuffers::FlatBufferBuilder builder;
+
+  auto instrumentName = builder.CreateString(m_instrumentName);
+  auto messageRunInfo = ISISDAE::CreateRunInfo(
+      builder, m_startTime, m_runNumber, instrumentName, m_streamOffset);
+
+  builder.Finish(messageRunInfo);
 
   auto bufferpointer =
       reinterpret_cast<const char *>(builder.GetBufferPointer());
