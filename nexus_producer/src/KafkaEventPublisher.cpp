@@ -58,23 +58,37 @@ void KafkaEventPublisher::sendMessage(char *buf, size_t messageSize) {
 
   RdKafka::ErrorCode resp;
   do {
-    // using -1 as the partition number will cause rdkafka to distribute messages
-    // across multiple partitions to load balance (if the topic has multiple
-    // partitions)
-    resp = m_producer_ptr->produce(
-        m_topic_ptr.get(), -1, RdKafka::Producer::RK_MSG_COPY, buf, messageSize,
-        NULL, NULL);
+
+    resp = m_producer_ptr->produce(m_topic_ptr.get(), m_partitionNumber,
+                                   RdKafka::Producer::RK_MSG_COPY, buf,
+                                   messageSize, NULL, NULL);
 
     if (resp != RdKafka::ERR_NO_ERROR) {
       if (resp != RdKafka::ERR__QUEUE_FULL) {
-        std::cerr << "% Produce failed: " << RdKafka::err2str(resp) << std::endl;
+        std::cerr << "% Produce failed: " << RdKafka::err2str(resp)
+                  << std::endl;
         std::cerr << "message size was " << messageSize << std::endl;
       }
-      // This blocking poll call should give Kafka some time for the problem to be resolved
+      // This blocking poll call should give Kafka some time for the problem to
+      // be resolved
       // for example for messages to leave the queue if it is full
       m_producer_ptr->poll(1000);
     } else {
       m_producer_ptr->poll(0);
     }
   } while (resp == RdKafka::ERR__QUEUE_FULL);
+}
+
+int64_t KafkaEventPublisher::getCurrentOffset() {
+
+  int64_t lowOffset = 0;
+  int64_t highOffset = 0;
+  auto err = m_producer_ptr->query_watermark_offsets(
+      m_topic_ptr->name(), m_partitionNumber, &lowOffset, &highOffset, 1000);
+  if (err != RdKafka::ERR_NO_ERROR) {
+    std::cerr << "%% Failed to acquire current offset, will use 0: "
+              << RdKafka::err2str(err) << std::endl;
+    return 0;
+  }
+  return highOffset;
 }

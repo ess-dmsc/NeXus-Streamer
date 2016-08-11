@@ -172,6 +172,7 @@ int64_t NexusPublisher::createAndSendMessage(std::string &rawbuf,
 int64_t NexusPublisher::createAndSendRunMessage(std::string &rawbuf,
                                                 int runNumber) {
   auto messageData = createRunMessageData(runNumber);
+  messageData->setStreamOffset(m_publisher->getCurrentOffset());
   auto buffer_uptr = messageData->getBufferPointer(rawbuf);
   m_publisher->sendMessage(reinterpret_cast<char *>(buffer_uptr.get()),
                            messageData->getBufferSize());

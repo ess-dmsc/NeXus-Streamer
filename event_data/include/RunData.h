@@ -15,11 +15,13 @@ public:
   }
   void setStartTime(const std::string &inputTime);
   void setStartTime(uint64_t inputTime) { m_startTime = inputTime; }
+  void setStreamOffset(int64_t streamOffset) { m_streamOffset = streamOffset; }
 
   int32_t getRunNumber() { return m_runNumber; }
   std::string getInstrumentName() { return m_instrumentName; }
   uint64_t getStartTime() { return m_startTime; }
-  size_t getBufferSize() { return m_bufferSize; };
+  size_t getBufferSize() { return m_bufferSize; }
+  int64_t getStreamOffset() { return m_streamOffset; }
 
   std::string runInfo();
 
@@ -28,7 +30,7 @@ private:
   int32_t m_runNumber = 0;
   std::string m_instrumentName = "";
   size_t m_bufferSize = 0;
-  uint64_t m_streamOffset = 0;
+  int64_t m_streamOffset = 0;
 };
 
 #endif // ISIS_NEXUS_STREAMER_FOR_MANTID_RUNDATA_H

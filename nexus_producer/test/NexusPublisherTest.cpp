@@ -159,6 +159,7 @@ TEST(NexusPublisherTest, test_stream_data) {
   EXPECT_CALL(*publisher.get(), sendMessage(_, _))
       .Times(numberOfFrames * messagesPerFrame +
              1); // +1 for run metadata message
+  EXPECT_CALL(*publisher.get(), getCurrentOffset()).Times(1);
 
   NexusPublisher streamer(publisher, broker, topic,
                           testDataPath + "SANS_test_reduced.hdf5", false);
@@ -181,6 +182,7 @@ TEST(NexusPublisherTest, test_stream_data_multiple_messages_per_frame) {
   EXPECT_CALL(*publisher.get(), sendMessage(_, _))
       .Times(numberOfFrames * messagesPerFrame +
              1); // +1 for run metadata message
+  EXPECT_CALL(*publisher.get(), getCurrentOffset()).Times(1);
 
   NexusPublisher streamer(publisher, broker, topic,
                           testDataPath + "SANS_test_reduced.hdf5", false);

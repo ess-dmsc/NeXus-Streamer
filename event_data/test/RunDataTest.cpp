@@ -18,6 +18,12 @@ TEST(RunDataTest, set_and_get_run_number) {
   EXPECT_EQ(42, rundata.getRunNumber());
 }
 
+TEST(RunDataTest, set_and_get_stream_offset) {
+  auto rundata = RunData();
+  EXPECT_NO_THROW(rundata.setStreamOffset(42));
+  EXPECT_EQ(42, rundata.getStreamOffset());
+}
+
 TEST(RunDataTest, set_and_get_instrument_name) {
   auto rundata = RunData();
   EXPECT_NO_THROW(rundata.setInstrumentName("SANS2D"));
