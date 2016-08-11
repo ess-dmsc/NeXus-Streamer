@@ -24,6 +24,17 @@ TEST(RunDataTest, set_and_get_instrument_name) {
   EXPECT_EQ("SANS2D", rundata.getInstrumentName());
 }
 
+TEST(RunDataTest, get_RunInfo) {
+  auto rundata = RunData();
+  EXPECT_NO_THROW(rundata.setInstrumentName("SANS2D"));
+  EXPECT_NO_THROW(rundata.setRunNumber(42));
+  EXPECT_NO_THROW(rundata.setStartTime("2016-08-11T08:50:18"));
+
+  EXPECT_EQ("Run number: 42, Instrument name: SANS2D, Start time: "
+            "2016-08-11T09:50:18",
+            rundata.runInfo());
+}
+
 TEST(RunDataTest, encode_and_decode_RunData) {
   auto rundata = RunData();
   EXPECT_NO_THROW(rundata.setInstrumentName("SANS2D"));

@@ -21,6 +21,8 @@ public:
   uint64_t getStartTime() { return m_startTime; }
   size_t getBufferSize() { return m_bufferSize; };
 
+  std::string runInfo();
+
 private:
   uint64_t m_startTime = 0;
   int32_t m_runNumber = 0;
