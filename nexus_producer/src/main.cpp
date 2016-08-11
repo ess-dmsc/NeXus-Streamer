@@ -59,13 +59,20 @@ int main(int argc, char **argv) {
 
   if (filename.empty()) {
   usage:
-    fprintf(stderr, "Usage: %s -f <filepath> "
-                    "[-b <host:port>] "
-                    "[-t <topic_name>] "
-                    "[-m <messages_per_frame>] "
-                    "[-s]"
-                    "[-q] "
-                    "\n",
+    fprintf(stderr,
+            "Usage:\n"
+            "%s -f <filepath>\n"
+            "[-b <host>]    Specify broker IP address or hostname\n"
+            "[-t <event_topic_name>]    Specify name of event data topic to "
+            "publish to\n"
+            "[-r <run_topic_name>]    Specify name of run data topic to "
+            "publish to\n"
+            "[-m <messages_per_frame>]   Specify number of messages per frame, "
+            "defaults to 1\n"
+            "[-s]    Slow mode, publishes data at approx realistic rate of 10 "
+            "frames per second\n"
+            "[-q]    Quiet mode, makes publisher less chatty on stdout\n"
+            "\n",
             argv[0]);
     exit(1);
   }
