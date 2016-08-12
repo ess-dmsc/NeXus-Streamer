@@ -32,8 +32,16 @@ matrix:
         - cppcheck --force --quiet --inline-suppr --enable=all --suppress=missingIncludeSystem -I nexus_producer/include nexus_file_reader
         - cppcheck --force --quiet --inline-suppr --enable=all --suppress=missingIncludeSystem -I event_data/include event_data
       before_install: sudo apt-get -y install cppcheck
-    - env: TEST_NAME="coveralls"
+    - env:
+        - TEST_NAME="coveralls"
+        - COMPILER=g++-5
       compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
       install:
           - if [ "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
       script:

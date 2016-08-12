@@ -68,6 +68,7 @@ int64_t NexusFileReader::getRunStartTime() {
 
 int64_t NexusFileReader::convertStringToUnixTime(const std::string &timeString) {
   std::istringstream ss(timeString);
+  ss.imbue(std::locale("en_GB.utf-8"));
   std::tm tmb = {};
   ss >> std::get_time(&tmb, "%Y-%m-%dT%H:%M:%S");
   auto timeUnix = std::mktime(&tmb);

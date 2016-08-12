@@ -7,6 +7,7 @@
 
 void RunData::setStartTime(const std::string &inputTime) {
   std::istringstream ss(inputTime);
+  ss.imbue(std::locale("en_GB.utf-8"));
   std::tm tmb = {};
   ss >> std::get_time(&tmb, "%Y-%m-%dT%H:%M:%S");
   m_startTime = static_cast<uint64_t>(std::mktime(&tmb));
@@ -67,6 +68,7 @@ flatbuffers::unique_ptr_t RunData::getRunBufferPointer(std::string &buffer) {
 
 std::string RunData::runInfo() {
   std::stringstream ssRunInfo;
+  ssRunInfo.imbue(std::locale("en_GB.utf-8"));
   const time_t sTime = static_cast<time_t>(m_startTime);
   ssRunInfo << "Run number: " << m_runNumber << ", "
             << "Instrument name: " << m_instrumentName << ", "
