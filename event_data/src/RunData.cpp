@@ -73,7 +73,7 @@ std::string RunData::runInfo() {
   ssRunInfo << "Run number: " << m_runNumber << ", "
             << "Instrument name: " << m_instrumentName << ", "
             << "Start time: "
-            << std::put_time(std::localtime(&sTime), "%Y-%m-%dT%H:%M:%S")
+            << std::put_time(std::gmtime(&sTime), "%Y-%m-%dT%H:%M:%S")
             << ", Run offset: " << m_streamOffset;
   return ssRunInfo.str();
 }
