@@ -97,3 +97,15 @@ TEST(NexusFileReaderTest, get_frame_time) {
   EXPECT_FLOAT_EQ(2.940000057220459, fileReader.getFrameTime(0));
   EXPECT_FLOAT_EQ(3.6389999389648438, fileReader.getFrameTime(7));
 }
+
+TEST(NexusFileReaderTest, get_run_start_time) {
+  extern std::string testDataPath;
+  auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs");
+  EXPECT_EQ(1460429932, fileReader.getRunStartTime());
+}
+
+TEST(NexusFileReaderTest, get_instrument_name) {
+  extern std::string testDataPath;
+  auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs");
+  EXPECT_EQ("SANS2D", fileReader.getInstrumentName());
+}

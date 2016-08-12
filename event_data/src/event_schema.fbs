@@ -1,5 +1,7 @@
 // schema for ISIS data streaming test
 
+include "run_info_schema.fbs";
+
 namespace ISISDAE;
 
 enum RunState : byte { SETUP=0, RUNNING=1 }
@@ -50,4 +52,10 @@ table FramePart {
 	se_events : [SEEvent];
 }
 
-root_type FramePart;
+union MessageTypes { FramePart, RunInfo }
+
+table EventMessage {
+    message : MessageTypes;
+}
+
+root_type EventMessage;

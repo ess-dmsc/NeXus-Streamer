@@ -11,11 +11,9 @@ class EventData {
 public:
   // Construct a new empty EventData object
   EventData(){};
-  // Construct an EventData object from a flatbuf buffer
-  EventData(const uint8_t *buf);
 
   // Decode message into existing EventData instance
-  void decodeMessage(const uint8_t *buf);
+  bool decodeMessage(const uint8_t *buf);
 
   // Setters
   void setDetId(std::vector<int32_t> detIds) { m_detId = detIds; };

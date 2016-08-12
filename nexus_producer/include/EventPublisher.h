@@ -6,8 +6,10 @@
 class EventPublisher {
 public:
   virtual ~EventPublisher() {}
-  virtual void setUp(const std::string &broker, const std::string &topic) = 0;
-  virtual void sendMessage(char *buf, size_t messageSize) = 0;
+  virtual void setUp(const std::string &broker, const std::string &topic, const std::string &runTopic) = 0;
+  virtual void sendEventMessage(char *buf, size_t messageSize) = 0;
+  virtual void sendRunMessage(char *buf, size_t messageSize) = 0;
+  virtual int64_t getCurrentOffset() = 0;
 };
 
 #endif // ISIS_NEXUS_STREAMER_EVENTPUBLISHER_H

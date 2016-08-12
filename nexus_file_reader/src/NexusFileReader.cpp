@@ -1,5 +1,8 @@
 #include "../include/NexusFileReader.h"
 #include <iostream>
+#include <ctime>
+#include <sstream>
+#include <iomanip>
 
 using namespace H5;
 
@@ -49,6 +52,39 @@ int32_t NexusFileReader::getPeriodNumber() {
   dataset.read(&periodNumber, PredType::NATIVE_INT32);
 
   return periodNumber;
+}
+
+/**
+ * Get the start time of the run as a Unix timestamp
+ *
+ * @return - Unix timestamp of start of run
+ */
+int64_t NexusFileReader::getRunStartTime() {
+  DataSet dataset = m_file->openDataSet("/raw_data_1/start_time");
+  std::string startTime;
+  dataset.read(startTime, dataset.getDataType(), dataset.getSpace());
+  return convertStringToUnixTime(startTime);
+}
+
+int64_t NexusFileReader::convertStringToUnixTime(const std::string &timeString) {
+  std::istringstream ss(timeString);
+  ss.imbue(std::locale("en_GB.utf-8"));
+  std::tm tmb = {};
+  ss >> std::get_time(&tmb, "%Y-%m-%dT%H:%M:%S");
+  auto timeUnix = std::mktime(&tmb);
+  return static_cast<int64_t>(timeUnix);
+}
+
+/**
+ * Get instrument name
+ *
+ * @return - instrument name
+ */
+std::string NexusFileReader::getInstrumentName() {
+  DataSet dataset = m_file->openDataSet("/raw_data_1/name");
+  std::string instrumentName;
+  dataset.read(instrumentName, dataset.getDataType(), dataset.getSpace());
+  return instrumentName;
 }
 
 /**

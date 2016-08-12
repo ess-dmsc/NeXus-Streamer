@@ -15,7 +15,9 @@ datasets = [
     '/raw_data_1/detector_1_events/event_time_offset',
     'raw_data_1/framelog/proton_charge/value',
     '/raw_data_1/periods/number',
-    '/raw_data_1/detector_1_events/event_time_zero'
+    '/raw_data_1/detector_1_events/event_time_zero',
+    '/raw_data_1/name',
+    '/raw_data_1/start_time'
 ]
 
 with h5py.File(uncompressed_file, 'w') as f_write:

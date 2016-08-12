@@ -3,6 +3,21 @@
 # ISIS NeXus Streamer for Mantid
 Stream event data from a NeXus file from RAL/ISIS using Apache Kafka for the purpose of development of live data streaming in Mantid.
 
+Run metadata messages are sent to both the event stream and the run info stream. The offset recorded in the message is guaranteed to correspond to just before the RunInfo message in the event stream. Messages should be discarded until a RunInfo message with the same run number is encountered. In practice, at slow data rates and with a single producer the offset will match exactly.
+
+The client runs until the user terminates it, repeatedly sending data from the same file but with incrementing run numbers.
+
+Usage:
+```
+main_nexusPublisher -f <filepath>
+[-b <host>]    Specify broker IP address or hostname, default is 'sakura'
+[-t <event_topic_name>]    Specify name of event data topic to publish to, default is 'test_event_topic'
+[-r <run_topic_name>]    Specify name of run data topic to publish to, default is 'test_run_topic'
+[-m <messages_per_frame>]   Specify number of messages per frame, default is '1'
+[-s]    Slow mode, publishes data at approx realistic rate of 10 frames per second
+[-q]    Quiet mode, makes publisher less chatty on stdout
+```
+
 ## Dependencies
 Currently requires having `librdkafka` and the HDF5 C++ library installed. If `tcmalloc` is available then it will be used, but it is not a requirement.
 
