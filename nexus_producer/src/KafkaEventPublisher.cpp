@@ -63,6 +63,9 @@ void KafkaEventPublisher::setUp(const std::string &broker_str,
     std::cerr << "Failed to create topic: " << error_str << std::endl;
     exit(1);
   }
+
+  // This ensures everything is ready when we need to query offset information later
+  m_producer_ptr->poll(1000);
 }
 
 /**
@@ -110,7 +113,7 @@ int64_t KafkaEventPublisher::getCurrentOffset() {
   int64_t lowOffset = 0;
   int64_t highOffset = 0;
   auto err = m_producer_ptr->query_watermark_offsets(
-      m_topic_ptr->name(), m_partitionNumber, &lowOffset, &highOffset, 1000);
+      m_topic_ptr->name(), m_partitionNumber, &lowOffset, &highOffset, -1);
   if (err != RdKafka::ERR_NO_ERROR) {
     std::cerr << "%% Failed to acquire current offset, will use 0: "
               << RdKafka::err2str(err) << std::endl;
