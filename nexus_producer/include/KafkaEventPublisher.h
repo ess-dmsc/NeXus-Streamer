@@ -13,9 +13,12 @@ public:
       : m_compression(compression){};
   ~KafkaEventPublisher() { RdKafka::wait_destroyed(5000); };
 
-  void setUp(const std::string &broker_str, const std::string &topic_str, const std::string &runTopic_str) override;
+  void setUp(const std::string &broker_str, const std::string &topic_str,
+             const std::string &runTopic_str,
+             const std::string &detSpecTopic) override;
   void sendEventMessage(char *buf, size_t messageSize) override;
   void sendRunMessage(char *buf, size_t messageSize) override;
+  void sendDetSpecMessage(char *buf, size_t messageSize) override;
   int64_t getCurrentOffset() override;
 
 private:
@@ -27,6 +30,8 @@ private:
   std::shared_ptr<RdKafka::Topic> m_topic_ptr;
   std::shared_ptr<RdKafka::Producer> m_runProducer_ptr;
   std::shared_ptr<RdKafka::Topic> m_runTopic_ptr;
+  std::shared_ptr<RdKafka::Producer> m_detSpecProducer_ptr;
+  std::shared_ptr<RdKafka::Topic> m_detSpecTopic_ptr;
   std::string m_compression = "";
 
   // We require messages to be in order, therefore always publish to partition 0

@@ -5,6 +5,7 @@
 
 #include "../../event_data/include/EventData.h"
 #include "../../event_data/include/RunData.h"
+#include "../../event_data/include/DetectorSpectrumMapData.h"
 #include "../../nexus_file_reader/include/NexusFileReader.h"
 #include "EventPublisher.h"
 
@@ -13,11 +14,15 @@ public:
   NexusPublisher(std::shared_ptr<EventPublisher> publisher,
                  const std::string &brokerAddress,
                  const std::string &streamName, const std::string &runTopicName,
-                 const std::string &filename, const bool quietMode);
+                 const std::string &detSpecTopicName,
+                 const std::string &filename,
+                 const std::string &detSpecMapFilename, const bool quietMode);
   std::vector<std::shared_ptr<EventData>>
   createMessageData(hsize_t frameNumber, const int messagesPerFrame);
   int64_t createAndSendRunMessage(std::string &rawbuf, int runNumber);
+  int64_t createAndSendDetSpecMessage(std::string &rawbuf);
   std::shared_ptr<RunData> createRunMessageData(int runNumber);
+  std::shared_ptr<DetectorSpectrumMapData> createDetSpecMessageData();
   void streamData(const int messagesPerFrame, int runNumber, bool slow);
 
 private:
@@ -28,6 +33,7 @@ private:
   std::shared_ptr<EventPublisher> m_publisher;
   std::shared_ptr<NexusFileReader> m_fileReader;
   bool m_quietMode = false;
+  std::string m_detSpecMapFilename;
 };
 
 #endif // ISIS_NEXUS_STREAMER_NEXUSPUBLISHER_H

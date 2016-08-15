@@ -10,7 +10,8 @@
  */
 void KafkaEventPublisher::setUp(const std::string &broker_str,
                                 const std::string &topic_str,
-                                const std::string &runTopic_str) {
+                                const std::string &runTopic_str,
+                                const std::string &detSpecTopic_str) {
 
   std::cout << "Setting up Kafka producer" << std::endl;
 
@@ -64,6 +65,22 @@ void KafkaEventPublisher::setUp(const std::string &broker_str,
     exit(1);
   }
 
+  // Create detSpec message producer
+  m_detSpecProducer_ptr = std::shared_ptr<RdKafka::Producer>(
+      RdKafka::Producer::create(conf, error_str));
+  if (!m_detSpecProducer_ptr.get()) {
+    std::cerr << "Failed to create producer: " << error_str << std::endl;
+    exit(1);
+  }
+
+  // Create detSpec topic handle
+  m_detSpecTopic_ptr = std::shared_ptr<RdKafka::Topic>(RdKafka::Topic::create(
+      m_runProducer_ptr.get(), detSpecTopic_str, tconf, error_str));
+  if (!m_detSpecTopic_ptr.get()) {
+    std::cerr << "Failed to create topic: " << error_str << std::endl;
+    exit(1);
+  }
+
   // This ensures everything is ready when we need to query offset information later
   m_producer_ptr->poll(1000);
 }
@@ -80,6 +97,10 @@ void KafkaEventPublisher::sendEventMessage(char *buf, size_t messageSize) {
 
 void KafkaEventPublisher::sendRunMessage(char *buf, size_t messageSize) {
   sendMessage(buf, messageSize, m_runProducer_ptr, m_runTopic_ptr);
+}
+
+void KafkaEventPublisher::sendDetSpecMessage(char *buf, size_t messageSize) {
+  sendMessage(buf, messageSize, m_detSpecProducer_ptr, m_detSpecTopic_ptr);
 }
 
 void KafkaEventPublisher::sendMessage(
