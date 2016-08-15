@@ -20,6 +20,18 @@ datasets = [
     '/raw_data_1/start_time'
 ]
 
+datasets_selogs = [
+    'Guide_Pressure',
+    'Rear_Det_X',
+    'SECI_OUT_OF_RANGE_BLOCK',
+    'Sample',
+    'TEMP1'
+]
+
+for dataset in datasets_selogs:
+    datasets.append('/raw_data_1/selog/' + dataset + '/value_log/time')
+    datasets.append('/raw_data_1/selog/' + dataset + '/value_log/value')
+
 with h5py.File(uncompressed_file, 'w') as f_write:
     pass
 
