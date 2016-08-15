@@ -8,6 +8,8 @@ public:
   DetectorSpectrumMapData(const std::string &filename);
 
   size_t getNumberOfEntries() { return m_numberOfEntries; }
+  std::vector<int32_t> getDetectors() { return m_detectors; }
+  std::vector<int32_t> getSpectra() { return m_spectra; }
 
 private:
   void readFile(const std::string &filename);
