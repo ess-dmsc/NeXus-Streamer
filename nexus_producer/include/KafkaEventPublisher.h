@@ -23,14 +23,11 @@ public:
 
 private:
   void sendMessage(char *buf, size_t messageSize,
-                   std::shared_ptr<RdKafka::Producer> producer,
                    std::shared_ptr<RdKafka::Topic> topic);
 
   std::shared_ptr<RdKafka::Producer> m_producer_ptr;
   std::shared_ptr<RdKafka::Topic> m_topic_ptr;
-  std::shared_ptr<RdKafka::Producer> m_runProducer_ptr;
   std::shared_ptr<RdKafka::Topic> m_runTopic_ptr;
-  std::shared_ptr<RdKafka::Producer> m_detSpecProducer_ptr;
   std::shared_ptr<RdKafka::Topic> m_detSpecTopic_ptr;
   std::string m_compression = "";
 
