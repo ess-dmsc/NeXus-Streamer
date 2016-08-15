@@ -18,15 +18,17 @@ def parseMessage(buf):
 
 
 if __name__ == "__main__":
-    c = Consumer({'bootstrap.servers': 'tenten', 'group.id': 'python-read-run-info',
+    c = Consumer({'bootstrap.servers': 'sakura', 'group.id': 'python-read-run-info',
                   'default.topic.config': {'auto.offset.reset': 'smallest'}, 'enable.auto.commit': False})
     c.subscribe(['test_run_topic'])
     running = True
     while running:
-        msg = c.poll()
+        msg = c.poll(1000)
         if not msg.error():
             parseMessage(msg.value())
         elif msg.error().code() != KafkaError._PARTITION_EOF:
             print(msg.error())
+            running = False
+        else:
             running = False
     c.close()
