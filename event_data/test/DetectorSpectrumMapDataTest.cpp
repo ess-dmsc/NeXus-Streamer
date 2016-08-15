@@ -40,7 +40,7 @@ TEST(DetectorSpectrumMapDataTest, create_message_buffer) {
       DetectorSpectrumMapData(testDataPath + "spectrum_gastubes_01.dat");
 
   std::string rawbuf;
-  EXPECT_NO_THROW(detSpecMap.getEventBufferPointer(rawbuf));
+  EXPECT_NO_THROW(detSpecMap.getBufferPointer(rawbuf));
 
   auto receivedMapData = DetectorSpectrumMapData();
   EXPECT_NO_THROW(receivedMapData.decodeMessage(

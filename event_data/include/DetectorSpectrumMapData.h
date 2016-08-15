@@ -8,7 +8,7 @@ public:
   DetectorSpectrumMapData() {}
   DetectorSpectrumMapData(const std::string &filename);
 
-  flatbuffers::unique_ptr_t getEventBufferPointer(std::string &buffer);
+  flatbuffers::unique_ptr_t getBufferPointer(std::string &buffer);
   void decodeMessage(const uint8_t *buf);
 
   size_t getNumberOfEntries() { return m_numberOfEntries; }

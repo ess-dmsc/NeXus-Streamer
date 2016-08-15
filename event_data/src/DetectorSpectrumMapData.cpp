@@ -40,7 +40,7 @@ void DetectorSpectrumMapData::decodeMessage(const uint8_t *buf) {
 }
 
 flatbuffers::unique_ptr_t
-DetectorSpectrumMapData::getEventBufferPointer(std::string &buffer) {
+DetectorSpectrumMapData::getBufferPointer(std::string &buffer) {
   flatbuffers::FlatBufferBuilder builder;
 
   auto messageFlatbuf = ISISDAE::CreateSpectraDetectorMapping(
