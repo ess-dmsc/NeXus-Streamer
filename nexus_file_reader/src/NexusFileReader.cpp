@@ -54,6 +54,15 @@ int32_t NexusFileReader::getPeriodNumber() {
   return periodNumber;
 }
 
+std::vector<std::string> NexusFileReader::getSENames() {
+  Group group = m_file->openGroup("/raw_data_1/selog");
+  std::vector<std::string> seNames;
+  for (hsize_t i = 0; i < group.getNumObjs(); i++) {
+    seNames.push_back(group.getObjnameByIdx(i));
+  }
+  return seNames;
+}
+
 /**
  * Get the start time of the run as a Unix timestamp
  *

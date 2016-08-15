@@ -1,3 +1,4 @@
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
 #include "../include/NexusFileReader.h"
@@ -108,4 +109,14 @@ TEST(NexusFileReaderTest, get_instrument_name) {
   extern std::string testDataPath;
   auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs");
   EXPECT_EQ("SANS2D", fileReader.getInstrumentName());
+}
+
+TEST(NexusFileReaderTest, get_se_names) {
+  extern std::string testDataPath;
+  auto fileReader = NexusFileReader(testDataPath + "SANS_test_reduced.hdf5");
+  auto seNamesFromFile = fileReader.getSENames();
+  EXPECT_THAT(seNamesFromFile,
+              ::testing::ElementsAre("Guide_Pressure", "Rear_Det_X",
+                                     "SECI_OUT_OF_RANGE_BLOCK", "Sample",
+                                     "TEMP1"));
 }

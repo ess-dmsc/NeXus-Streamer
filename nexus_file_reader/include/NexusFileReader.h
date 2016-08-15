@@ -23,6 +23,7 @@ public:
   double getFrameTime(hsize_t frameNumber);
   int64_t getRunStartTime();
   std::string getInstrumentName();
+  std::vector<std::string> getSENames();
 
 private:
   template <typename T>
