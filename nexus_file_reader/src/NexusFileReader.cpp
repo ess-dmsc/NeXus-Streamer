@@ -54,13 +54,19 @@ int32_t NexusFileReader::getPeriodNumber() {
   return periodNumber;
 }
 
-std::vector<std::string> NexusFileReader::getSENames() {
-  Group group = m_file->openGroup("/raw_data_1/selog");
-  std::vector<std::string> seNames;
+/**
+ * Get the names of objects in a specified group
+ *
+ * @param name of the group
+ * @return names of objects in the specified group
+ */
+std::vector<std::string> NexusFileReader::getNamesInGroup(const std::string &groupName) {
+  Group group = m_file->openGroup(groupName);
+  std::vector<std::string> names;
   for (hsize_t i = 0; i < group.getNumObjs(); i++) {
-    seNames.push_back(group.getObjnameByIdx(i));
+    names.push_back(group.getObjnameByIdx(i));
   }
-  return seNames;
+  return names;
 }
 
 /**
