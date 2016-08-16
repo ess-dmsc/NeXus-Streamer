@@ -1,55 +1,44 @@
 #include <gmock/gmock.h>
 #include <memory>
 
+#include "../../event_data/include/DetectorSpectrumMapData.h"
 #include "MockEventPublisher.h"
 #include "NexusPublisher.h"
 
 using ::testing::AtLeast;
 using ::testing::_;
 
-class NexusPublisherTest : public ::testing::Test {};
+class NexusPublisherTest : public ::testing::Test {
+public:
+  NexusPublisher createStreamer(bool quiet) {
+    extern std::string testDataPath;
 
-TEST(NexusPublisherTest, test_create_streamer) {
-  extern std::string testDataPath;
+    const std::string broker = "broker_name";
+    const std::string topic = "topic_name";
+    const std::string runTopic = "run_topic_name";
+    const std::string detSpecTopic = "det_spec_topic_name";
 
-  const std::string broker = "broker_name";
-  const std::string topic = "topic_name";
-  const std::string runTopic = "run_topic_name";
+    auto publisher = std::make_shared<MockEventPublisher>();
+    EXPECT_CALL(*publisher.get(), setUp(broker, topic, runTopic, detSpecTopic))
+        .Times(AtLeast(1));
 
-  auto publisher = std::make_shared<MockEventPublisher>();
-  EXPECT_CALL(*publisher.get(), setUp(broker, topic, runTopic)).Times(AtLeast(1));
+    NexusPublisher streamer(publisher, broker, topic, runTopic, detSpecTopic,
+                            testDataPath + "SANS_test_reduced.hdf5",
+                            testDataPath + "spectrum_gastubes_01.dat", quiet);
+    return streamer;
+  }
+};
 
-  NexusPublisher streamer(publisher, broker, topic, runTopic,
-                          testDataPath + "SANS_test_reduced.hdf5", false);
+TEST_F(NexusPublisherTest, test_create_streamer) {
+  createStreamer(false);
 }
 
-TEST(NexusPublisherTest, test_create_streamer_quiet) {
-  extern std::string testDataPath;
-
-  const std::string broker = "broker_name";
-  const std::string topic = "topic_name";
-  const std::string runTopic = "run_topic_name";
-
-  auto publisher = std::make_shared<MockEventPublisher>();
-  EXPECT_CALL(*publisher.get(), setUp(broker, topic, runTopic)).Times(AtLeast(1));
-
-  NexusPublisher streamer(publisher, broker, topic, runTopic,
-                          testDataPath + "SANS_test_reduced.hdf5", true);
+TEST_F(NexusPublisherTest, test_create_streamer_quiet) {
+  createStreamer(true);
 }
 
-TEST(NexusPublisherTest, test_create_message_data) {
-  extern std::string testDataPath;
-
-  const std::string broker = "broker_name";
-  const std::string topic = "topic_name";
-  const std::string runTopic = "run_topic_name";
-
-  auto publisher = std::make_shared<MockEventPublisher>();
-
-  EXPECT_CALL(*publisher.get(), setUp(broker, topic, runTopic)).Times(AtLeast(1));
-
-  NexusPublisher streamer(publisher, broker, topic, runTopic,
-                          testDataPath + "SANS_test_reduced.hdf5", true);
+TEST_F(NexusPublisherTest, test_create_message_data) {
+  auto streamer = createStreamer(true);
   auto eventData = streamer.createMessageData(static_cast<hsize_t>(1), 1);
 
   std::string rawbuf;
@@ -65,20 +54,9 @@ TEST(NexusPublisherTest, test_create_message_data) {
   EXPECT_FLOAT_EQ(3.0399999618530273, receivedEventData.getFrameTime());
 }
 
-TEST(NexusPublisherTest, test_create_message_data_3_message_per_frame) {
-  extern std::string testDataPath;
-
-  const std::string broker = "broker_name";
-  const std::string topic = "topic_name";
-  const std::string runTopic = "run_topic_name";
+TEST_F(NexusPublisherTest, test_create_message_data_3_message_per_frame) {
+  auto streamer = createStreamer(true);
   int frameNumber = 1;
-
-  auto publisher = std::make_shared<MockEventPublisher>();
-
-  EXPECT_CALL(*publisher.get(), setUp(broker, topic, runTopic)).Times(AtLeast(1));
-
-  NexusPublisher streamer(publisher, broker, topic, runTopic,
-                          testDataPath + "SANS_test_reduced.hdf5", true);
   auto eventData =
       streamer.createMessageData(static_cast<hsize_t>(frameNumber), 3);
 
@@ -105,21 +83,10 @@ TEST(NexusPublisherTest, test_create_message_data_3_message_per_frame) {
   EXPECT_FALSE(receivedEventData.getEndOfRun());
 }
 
-TEST(NexusPublisherTest,
+TEST_F(NexusPublisherTest,
      test_create_message_data_3_message_per_frame_end_of_run) {
-  extern std::string testDataPath;
-
-  const std::string broker = "broker_name";
-  const std::string topic = "topic_name";
-  const std::string runTopic = "run_topic_name";
+  auto streamer = createStreamer(true);
   int frameNumber = 299;
-
-  auto publisher = std::make_shared<MockEventPublisher>();
-
-  EXPECT_CALL(*publisher.get(), setUp(broker, topic, runTopic)).Times(AtLeast(1));
-
-  NexusPublisher streamer(publisher, broker, topic, runTopic,
-                          testDataPath + "SANS_test_reduced.hdf5", true);
   auto eventData =
       streamer.createMessageData(static_cast<hsize_t>(frameNumber), 3);
 
@@ -148,70 +115,65 @@ TEST(NexusPublisherTest,
   EXPECT_TRUE(receivedEventData.getEndOfRun());
 }
 
-TEST(NexusPublisherTest, test_stream_data) {
-
+TEST_F(NexusPublisherTest, test_stream_data) {
   extern std::string testDataPath;
 
   const std::string broker = "broker_name";
   const std::string topic = "topic_name";
   const std::string runTopic = "run_topic_name";
+  const std::string detSpecTopic = "det_spec_topic_name";
 
   auto publisher = std::make_shared<MockEventPublisher>();
 
   const int numberOfFrames = 300;
   const int messagesPerFrame = 1;
 
-  EXPECT_CALL(*publisher.get(), setUp(broker, topic, runTopic)).Times(1);
+  EXPECT_CALL(*publisher.get(), setUp(broker, topic, runTopic, detSpecTopic))
+      .Times(AtLeast(1));
   EXPECT_CALL(*publisher.get(), sendEventMessage(_, _))
-      .Times(numberOfFrames * messagesPerFrame + 1); // +1 for run metadata message
-  EXPECT_CALL(*publisher.get(), sendRunMessage(_, _))
-      .Times(1);
+      .Times(numberOfFrames * messagesPerFrame +
+             1); // +1 for run metadata message
+  EXPECT_CALL(*publisher.get(), sendRunMessage(_, _)).Times(1);
+  EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_, _)).Times(1);
   EXPECT_CALL(*publisher.get(), getCurrentOffset()).Times(1);
 
-  NexusPublisher streamer(publisher, broker, topic, runTopic,
-                          testDataPath + "SANS_test_reduced.hdf5", false);
+  NexusPublisher streamer(publisher, broker, topic, runTopic, detSpecTopic,
+                          testDataPath + "SANS_test_reduced.hdf5",
+                          testDataPath + "spectrum_gastubes_01.dat", true);
   EXPECT_NO_THROW(streamer.streamData(messagesPerFrame, 1, false));
 }
 
-TEST(NexusPublisherTest, test_stream_data_multiple_messages_per_frame) {
+TEST_F(NexusPublisherTest, test_stream_data_multiple_messages_per_frame) {
 
   extern std::string testDataPath;
 
   const std::string broker = "broker_name";
   const std::string topic = "topic_name";
   const std::string runTopic = "run_topic_name";
+  const std::string detSpecTopic = "det_spec_topic_name";
 
   auto publisher = std::make_shared<MockEventPublisher>();
 
   const int numberOfFrames = 300;
   const int messagesPerFrame = 10;
 
-  EXPECT_CALL(*publisher.get(), setUp(broker, topic, runTopic)).Times(1);
+  EXPECT_CALL(*publisher.get(), setUp(broker, topic, runTopic, detSpecTopic))
+      .Times(AtLeast(1));
   EXPECT_CALL(*publisher.get(), sendEventMessage(_, _))
       .Times(numberOfFrames * messagesPerFrame +
              1); // +1 for run metadata message
-  EXPECT_CALL(*publisher.get(), sendRunMessage(_, _))
-      .Times(1);
+  EXPECT_CALL(*publisher.get(), sendRunMessage(_, _)).Times(1);
+  EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_, _)).Times(1);
   EXPECT_CALL(*publisher.get(), getCurrentOffset()).Times(1);
 
-  NexusPublisher streamer(publisher, broker, topic, runTopic,
-                          testDataPath + "SANS_test_reduced.hdf5", false);
+  NexusPublisher streamer(publisher, broker, topic, runTopic, detSpecTopic,
+                          testDataPath + "SANS_test_reduced.hdf5",
+                          testDataPath + "spectrum_gastubes_01.dat", true);
   EXPECT_NO_THROW(streamer.streamData(messagesPerFrame, 1, false));
 }
 
-TEST(NexusPublisherTest, test_create_run_message_data) {
-  extern std::string testDataPath;
-
-  const std::string broker = "broker_name";
-  const std::string topic = "topic_name";
-  const std::string runTopic = "run_topic_name";
-
-  auto publisher = std::make_shared<MockEventPublisher>();
-
-  EXPECT_CALL(*publisher.get(), setUp(broker, topic, runTopic)).Times(AtLeast(1));
-
-  NexusPublisher streamer(publisher, broker, topic, runTopic,
-                          testDataPath + "SANS_test_reduced.hdf5", true);
+TEST_F(NexusPublisherTest, test_create_run_message_data) {
+  auto streamer = createStreamer(true);
   int runNumber = 3;
   auto runData = streamer.createRunMessageData(runNumber);
 
@@ -227,4 +189,17 @@ TEST(NexusPublisherTest, test_create_run_message_data) {
   EXPECT_TRUE(receivedRunData.decodeMessage(
       reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
   EXPECT_EQ(runNumber, receivedRunData.getRunNumber());
+}
+
+TEST_F(NexusPublisherTest, test_create_det_spec_map_message_data) {
+  auto streamer = createStreamer(true);
+  auto detSpecMap = streamer.createDetSpecMessageData();
+
+  std::string rawbuf;
+  detSpecMap->getBufferPointer(rawbuf);
+
+  auto receivedData = DetectorSpectrumMapData();
+  EXPECT_NO_THROW(receivedData.decodeMessage(
+      reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
+  EXPECT_EQ(245768, receivedData.getNumberOfEntries());
 }
