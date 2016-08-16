@@ -114,7 +114,7 @@ TEST(NexusFileReaderTest, get_instrument_name) {
 TEST(NexusFileReaderTest, get_se_names) {
   extern std::string testDataPath;
   auto fileReader = NexusFileReader(testDataPath + "SANS_test_reduced.hdf5");
-  auto seNamesFromFile = fileReader.getSENames();
+  auto seNamesFromFile = fileReader.getNamesInGroup("/raw_data_1/selog");
   EXPECT_THAT(seNamesFromFile,
               ::testing::ElementsAre("Guide_Pressure", "Rear_Det_X",
                                      "SECI_OUT_OF_RANGE_BLOCK", "Sample",

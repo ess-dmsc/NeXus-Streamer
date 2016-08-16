@@ -3,17 +3,21 @@ project(isis_nexus_streamer)
 set( SRC_FILES
         src/EventData.cpp
         src/RunData.cpp
-        src/DetectorSpectrumMapData.cpp)
+        src/DetectorSpectrumMapData.cpp
+        src/SampleEnvironmentEventInt.cpp)
 
 set( INC_FILES
         include/EventData.h
         include/RunData.h
-        include/DetectorSpectrumMapData.h)
+        include/DetectorSpectrumMapData.h
+        include/SampleEnvironmentEvent.h
+        include/SampleEnvironmentEventInt.h)
 
 set( TEST_FILES
         test/EventDataTest.cpp
         test/RunDataTest.cpp
-        test/DetectorSpectrumMapDataTest.cpp)
+        test/DetectorSpectrumMapDataTest.cpp
+        test/SampleEnvironmentEventTest.cpp)
 
 #####################
 ## Libraries       ##
@@ -22,9 +26,7 @@ set( TEST_FILES
 include_directories(
         ${PROJECT_SOURCE_DIR}/include)
 
-add_library(eventdata_lib ${PROJECT_SOURCE_DIR}/src/EventData.cpp)
-add_library(rundata_lib ${PROJECT_SOURCE_DIR}/src/RunData.cpp)
-add_library(detSpecMapData_lib ${PROJECT_SOURCE_DIR}/src/DetectorSpectrumMapData.cpp)
+add_library(eventdata_lib ${SRC_FILES})
 
 #####################
 ## Unit Tests      ##
@@ -33,9 +35,7 @@ add_library(detSpecMapData_lib ${PROJECT_SOURCE_DIR}/src/DetectorSpectrumMapData
 set(eventData_tests_LINK_LIBRARIES
         gtest
         gmock
-        eventdata_lib
-        rundata_lib
-        detSpecMapData_lib)
+        eventdata_lib)
 if(UNIX)
     list(APPEND tests_LINK_LIBRARIES pthread)
 endif()

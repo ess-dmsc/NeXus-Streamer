@@ -40,9 +40,7 @@ public:
 
   flatbuffers::unique_ptr_t getBufferPointer(std::string &buffer);
 
-      size_t getBufferSize() {
-    return m_bufferSize;
-  }
+  size_t getBufferSize() { return m_bufferSize; }
 
 private:
   // Default values here should match default values in the schema
