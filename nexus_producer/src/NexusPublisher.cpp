@@ -2,6 +2,7 @@
 #include <iostream>
 #include <thread>
 
+#include "../../event_data/include/DetectorSpectrumMapData.h"
 #include "NexusPublisher.h"
 
 /**
@@ -18,16 +19,15 @@
  * @return - a NeXusPublisher object, call streamData() on it to start streaming
  * data
  */
-NexusPublisher::NexusPublisher(std::shared_ptr<EventPublisher> publisher,
-                               const std::string &brokerAddress,
-                               const std::string &streamName,
-                               const std::string &runTopicName,
-                               const std::string &filename,
-                               const bool quietMode)
+NexusPublisher::NexusPublisher(
+    std::shared_ptr<EventPublisher> publisher, const std::string &brokerAddress,
+    const std::string &streamName, const std::string &runTopicName,
+    const std::string &detSpecTopicName, const std::string &filename,
+    const std::string &detSpecMapFilename, const bool quietMode)
     : m_publisher(publisher),
       m_fileReader(std::make_shared<NexusFileReader>(filename)),
-      m_quietMode(quietMode) {
-  publisher->setUp(brokerAddress, streamName, runTopicName);
+      m_quietMode(quietMode), m_detSpecMapFilename(detSpecMapFilename) {
+  publisher->setUp(brokerAddress, streamName, runTopicName, detSpecTopicName);
 }
 
 /**
@@ -111,6 +111,18 @@ std::shared_ptr<RunData> NexusPublisher::createRunMessageData(int runNumber) {
 }
 
 /**
+ * Create detector-spectrum map message data from file
+ *
+ * @return detector-spectrum map message data
+ */
+std::shared_ptr<DetectorSpectrumMapData>
+NexusPublisher::createDetSpecMessageData() {
+  auto detSpecMap =
+      std::make_shared<DetectorSpectrumMapData>(m_detSpecMapFilename);
+  return detSpecMap;
+}
+
+/**
  * Start streaming all the data from the file
  */
 void NexusPublisher::streamData(const int messagesPerFrame, int runNumber,
@@ -122,6 +134,7 @@ void NexusPublisher::streamData(const int messagesPerFrame, int runNumber,
   const auto numberOfFrames = m_fileReader->getNumberOfFrames();
 
   totalBytesSent += createAndSendRunMessage(rawbuf, runNumber);
+  totalBytesSent += createAndSendDetSpecMessage(rawbuf);
 
   for (size_t frameNumber = 0; frameNumber < numberOfFrames; frameNumber++) {
     totalBytesSent +=
@@ -185,6 +198,14 @@ int64_t NexusPublisher::createAndSendRunMessage(std::string &rawbuf,
                               messageData->getBufferSize());
   std::cout << "Publishing new run:" << std::endl;
   std::cout << messageData->runInfo() << std::endl;
+  return rawbuf.size();
+}
+
+int64_t NexusPublisher::createAndSendDetSpecMessage(std::string &rawbuf) {
+  auto messageData = createDetSpecMessageData();
+  auto buffer_uptr = messageData->getBufferPointer(rawbuf);
+  m_publisher->sendDetSpecMessage(reinterpret_cast<char *>(buffer_uptr.get()),
+                                  messageData->getBufferSize());
   return rawbuf.size();
 }
 
