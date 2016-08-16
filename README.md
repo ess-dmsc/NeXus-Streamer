@@ -9,11 +9,13 @@ The client runs until the user terminates it, repeatedly sending data from the s
 
 Usage:
 ```
-main_nexusPublisher -f <filepath>
-[-b <host>]    Specify broker IP address or hostname, default is 'sakura'
-[-t <event_topic_name>]    Specify name of event data topic to publish to, default is 'test_event_topic'
-[-r <run_topic_name>]    Specify name of run data topic to publish to, default is 'test_run_topic'
-[-m <messages_per_frame>]   Specify number of messages per frame, default is '1'
+main_nexusPublisher -f <filepath>    Full file path of nexus file to stream
+-d <det_spec_map_filepath>    Full file path of file defining the det-spec mapping
+[-b <host>]    Broker IP address or hostname, default is 'sakura'
+[-t <event_topic_name>]    Name of event data topic to publish to, default is 'test_event_topic'
+[-r <run_topic_name>]    Name of run data topic to publish to, default is 'test_run_topic'
+[-a <det_spec_topic_name>]    Name of detector-spectra map topic to publish to, default is 'test_det_spec_topic'
+[-m <messages_per_frame>]   Number of messages per frame to use, default is '1'
 [-s]    Slow mode, publishes data at approx realistic rate of 10 frames per second
 [-q]    Quiet mode, makes publisher less chatty on stdout
 ```
