@@ -21,6 +21,7 @@ public:
   size_t getNumberOfFrames() { return m_numberOfFrames; };
   hsize_t getNumberOfEventsInFrame(hsize_t frameNumber);
   double getFrameTime(hsize_t frameNumber);
+  std::vector<int> getFramePartsPerFrame(int maxEventsPerMessage);
   int64_t getRunStartTime();
   std::string getInstrumentName();
 

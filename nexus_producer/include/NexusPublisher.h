@@ -23,7 +23,7 @@ public:
   int64_t createAndSendDetSpecMessage(std::string &rawbuf);
   std::shared_ptr<RunData> createRunMessageData(int runNumber);
   std::shared_ptr<DetectorSpectrumMapData> createDetSpecMessageData();
-  void streamData(const int messagesPerFrame, int runNumber, bool slow);
+  void streamData(const int maxEventsPerFramePart, int runNumber, bool slow);
 
 private:
   int64_t createAndSendMessage(std::string &rawbuf, size_t frameNumber,
