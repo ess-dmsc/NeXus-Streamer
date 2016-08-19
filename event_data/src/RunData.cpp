@@ -6,10 +6,15 @@
 #include <sstream>
 
 void RunData::setStartTime(const std::string &inputTime) {
+  std::tm tmb = {};
+#if defined(__GNUC__) && __GNUC__ >= 5
   std::istringstream ss(inputTime);
   ss.imbue(std::locale("en_GB.utf-8"));
-  std::tm tmb = {};
   ss >> std::get_time(&tmb, "%Y-%m-%dT%H:%M:%S");
+#else
+  // gcc < 5 does not have std::get_time implemented
+  strptime(inputTime.c_str(), "%Y-%m-%dT%H:%M:%S", &tmb);
+#endif
   m_startTime = static_cast<uint64_t>(std::mktime(&tmb));
 }
 
@@ -69,11 +74,19 @@ flatbuffers::unique_ptr_t RunData::getRunBufferPointer(std::string &buffer) {
 std::string RunData::runInfo() {
   std::stringstream ssRunInfo;
   ssRunInfo.imbue(std::locale("en_GB.utf-8"));
-  const time_t sTime = static_cast<time_t>(m_startTime);
   ssRunInfo << "Run number: " << m_runNumber << ", "
             << "Instrument name: " << m_instrumentName << ", "
-            << "Start time: "
-            << std::put_time(std::gmtime(&sTime), "%Y-%m-%dT%H:%M:%S")
-            << ", Run offset: " << m_streamOffset;
+            << "Start time: ";
+  const time_t sTime = static_cast<time_t>(m_startTime);
+#if defined(__GNUC__) && __GNUC__ >= 5
+  ssRunInfo << std::put_time(std::gmtime(&sTime), "%Y-%m-%dT%H:%M:%S");
+#else
+  // gcc < 5 does not have std::put_time implemented
+  auto tmb = std::gmtime(&sTime);
+  std::array<char, 20> buffer;
+  strftime(buffer.data(), 20, "%Y-%m-%dT%H:%M:%S", tmb);
+  ssRunInfo << buffer.data();
+#endif
+  ssRunInfo << ", Run offset: " << m_streamOffset;
   return ssRunInfo.str();
 }
