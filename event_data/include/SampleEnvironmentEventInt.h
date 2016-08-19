@@ -5,6 +5,7 @@
 
 class SampleEnvironmentEventInt : public SampleEnvironmentEvent {
 public:
+  SampleEnvironmentEventInt() {};
   SampleEnvironmentEventInt(const std::string &name, float time, int32_t value)
       : m_name(name), m_time(time), m_value(value) {}
 

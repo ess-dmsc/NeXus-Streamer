@@ -4,14 +4,20 @@ set( SRC_FILES
         src/EventData.cpp
         src/RunData.cpp
         src/DetectorSpectrumMapData.cpp
-        src/SampleEnvironmentEventInt.cpp)
+        src/SampleEnvironmentEventInt.cpp
+        src/SampleEnvironmentEventLong.cpp
+        src/SampleEnvironmentEventDouble.cpp
+        src/SampleEnvironmentEventString.cpp)
 
 set( INC_FILES
         include/EventData.h
         include/RunData.h
         include/DetectorSpectrumMapData.h
         include/SampleEnvironmentEvent.h
-        include/SampleEnvironmentEventInt.h)
+        include/SampleEnvironmentEventInt.h
+        include/SampleEnvironmentEventLong.h
+        include/SampleEnvironmentEventDouble.h
+        include/SampleEnvironmentEventString.h)
 
 set( TEST_FILES
         test/EventDataTest.cpp
