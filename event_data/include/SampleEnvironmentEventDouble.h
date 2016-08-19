@@ -13,6 +13,9 @@ public:
   flatbuffers::Offset<ISISDAE::SEEvent>
   getSEEvent(flatbuffers::FlatBufferBuilder &builder) override;
 
+  std::string getName() override { return m_name; }
+  float getTime() override { return m_time; }
+
 private:
   std::string m_name;
   float m_time;
