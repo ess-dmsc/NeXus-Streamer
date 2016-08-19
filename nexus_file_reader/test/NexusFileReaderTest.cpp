@@ -120,3 +120,10 @@ TEST(NexusFileReaderTest, get_se_names) {
                                      "SECI_OUT_OF_RANGE_BLOCK", "Sample",
                                      "TEMP1"));
 }
+
+TEST(NexusFileReaderTest, get_frame_parts_per_frame) {
+  extern std::string testDataPath;
+  auto fileReader = NexusFileReader(testDataPath + "SANS_test_reduced.hdf5");
+  auto framePartsPerFrame = fileReader.getFramePartsPerFrame(200);
+  EXPECT_EQ(4, framePartsPerFrame[0]);
+}

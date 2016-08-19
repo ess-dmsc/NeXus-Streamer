@@ -1,8 +1,9 @@
 #include "../include/NexusFileReader.h"
-#include <iostream>
+#include <cmath>
 #include <ctime>
-#include <sstream>
 #include <iomanip>
+#include <iostream>
+#include <sstream>
 
 using namespace H5;
 
@@ -81,7 +82,8 @@ int64_t NexusFileReader::getRunStartTime() {
   return convertStringToUnixTime(startTime);
 }
 
-int64_t NexusFileReader::convertStringToUnixTime(const std::string &timeString) {
+int64_t
+NexusFileReader::convertStringToUnixTime(const std::string &timeString) {
   std::tm tmb = {};
 #if defined(__GNUC__) && __GNUC__ >= 5
   std::istringstream ss(timeString);
@@ -259,4 +261,16 @@ bool NexusFileReader::getEventTofs(std::vector<float> &tofs,
   dataset.read(tofs.data(), PredType::NATIVE_FLOAT, memspace, dataspace);
 
   return true;
+}
+
+std::vector<int>
+NexusFileReader::getFramePartsPerFrame(int maxEventsPerMessage) {
+  std::vector<int> framePartsPerFrame;
+  framePartsPerFrame.resize(m_numberOfFrames);
+  for (hsize_t frameNumber = 0; frameNumber < m_numberOfFrames; frameNumber++) {
+    framePartsPerFrame[frameNumber] = static_cast<int>(
+        std::ceil(static_cast<float>(getNumberOfEventsInFrame(frameNumber)) /
+                  static_cast<float>(maxEventsPerMessage)));
+  }
+  return framePartsPerFrame;
 }
