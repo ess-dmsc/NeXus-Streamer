@@ -142,7 +142,7 @@ void NexusPublisher::streamData(const int messagesPerFrame, int runNumber,
     reportProgress(static_cast<float>(frameNumber) /
                    static_cast<float>(numberOfFrames));
 
-    // Publish messages at roughly realistic messsage rate (~10 frames per
+    // Publish messages at roughly realistic message rate (~10 frames per
     // second)
     if (slow) {
       std::this_thread::sleep_for(std::chrono::milliseconds(100));

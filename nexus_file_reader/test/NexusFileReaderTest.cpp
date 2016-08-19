@@ -109,3 +109,10 @@ TEST(NexusFileReaderTest, get_instrument_name) {
   auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs");
   EXPECT_EQ("SANS2D", fileReader.getInstrumentName());
 }
+
+TEST(NexusFileReaderTest, get_frame_parts_per_frame) {
+  extern std::string testDataPath;
+  auto fileReader = NexusFileReader(testDataPath + "SANS_test_reduced.hdf5");
+  auto framePartsPerFrame = fileReader.getFramePartsPerFrame(200);
+  EXPECT_EQ(4, framePartsPerFrame[0]);
+}
