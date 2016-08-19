@@ -127,3 +127,10 @@ TEST(NexusFileReaderTest, get_frame_parts_per_frame) {
   auto framePartsPerFrame = fileReader.getFramePartsPerFrame(200);
   EXPECT_EQ(4, framePartsPerFrame[0]);
 }
+
+TEST(NexusFileReaderTest, get_float_vector) {
+  extern std::string testDataPath;
+  auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs");
+  auto floatVector = fileReader.getFloatVector("/raw_data_1/selog/Guide_Pressure/value_log/time");
+  EXPECT_FLOAT_EQ(1821.0, floatVector[4]);
+}

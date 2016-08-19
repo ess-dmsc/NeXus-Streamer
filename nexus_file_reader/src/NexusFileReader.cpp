@@ -1,5 +1,4 @@
 #include "../include/NexusFileReader.h"
-#include <cmath>
 #include <ctime>
 #include <iomanip>
 #include <iostream>
@@ -19,6 +18,19 @@ NexusFileReader::NexusFileReader(const std::string &filename)
   size_t numOfFrames;
   dataset.read(&numOfFrames, PredType::NATIVE_UINT64);
   m_numberOfFrames = numOfFrames;
+}
+
+std::vector<float> NexusFileReader::getFloatVector(const std::string &datasetName) {
+  auto dataset = m_file->openDataSet(datasetName);
+  std::vector<float> values;
+
+  auto dataspace = dataset.getSpace();
+
+  // resize vector to the correct size to put the new data in
+  values.resize(dataspace.getSelectNpoints());
+
+  dataset.read(values.data(), PredType::NATIVE_FLOAT, dataspace);
+  return values;
 }
 
 /**

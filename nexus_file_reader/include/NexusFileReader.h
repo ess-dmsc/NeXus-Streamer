@@ -1,12 +1,16 @@
 #ifndef ISIS_NEXUS_STREAMER_NEXUSFILEREADER_H
 #define ISIS_NEXUS_STREAMER_NEXUSFILEREADER_H
 
+#include "../../event_data/include/SampleEnvironmentEvent.h"
 #include <H5Cpp.h>
 #include <memory>
 #include <vector>
+#include <unordered_map>
 
 // a typedef for our managed H5File pointer
 typedef std::unique_ptr<H5::H5File> H5FilePtr;
+
+typedef std::vector<std::shared_ptr<SampleEnvironmentEvent>> sEEventVector;
 
 class NexusFileReader {
 public:
@@ -25,6 +29,7 @@ public:
   int64_t getRunStartTime();
   std::string getInstrumentName();
   std::vector<std::string> getNamesInGroup(const std::string &groupName);
+  std::vector<float> getFloatVector(const std::string &dataset);
 
 private:
   template <typename T>
@@ -34,6 +39,7 @@ private:
   H5FilePtr m_file = nullptr;
   size_t m_numberOfFrames;
   int64_t convertStringToUnixTime(const std::string &timeString);
+  std::unordered_map<hsize_t, sEEventVector> makeSEEventMap();
 };
 
 #endif // ISIS_NEXUS_STREAMER_NEXUSFILEREADER_H

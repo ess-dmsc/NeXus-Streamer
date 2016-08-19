@@ -20,6 +20,7 @@ include_directories(
 add_library(nexusFileReader_lib ${PROJECT_SOURCE_DIR}/src/NexusFileReader.cpp)
 
 target_link_libraries(nexusFileReader_lib
+        eventdata_lib
         ${HDF5_LIBRARIES}
         ${HDF5_CXX_LIBRARIES})
 
