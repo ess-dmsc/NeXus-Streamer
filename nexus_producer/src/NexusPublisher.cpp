@@ -125,20 +125,21 @@ NexusPublisher::createDetSpecMessageData() {
 /**
  * Start streaming all the data from the file
  */
-void NexusPublisher::streamData(const int messagesPerFrame, int runNumber,
+void NexusPublisher::streamData(const int maxEventsPerFramePart, int runNumber,
                                 bool slow) {
   std::string rawbuf;
   // frame numbers run from 0 to numberOfFrames-1
   reportProgress(0.0);
   int64_t totalBytesSent = 0;
   const auto numberOfFrames = m_fileReader->getNumberOfFrames();
+  auto framePartsPerFrame = m_fileReader->getFramePartsPerFrame(maxEventsPerFramePart);
 
   totalBytesSent += createAndSendRunMessage(rawbuf, runNumber);
   totalBytesSent += createAndSendDetSpecMessage(rawbuf);
 
   for (size_t frameNumber = 0; frameNumber < numberOfFrames; frameNumber++) {
     totalBytesSent +=
-        createAndSendMessage(rawbuf, frameNumber, messagesPerFrame);
+        createAndSendMessage(rawbuf, frameNumber, framePartsPerFrame[frameNumber]);
     reportProgress(static_cast<float>(frameNumber) /
                    static_cast<float>(numberOfFrames));
 
@@ -151,10 +152,7 @@ void NexusPublisher::streamData(const int messagesPerFrame, int runNumber,
   reportProgress(1.0);
   std::cout << std::endl
             << "Frames sent: " << m_fileReader->getNumberOfFrames() << std::endl
-            << "Bytes sent: " << totalBytesSent << std::endl
-            << "Average message size: "
-            << totalBytesSent / (messagesPerFrame * numberOfFrames * 1000)
-            << " kB" << std::endl;
+            << "Bytes sent: " << totalBytesSent << std::endl;
 }
 
 /**

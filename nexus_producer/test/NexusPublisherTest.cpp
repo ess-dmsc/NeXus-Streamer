@@ -126,13 +126,12 @@ TEST_F(NexusPublisherTest, test_stream_data) {
   auto publisher = std::make_shared<MockEventPublisher>();
 
   const int numberOfFrames = 300;
-  const int messagesPerFrame = 1;
+  const int maxEventsPerFramePart = 1000000;
 
   EXPECT_CALL(*publisher.get(), setUp(broker, topic, runTopic, detSpecTopic))
       .Times(AtLeast(1));
   EXPECT_CALL(*publisher.get(), sendEventMessage(_, _))
-      .Times(numberOfFrames * messagesPerFrame +
-             1); // +1 for run metadata message
+      .Times(numberOfFrames + 1); // +1 for run data message
   EXPECT_CALL(*publisher.get(), sendRunMessage(_, _)).Times(1);
   EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_, _)).Times(1);
   EXPECT_CALL(*publisher.get(), getCurrentOffset()).Times(1);
@@ -140,7 +139,7 @@ TEST_F(NexusPublisherTest, test_stream_data) {
   NexusPublisher streamer(publisher, broker, topic, runTopic, detSpecTopic,
                           testDataPath + "SANS_test_reduced.hdf5",
                           testDataPath + "spectrum_gastubes_01.dat", true);
-  EXPECT_NO_THROW(streamer.streamData(messagesPerFrame, 1, false));
+  EXPECT_NO_THROW(streamer.streamData(maxEventsPerFramePart, 1, false));
 }
 
 TEST_F(NexusPublisherTest, test_stream_data_multiple_messages_per_frame) {
@@ -154,14 +153,12 @@ TEST_F(NexusPublisherTest, test_stream_data_multiple_messages_per_frame) {
 
   auto publisher = std::make_shared<MockEventPublisher>();
 
-  const int numberOfFrames = 300;
-  const int messagesPerFrame = 10;
+  const int maxEventsPerFramePart = 200;
 
   EXPECT_CALL(*publisher.get(), setUp(broker, topic, runTopic, detSpecTopic))
       .Times(AtLeast(1));
   EXPECT_CALL(*publisher.get(), sendEventMessage(_, _))
-      .Times(numberOfFrames * messagesPerFrame +
-             1); // +1 for run metadata message
+      .Times(1292);
   EXPECT_CALL(*publisher.get(), sendRunMessage(_, _)).Times(1);
   EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_, _)).Times(1);
   EXPECT_CALL(*publisher.get(), getCurrentOffset()).Times(1);
@@ -169,7 +166,7 @@ TEST_F(NexusPublisherTest, test_stream_data_multiple_messages_per_frame) {
   NexusPublisher streamer(publisher, broker, topic, runTopic, detSpecTopic,
                           testDataPath + "SANS_test_reduced.hdf5",
                           testDataPath + "spectrum_gastubes_01.dat", true);
-  EXPECT_NO_THROW(streamer.streamData(messagesPerFrame, 1, false));
+  EXPECT_NO_THROW(streamer.streamData(maxEventsPerFramePart, 1, false));
 }
 
 TEST_F(NexusPublisherTest, test_create_run_message_data) {

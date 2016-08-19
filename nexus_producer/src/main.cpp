@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
   std::string compression = "";
   bool slow = false;
   bool quietMode = false;
-  int messagesPerFrame = 1;
+  int maxEventsPerFramePart = 200;
 
   while ((opt = getopt(argc, argv, "f:d:b:t:c:m:r:a:sq")) != -1) {
     switch (opt) {
@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
       break;
 
     case 'm':
-      messagesPerFrame = std::stoi(optarg);
+      maxEventsPerFramePart = std::stoi(optarg);
       break;
 
     case 'r':
@@ -87,8 +87,8 @@ int main(int argc, char **argv) {
             "[-a <det_spec_topic_name>]    Specify name of detector-spectra "
             "map topic to "
             "publish to, default is 'test_det_spec_topic'\n"
-            "[-m <messages_per_frame>]   Specify number of messages per frame, "
-            "default is '1'\n"
+            "[-m <max_events_per_message>]   Maximum number of events to send "
+            "in a single message, default is 200\n"
             "[-s]    Slow mode, publishes data at approx realistic rate of 10 "
             "frames per second\n"
             "[-q]    Quiet mode, makes publisher less chatty on stdout\n"
@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
 
   // Publish the same data repeatedly, with incrementing run numbers
   while (true) {
-    streamer.streamData(messagesPerFrame, runNumber, slow);
+    streamer.streamData(maxEventsPerFramePart, runNumber, slow);
     runNumber++;
   }
 
