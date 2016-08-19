@@ -5,8 +5,9 @@
 
 class SampleEnvironmentEventString : public SampleEnvironmentEvent {
 public:
-  SampleEnvironmentEventString() {};
-  SampleEnvironmentEventString(const std::string &name, float time, const std::string &value)
+  SampleEnvironmentEventString() {}
+  SampleEnvironmentEventString(const std::string &name, float time,
+                               const std::string &value)
       : m_name(name), m_time(time), m_value(value) {}
 
   flatbuffers::Offset<ISISDAE::SEEvent>
@@ -18,4 +19,4 @@ private:
   std::string m_value;
 };
 
-#endif //ISIS_NEXUS_STREAMER_FOR_MANTID_SAMPLEENVIRONMENTEVENTSTRING_H
+#endif // ISIS_NEXUS_STREAMER_FOR_MANTID_SAMPLEENVIRONMENTEVENTSTRING_H

@@ -1,7 +1,7 @@
 #include "SampleEnvironmentEvent.h"
+#include "SampleEnvironmentEventDouble.h"
 #include "SampleEnvironmentEventInt.h"
 #include "SampleEnvironmentEventLong.h"
-#include "SampleEnvironmentEventDouble.h"
 #include "SampleEnvironmentEventString.h"
 #include <gtest/gtest.h>
 

@@ -5,8 +5,9 @@
 
 class SampleEnvironmentEventDouble : public SampleEnvironmentEvent {
 public:
-  SampleEnvironmentEventDouble() {};
-  SampleEnvironmentEventDouble(const std::string &name, float time, double value)
+  SampleEnvironmentEventDouble() {}
+  SampleEnvironmentEventDouble(const std::string &name, float time,
+                               double value)
       : m_name(name), m_time(time), m_value(value) {}
 
   flatbuffers::Offset<ISISDAE::SEEvent>
@@ -18,4 +19,4 @@ private:
   double m_value;
 };
 
-#endif //ISIS_NEXUS_STREAMER_FOR_MANTID_SAMPLEENVIRONMENTEVENTDOUBLE_H
+#endif // ISIS_NEXUS_STREAMER_FOR_MANTID_SAMPLEENVIRONMENTEVENTDOUBLE_H

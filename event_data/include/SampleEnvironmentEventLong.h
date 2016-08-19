@@ -5,7 +5,7 @@
 
 class SampleEnvironmentEventLong : public SampleEnvironmentEvent {
 public:
-  SampleEnvironmentEventLong() {};
+  SampleEnvironmentEventLong() {}
   SampleEnvironmentEventLong(const std::string &name, float time, int64_t value)
       : m_name(name), m_time(time), m_value(value) {}
 
@@ -18,4 +18,4 @@ private:
   int64_t m_value;
 };
 
-#endif //ISIS_NEXUS_STREAMER_FOR_MANTID_SAMPLEENVIRONMENTEVENTLONG_H
+#endif // ISIS_NEXUS_STREAMER_FOR_MANTID_SAMPLEENVIRONMENTEVENTLONG_H
