@@ -28,6 +28,7 @@ NexusPublisher::NexusPublisher(
       m_fileReader(std::make_shared<NexusFileReader>(filename)),
       m_quietMode(quietMode), m_detSpecMapFilename(detSpecMapFilename) {
   publisher->setUp(brokerAddress, streamName, runTopicName, detSpecTopicName);
+  m_sEEventMap = m_fileReader->getSEEventMap();
 }
 
 /**
@@ -65,6 +66,10 @@ NexusPublisher::createMessageData(hsize_t frameNumber,
     eventData->setPeriod(period);
     eventData->setFrameTime(frameTime);
 
+    if (messageNumber == 0) {
+      addSEEventsToMessage(frameNumber, eventData);
+    }
+
     auto upToDetId = detIds.begin() + ((messageNumber + 1) * eventsPerMessage);
     auto upToTof = tofs.begin() + ((messageNumber + 1) * eventsPerMessage);
 
@@ -92,6 +97,13 @@ NexusPublisher::createMessageData(hsize_t frameNumber,
   }
 
   return eventDataVector;
+}
+
+void NexusPublisher::addSEEventsToMessage(
+    hsize_t frameNumber, std::shared_ptr<EventData> eventData) {
+  for (auto sEEvent : m_sEEventMap[frameNumber]) {
+    eventData->addSEEvent(sEEvent);
+  }
 }
 
 /**

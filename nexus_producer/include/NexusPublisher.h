@@ -3,9 +3,9 @@
 
 #include <memory>
 
+#include "../../event_data/include/DetectorSpectrumMapData.h"
 #include "../../event_data/include/EventData.h"
 #include "../../event_data/include/RunData.h"
-#include "../../event_data/include/DetectorSpectrumMapData.h"
 #include "../../nexus_file_reader/include/NexusFileReader.h"
 #include "EventPublisher.h"
 
@@ -29,11 +29,14 @@ private:
   int64_t createAndSendMessage(std::string &rawbuf, size_t frameNumber,
                                const int messagesPerFrame);
   void reportProgress(const float progress);
+  void addSEEventsToMessage(hsize_t frameNumber,
+                            std::shared_ptr<EventData> eventData);
 
   std::shared_ptr<EventPublisher> m_publisher;
   std::shared_ptr<NexusFileReader> m_fileReader;
   bool m_quietMode = false;
   std::string m_detSpecMapFilename;
+  std::unordered_map<hsize_t, sEEventVector> m_sEEventMap;
 };
 
 #endif // ISIS_NEXUS_STREAMER_NEXUSPUBLISHER_H
