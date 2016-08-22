@@ -56,7 +56,8 @@ TEST_F(NexusPublisherTest, test_create_message_data) {
 TEST_F(NexusPublisherTest, test_create_message_data_with_SE_events) {
   int frameNumber = 10;
   auto streamer = createStreamer(true);
-  auto eventData = streamer.createMessageData(static_cast<hsize_t>(frameNumber), 1);
+  auto eventData =
+      streamer.createMessageData(static_cast<hsize_t>(frameNumber), 1);
 
   std::string rawbuf;
   eventData[0]->getBufferPointer(rawbuf);

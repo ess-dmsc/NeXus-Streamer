@@ -110,7 +110,8 @@ NexusFileReader::get1DDataset(DataType dataType,
   return values;
 }
 
-std::vector<std::string> NexusFileReader::get1DStringDataset(const std::string &datasetName) {
+std::vector<std::string>
+NexusFileReader::get1DStringDataset(const std::string &datasetName) {
   std::string value;
   auto dataset = m_file->openDataSet(datasetName);
   auto dataspace = dataset.getSpace();
