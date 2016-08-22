@@ -28,6 +28,7 @@ NexusPublisher::NexusPublisher(
       m_fileReader(std::make_shared<NexusFileReader>(filename)),
       m_quietMode(quietMode), m_detSpecMapFilename(detSpecMapFilename) {
   publisher->setUp(brokerAddress, streamName, runTopicName, detSpecTopicName);
+  m_sEEventMap = m_fileReader->getSEEventMap();
 }
 
 /**
@@ -65,6 +66,10 @@ NexusPublisher::createMessageData(hsize_t frameNumber,
     eventData->setPeriod(period);
     eventData->setFrameTime(frameTime);
 
+    if (messageNumber == 0) {
+      addSEEventsToMessage(frameNumber, eventData);
+    }
+
     auto upToDetId = detIds.begin() + ((messageNumber + 1) * eventsPerMessage);
     auto upToTof = tofs.begin() + ((messageNumber + 1) * eventsPerMessage);
 
@@ -92,6 +97,13 @@ NexusPublisher::createMessageData(hsize_t frameNumber,
   }
 
   return eventDataVector;
+}
+
+void NexusPublisher::addSEEventsToMessage(
+    hsize_t frameNumber, std::shared_ptr<EventData> eventData) {
+  for (auto sEEvent : m_sEEventMap[frameNumber]) {
+    eventData->addSEEvent(sEEvent);
+  }
 }
 
 /**
@@ -132,14 +144,15 @@ void NexusPublisher::streamData(const int maxEventsPerFramePart, int runNumber,
   reportProgress(0.0);
   int64_t totalBytesSent = 0;
   const auto numberOfFrames = m_fileReader->getNumberOfFrames();
-  auto framePartsPerFrame = m_fileReader->getFramePartsPerFrame(maxEventsPerFramePart);
+  auto framePartsPerFrame =
+      m_fileReader->getFramePartsPerFrame(maxEventsPerFramePart);
 
   totalBytesSent += createAndSendRunMessage(rawbuf, runNumber);
   totalBytesSent += createAndSendDetSpecMessage(rawbuf);
 
   for (size_t frameNumber = 0; frameNumber < numberOfFrames; frameNumber++) {
-    totalBytesSent +=
-        createAndSendMessage(rawbuf, frameNumber, framePartsPerFrame[frameNumber]);
+    totalBytesSent += createAndSendMessage(rawbuf, frameNumber,
+                                           framePartsPerFrame[frameNumber]);
     reportProgress(static_cast<float>(frameNumber) /
                    static_cast<float>(numberOfFrames));
 
@@ -194,7 +207,7 @@ int64_t NexusPublisher::createAndSendRunMessage(std::string &rawbuf,
   buffer_uptr = messageData->getRunBufferPointer(rawbuf);
   m_publisher->sendRunMessage(reinterpret_cast<char *>(buffer_uptr.get()),
                               messageData->getBufferSize());
-  std::cout << "Publishing new run:" << std::endl;
+  std::cout << std::endl << "Publishing new run:" << std::endl;
   std::cout << messageData->runInfo() << std::endl;
   return rawbuf.size();
 }

@@ -1,13 +1,52 @@
 #include "EventData.h"
+#include <SampleEnvironmentEventDouble.h>
+#include <SampleEnvironmentEventInt.h>
+#include <SampleEnvironmentEventLong.h>
+#include <SampleEnvironmentEventString.h>
 #include <iostream>
+
+void EventData::decodeSampleEnvironmentEvents(
+    const flatbuffers::Vector<flatbuffers::Offset<ISISDAE::SEEvent>>
+        *sEEventVector) {
+  for (flatbuffers::uoffset_t i = 0; i < sEEventVector->Length(); i++) {
+    auto event = sEEventVector->Get(i);
+    if (event->value_type() == ISISDAE::SEValue_IntValue) {
+      auto value = static_cast<const ISISDAE::IntValue *>(event->value());
+      auto sEEvent = std::make_shared<SampleEnvironmentEventInt>(
+          event->name()->str(), event->time_offset(), value->value());
+      addSEEvent(sEEvent);
+    } else if (event->value_type() == ISISDAE::SEValue_LongValue) {
+      auto value = static_cast<const ISISDAE::LongValue *>(event->value());
+      auto sEEvent = std::make_shared<SampleEnvironmentEventLong>(
+          event->name()->str(), event->time_offset(), value->value());
+      addSEEvent(sEEvent);
+    } else if (event->value_type() == ISISDAE::SEValue_DoubleValue) {
+      auto value = static_cast<const ISISDAE::DoubleValue *>(event->value());
+      auto sEEvent = std::make_shared<SampleEnvironmentEventDouble>(
+          event->name()->str(), event->time_offset(), value->value());
+      addSEEvent(sEEvent);
+    } else if (event->value_type() == ISISDAE::SEValue_StringValue) {
+      auto value = static_cast<const ISISDAE::StringValue *>(event->value());
+      auto sEEvent = std::make_shared<SampleEnvironmentEventString>(
+          event->name()->str(), event->time_offset(), value->value()->str());
+      addSEEvent(sEEvent);
+    } else {
+      std::cout << "SEValue was not of recognised type" << std::endl;
+    }
+  }
+}
 
 bool EventData::decodeMessage(const uint8_t *buf) {
   auto messageData = ISISDAE::GetEventMessage(buf);
   if (messageData->message_type() == ISISDAE::MessageTypes_FramePart) {
-    auto frameData = static_cast<const ISISDAE::FramePart*>(messageData->message());
+    auto frameData =
+        static_cast<const ISISDAE::FramePart *>(messageData->message());
     auto eventData = frameData->n_events();
     auto detIdFBVector = eventData->spec();
     auto tofFBVector = eventData->tof();
+    auto sEEventVector = frameData->se_events();
+
+    decodeSampleEnvironmentEvents(sEEventVector);
 
     auto numberOfEvents = detIdFBVector->size();
     m_detId.resize(static_cast<size_t>(numberOfEvents));
@@ -30,9 +69,11 @@ bool EventData::decodeMessage(const uint8_t *buf) {
 flatbuffers::unique_ptr_t EventData::getBufferPointer(std::string &buffer) {
   flatbuffers::FlatBufferBuilder builder;
 
-  auto sEEvent = ISISDAE::CreateSEEvent(builder);
   std::vector<flatbuffers::Offset<ISISDAE::SEEvent>> sEEventsVector;
-  sEEventsVector.push_back(sEEvent);
+  for (auto sEEvent : m_sampleEnvironmentEvents) {
+    auto sEEventOffset = sEEvent->getSEEvent(builder);
+    sEEventsVector.push_back(sEEventOffset);
+  }
   auto messageSEEvents = builder.CreateVector(sEEventsVector);
 
   auto messageNEvents = ISISDAE::CreateNEvents(
@@ -43,7 +84,8 @@ flatbuffers::unique_ptr_t EventData::getBufferPointer(std::string &buffer) {
       m_protonCharge, m_period, m_endOfFrame, m_endOfRun, messageNEvents,
       messageSEEvents);
 
-  auto messageFlatbuf = ISISDAE::CreateEventMessage(builder, ISISDAE::MessageTypes_FramePart, messageFramePart.Union());
+  auto messageFlatbuf = ISISDAE::CreateEventMessage(
+      builder, ISISDAE::MessageTypes_FramePart, messageFramePart.Union());
   builder.Finish(messageFlatbuf);
 
   auto bufferpointer =
