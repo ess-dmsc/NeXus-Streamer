@@ -30,8 +30,10 @@ public:
   std::string getInstrumentName();
   std::vector<std::string> getNamesInGroup(const std::string &groupName);
   std::vector<float> getFloatVector(const std::string &dataset);
+  std::unordered_map<hsize_t, sEEventVector> getSEEventMap();
 
 private:
+  size_t findFrameNumberOfTime(float time);
   template <typename T>
   T getSingleValueFromDataset(const std::string &dataset, H5::PredType datatype,
                               hsize_t offset);
@@ -39,7 +41,6 @@ private:
   H5FilePtr m_file = nullptr;
   size_t m_numberOfFrames;
   int64_t convertStringToUnixTime(const std::string &timeString);
-  std::unordered_map<hsize_t, sEEventVector> makeSEEventMap();
 };
 
 #endif // ISIS_NEXUS_STREAMER_NEXUSFILEREADER_H

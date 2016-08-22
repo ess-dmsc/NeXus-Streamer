@@ -1,4 +1,5 @@
 #include "../include/NexusFileReader.h"
+#include "../../event_data/include/SampleEnvironmentEventDouble.h"
 #include <ctime>
 #include <iomanip>
 #include <iostream>
@@ -20,7 +21,47 @@ NexusFileReader::NexusFileReader(const std::string &filename)
   m_numberOfFrames = numOfFrames;
 }
 
-std::vector<float> NexusFileReader::getFloatVector(const std::string &datasetName) {
+size_t NexusFileReader::findFrameNumberOfTime(float time) {
+  auto frameNumber = static_cast<size_t>(std::floor(time / 0.1));
+  return frameNumber;
+}
+
+std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
+  std::unordered_map<hsize_t, sEEventVector> sEEventMap;
+
+  auto groupNames = getNamesInGroup("/raw_data_1/selog");
+  for (auto const name : groupNames) {
+    if (name != "SECI_OUT_OF_RANGE_BLOCK") {
+      auto times =
+          getFloatVector("/raw_data_1/selog/" + name + "/value_log/time");
+      auto values =
+          getFloatVector("/raw_data_1/selog/" + name + "/value_log/value");
+
+      for (size_t i = 0; i < times.size(); i++) {
+        // Ignore entries for events which do not occur during the run
+        if (times[i] > 0) {
+          // The number of the frame the event happened in
+          auto frameNumber = findFrameNumberOfTime(times[i]);
+          if (frameNumber > m_numberOfFrames) {
+            continue;
+          }
+          if (sEEventMap.count(frameNumber) == 0) {
+            sEEventMap[frameNumber] = sEEventVector();
+          }
+
+          sEEventMap[frameNumber].push_back(
+              std::make_shared<SampleEnvironmentEventDouble>(name, times[i],
+                                                             values[i]));
+        }
+      }
+    }
+  }
+
+  return sEEventMap;
+}
+
+std::vector<float>
+NexusFileReader::getFloatVector(const std::string &datasetName) {
   auto dataset = m_file->openDataSet(datasetName);
   std::vector<float> values;
 
@@ -73,7 +114,8 @@ int32_t NexusFileReader::getPeriodNumber() {
  * @param name of the group
  * @return names of objects in the specified group
  */
-std::vector<std::string> NexusFileReader::getNamesInGroup(const std::string &groupName) {
+std::vector<std::string>
+NexusFileReader::getNamesInGroup(const std::string &groupName) {
   Group group = m_file->openGroup(groupName);
   std::vector<std::string> names;
   for (hsize_t i = 0; i < group.getNumObjs(); i++) {

@@ -194,7 +194,7 @@ int64_t NexusPublisher::createAndSendRunMessage(std::string &rawbuf,
   buffer_uptr = messageData->getRunBufferPointer(rawbuf);
   m_publisher->sendRunMessage(reinterpret_cast<char *>(buffer_uptr.get()),
                               messageData->getBufferSize());
-  std::cout << "Publishing new run:" << std::endl;
+  std::cout << std::endl << "Publishing new run:" << std::endl;
   std::cout << messageData->runInfo() << std::endl;
   return rawbuf.size();
 }
