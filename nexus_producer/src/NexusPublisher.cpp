@@ -132,14 +132,15 @@ void NexusPublisher::streamData(const int maxEventsPerFramePart, int runNumber,
   reportProgress(0.0);
   int64_t totalBytesSent = 0;
   const auto numberOfFrames = m_fileReader->getNumberOfFrames();
-  auto framePartsPerFrame = m_fileReader->getFramePartsPerFrame(maxEventsPerFramePart);
+  auto framePartsPerFrame =
+      m_fileReader->getFramePartsPerFrame(maxEventsPerFramePart);
 
   totalBytesSent += createAndSendRunMessage(rawbuf, runNumber);
   totalBytesSent += createAndSendDetSpecMessage(rawbuf);
 
   for (size_t frameNumber = 0; frameNumber < numberOfFrames; frameNumber++) {
-    totalBytesSent +=
-        createAndSendMessage(rawbuf, frameNumber, framePartsPerFrame[frameNumber]);
+    totalBytesSent += createAndSendMessage(rawbuf, frameNumber,
+                                           framePartsPerFrame[frameNumber]);
     reportProgress(static_cast<float>(frameNumber) /
                    static_cast<float>(numberOfFrames));
 

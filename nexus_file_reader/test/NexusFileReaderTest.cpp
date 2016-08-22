@@ -128,15 +128,28 @@ TEST(NexusFileReaderTest, get_frame_parts_per_frame) {
   EXPECT_EQ(4, framePartsPerFrame[0]);
 }
 
-TEST(NexusFileReaderTest, get_float_vector) {
+TEST(NexusFileReaderTest, get_1D_dataset_float) {
   extern std::string testDataPath;
   auto fileReader = NexusFileReader(testDataPath + "SANS_test_reduced.hdf5");
-  auto floatVector = fileReader.getFloatVector("/raw_data_1/selog/Guide_Pressure/value_log/time");
-  EXPECT_FLOAT_EQ(1821.0, floatVector[4]);
+  auto valueVector = fileReader.get1DDataset<float>(
+      H5::PredType::NATIVE_FLOAT,
+      "/raw_data_1/selog/Guide_Pressure/value_log/value");
+  EXPECT_FLOAT_EQ(0.18, valueVector[4]);
+}
+
+TEST(NexusFileReaderTest, get_1D_dataset_string) {
+  extern std::string testDataPath;
+  auto fileReader = NexusFileReader(testDataPath + "SANS_test_reduced.hdf5");
+  auto eventVector = fileReader.get1DStringDataset(
+      "/raw_data_1/selog/SECI_OUT_OF_RANGE_BLOCK/value_log/value");
+  EXPECT_EQ("Fast_Shutter", eventVector[0].substr(0, 12));
 }
 
 TEST(NexusFileReaderTest, get_sEEvent_map) {
   extern std::string testDataPath;
   auto fileReader = NexusFileReader(testDataPath + "SANS_test_reduced.hdf5");
   auto eventMap = fileReader.getSEEventMap();
+  auto eventVector = eventMap[10];
+  EXPECT_EQ(4, eventVector.size());
+  EXPECT_EQ("Guide_Pressure", eventVector[0]->getName());
 }

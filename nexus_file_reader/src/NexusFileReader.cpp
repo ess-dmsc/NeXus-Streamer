@@ -1,5 +1,8 @@
 #include "../include/NexusFileReader.h"
 #include "../../event_data/include/SampleEnvironmentEventDouble.h"
+#include "../../event_data/include/SampleEnvironmentEventInt.h"
+#include "../../event_data/include/SampleEnvironmentEventLong.h"
+#include "../../event_data/include/SampleEnvironmentEventString.h"
 #include <ctime>
 #include <iomanip>
 #include <iostream>
@@ -32,10 +35,25 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
   auto groupNames = getNamesInGroup("/raw_data_1/selog");
   for (auto const name : groupNames) {
     if (name != "SECI_OUT_OF_RANGE_BLOCK") {
+      std::vector<float> floatValues;
+      std::vector<int32_t> intValues;
+      std::vector<int64_t> longValues;
+      std::vector<std::string> stringValues;
+      std::string valueDatasetName =
+          "/raw_data_1/selog/" + name + "/value_log/value";
       auto times =
-          getFloatVector("/raw_data_1/selog/" + name + "/value_log/time");
-      auto values =
-          getFloatVector("/raw_data_1/selog/" + name + "/value_log/value");
+          get1DDataset<float>(PredType::NATIVE_FLOAT,
+                              "/raw_data_1/selog/" + name + "/value_log/time");
+      auto valueType = getDatasetType(valueDatasetName);
+      if (valueType == PredType::NATIVE_FLOAT) {
+        floatValues = get1DDataset<float>(valueType, valueDatasetName);
+      } else if (valueType == PredType::NATIVE_INT32) {
+        intValues = get1DDataset<int32_t>(valueType, valueDatasetName);
+      } else if (valueType == PredType::NATIVE_INT64) {
+        longValues = get1DDataset<int64_t>(valueType, valueDatasetName);
+      } else {
+        stringValues = get1DStringDataset(valueDatasetName);
+      }
 
       for (size_t i = 0; i < times.size(); i++) {
         // Ignore entries for events which do not occur during the run
@@ -45,13 +63,24 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
           if (frameNumber > m_numberOfFrames) {
             continue;
           }
-          if (sEEventMap.count(frameNumber) == 0) {
+          if (sEEventMap.count(frameNumber) == 0)
             sEEventMap[frameNumber] = sEEventVector();
-          }
-
-          sEEventMap[frameNumber].push_back(
-              std::make_shared<SampleEnvironmentEventDouble>(name, times[i],
-                                                             values[i]));
+          if (valueType == PredType::NATIVE_FLOAT)
+            sEEventMap[frameNumber].push_back(
+                std::make_shared<SampleEnvironmentEventDouble>(name, times[i],
+                                                               floatValues[i]));
+          else if (valueType == PredType::NATIVE_INT32)
+            sEEventMap[frameNumber].push_back(
+                std::make_shared<SampleEnvironmentEventInt>(name, times[i],
+                                                            intValues[i]));
+          else if (valueType == PredType::NATIVE_INT64)
+            sEEventMap[frameNumber].push_back(
+                std::make_shared<SampleEnvironmentEventLong>(name, times[i],
+                                                             longValues[i]));
+          else
+            sEEventMap[frameNumber].push_back(
+                std::make_shared<SampleEnvironmentEventString>(
+                    name, times[i], stringValues[i]));
         }
       }
     }
@@ -60,17 +89,37 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
   return sEEventMap;
 }
 
-std::vector<float>
-NexusFileReader::getFloatVector(const std::string &datasetName) {
+DataType NexusFileReader::getDatasetType(const std::string &datasetName) {
   auto dataset = m_file->openDataSet(datasetName);
-  std::vector<float> values;
+  return dataset.getDataType();
+}
+
+template <typename valueType>
+std::vector<valueType>
+NexusFileReader::get1DDataset(DataType dataType,
+                              const std::string &datasetName) {
+  auto dataset = m_file->openDataSet(datasetName);
+  std::vector<valueType> values;
 
   auto dataspace = dataset.getSpace();
 
   // resize vector to the correct size to put the new data in
   values.resize(dataspace.getSelectNpoints());
 
-  dataset.read(values.data(), PredType::NATIVE_FLOAT, dataspace);
+  dataset.read(values.data(), dataType, dataspace);
+  return values;
+}
+
+std::vector<std::string> NexusFileReader::get1DStringDataset(const std::string &datasetName) {
+  std::string value;
+  auto dataset = m_file->openDataSet(datasetName);
+  auto dataspace = dataset.getSpace();
+
+  dataset.read(value, dataset.getDataType(), dataspace);
+
+  std::vector<std::string> values;
+  values.push_back(value);
+
   return values;
 }
 

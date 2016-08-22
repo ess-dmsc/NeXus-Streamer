@@ -4,8 +4,8 @@
 #include "../../event_data/include/SampleEnvironmentEvent.h"
 #include <H5Cpp.h>
 #include <memory>
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
 // a typedef for our managed H5File pointer
 typedef std::unique_ptr<H5::H5File> H5FilePtr;
@@ -29,8 +29,12 @@ public:
   int64_t getRunStartTime();
   std::string getInstrumentName();
   std::vector<std::string> getNamesInGroup(const std::string &groupName);
-  std::vector<float> getFloatVector(const std::string &dataset);
   std::unordered_map<hsize_t, sEEventVector> getSEEventMap();
+  H5::DataType getDatasetType(const std::string &datasetName);
+  template <typename valueType>
+  std::vector<valueType> get1DDataset(H5::DataType dataType,
+                                      const std::string &datasetName);
+  std::vector<std::string> get1DStringDataset(const std::string &datasetName);
 
 private:
   size_t findFrameNumberOfTime(float time);
