@@ -118,7 +118,7 @@ TEST(NexusFileReaderTest, get_se_names) {
   EXPECT_THAT(seNamesFromFile,
               ::testing::ElementsAre("Guide_Pressure", "Rear_Det_X",
                                      "SECI_OUT_OF_RANGE_BLOCK", "Sample",
-                                     "TEMP1"));
+                                     "TEMP1", "fake_int", "fake_long"));
 }
 
 TEST(NexusFileReaderTest, get_frame_parts_per_frame) {
