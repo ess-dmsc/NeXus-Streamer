@@ -56,6 +56,7 @@ union MessageTypes { FramePart, RunInfo }
 
 table EventMessage {
     message : MessageTypes;
+    id : ulong;
 }
 
 root_type EventMessage;

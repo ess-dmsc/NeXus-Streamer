@@ -372,15 +372,18 @@ inline flatbuffers::Offset<FramePart> CreateFramePart(flatbuffers::FlatBufferBui
 struct EventMessage FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_MESSAGE_TYPE = 4,
-    VT_MESSAGE = 6
+    VT_MESSAGE = 6,
+    VT_ID = 8
   };
   MessageTypes message_type() const { return static_cast<MessageTypes>(GetField<uint8_t>(VT_MESSAGE_TYPE, 0)); }
   const void *message() const { return GetPointer<const void *>(VT_MESSAGE); }
+  uint64_t id() const { return GetField<uint64_t>(VT_ID, 0); }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<uint8_t>(verifier, VT_MESSAGE_TYPE) &&
            VerifyField<flatbuffers::uoffset_t>(verifier, VT_MESSAGE) &&
            VerifyMessageTypes(verifier, message(), message_type()) &&
+           VerifyField<uint64_t>(verifier, VT_ID) &&
            verifier.EndTable();
   }
 };
@@ -390,18 +393,21 @@ struct EventMessageBuilder {
   flatbuffers::uoffset_t start_;
   void add_message_type(MessageTypes message_type) { fbb_.AddElement<uint8_t>(EventMessage::VT_MESSAGE_TYPE, static_cast<uint8_t>(message_type), 0); }
   void add_message(flatbuffers::Offset<void> message) { fbb_.AddOffset(EventMessage::VT_MESSAGE, message); }
+  void add_id(uint64_t id) { fbb_.AddElement<uint64_t>(EventMessage::VT_ID, id, 0); }
   EventMessageBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
   EventMessageBuilder &operator=(const EventMessageBuilder &);
   flatbuffers::Offset<EventMessage> Finish() {
-    auto o = flatbuffers::Offset<EventMessage>(fbb_.EndTable(start_, 2));
+    auto o = flatbuffers::Offset<EventMessage>(fbb_.EndTable(start_, 3));
     return o;
   }
 };
 
 inline flatbuffers::Offset<EventMessage> CreateEventMessage(flatbuffers::FlatBufferBuilder &_fbb,
    MessageTypes message_type = MessageTypes_NONE,
-   flatbuffers::Offset<void> message = 0) {
+   flatbuffers::Offset<void> message = 0,
+   uint64_t id = 0) {
   EventMessageBuilder builder_(_fbb);
+  builder_.add_id(id);
   builder_.add_message(message);
   builder_.add_message_type(message_type);
   return builder_.Finish();
