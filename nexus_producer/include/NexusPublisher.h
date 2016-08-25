@@ -37,6 +37,7 @@ private:
   bool m_quietMode = false;
   std::string m_detSpecMapFilename;
   std::unordered_map<hsize_t, sEEventVector> m_sEEventMap;
+  uint64_t m_messageID = 0;
 };
 
 #endif // ISIS_NEXUS_STREAMER_NEXUSPUBLISHER_H

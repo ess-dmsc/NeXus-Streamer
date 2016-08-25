@@ -38,7 +38,7 @@ TEST_F(NexusPublisherTest, test_create_message_data) {
   auto eventData = streamer.createMessageData(static_cast<hsize_t>(1), 1);
 
   std::string rawbuf;
-  eventData[0]->getBufferPointer(rawbuf);
+  eventData[0]->getBufferPointer(rawbuf, 0);
 
   auto receivedEventData = EventData();
   EXPECT_TRUE(receivedEventData.decodeMessage(
@@ -60,7 +60,7 @@ TEST_F(NexusPublisherTest, test_create_message_data_with_SE_events) {
       streamer.createMessageData(static_cast<hsize_t>(frameNumber), 1);
 
   std::string rawbuf;
-  eventData[0]->getBufferPointer(rawbuf);
+  eventData[0]->getBufferPointer(rawbuf, 0);
 
   auto receivedEventData = EventData();
   EXPECT_TRUE(receivedEventData.decodeMessage(
@@ -83,7 +83,7 @@ TEST_F(NexusPublisherTest, test_create_message_data_3_message_per_frame) {
       streamer.createMessageData(static_cast<hsize_t>(frameNumber), 3);
 
   std::string rawbuf;
-  eventData[0]->getBufferPointer(rawbuf);
+  eventData[0]->getBufferPointer(rawbuf, 0);
 
   auto receivedEventData = EventData();
   EXPECT_TRUE(receivedEventData.decodeMessage(
@@ -95,7 +95,7 @@ TEST_F(NexusPublisherTest, test_create_message_data_3_message_per_frame) {
   EXPECT_FALSE(receivedEventData.getEndOfFrame());
   EXPECT_FALSE(receivedEventData.getEndOfRun());
 
-  eventData[2]->getBufferPointer(rawbuf);
+  eventData[2]->getBufferPointer(rawbuf, 1);
   EXPECT_TRUE(receivedEventData.decodeMessage(
       reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
   // Last message in frame should have remaining 256 events
@@ -113,7 +113,7 @@ TEST_F(NexusPublisherTest,
       streamer.createMessageData(static_cast<hsize_t>(frameNumber), 3);
 
   std::string rawbuf;
-  eventData[0]->getBufferPointer(rawbuf);
+  eventData[0]->getBufferPointer(rawbuf, 0);
 
   auto receivedData = RunData();
   // Should return false as this is not run data
@@ -129,7 +129,7 @@ TEST_F(NexusPublisherTest,
   EXPECT_FALSE(receivedEventData.getEndOfFrame());
   EXPECT_FALSE(receivedEventData.getEndOfRun());
 
-  eventData[2]->getBufferPointer(rawbuf);
+  eventData[2]->getBufferPointer(rawbuf, 0);
   EXPECT_TRUE(receivedEventData.decodeMessage(
       reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
   // Last message should be the last message in the frame and in the run

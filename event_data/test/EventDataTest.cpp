@@ -35,7 +35,7 @@ TEST(EventDataTest, get_buffer_pointer) {
   EXPECT_NO_THROW(events.setPeriod(period));
 
   std::string rawbuf;
-  EXPECT_NO_THROW(events.getBufferPointer(rawbuf));
+  EXPECT_NO_THROW(events.getBufferPointer(rawbuf, 0));
 
   auto receivedEventData = EventData();
   EXPECT_TRUE(receivedEventData.decodeMessage(
@@ -61,7 +61,7 @@ TEST(EventDataTest, get_buffer_size) {
   events.setTof(tofs);
 
   std::string rawbuf;
-  EXPECT_NO_THROW(events.getBufferPointer(rawbuf));
+  EXPECT_NO_THROW(events.getBufferPointer(rawbuf, 0));
   EXPECT_TRUE(events.getBufferSize() > 0);
 }
 
@@ -95,7 +95,7 @@ TEST(EventDataTest, add_sample_environment_event) {
   EXPECT_NO_THROW(events.addSEEvent(sEEventString));
 
   std::string rawbuf;
-  EXPECT_NO_THROW(events.getBufferPointer(rawbuf));
+  EXPECT_NO_THROW(events.getBufferPointer(rawbuf, 0));
   auto receivedEventData = EventData();
   EXPECT_TRUE(receivedEventData.decodeMessage(
       reinterpret_cast<const uint8_t *>(rawbuf.c_str())));

@@ -7,6 +7,8 @@
 #include "SampleEnvironmentEvent.h"
 #include "event_schema_generated.h"
 
+uint64_t getMessageID(const std::string &rawbuf);
+
 class EventData {
 
 public:
@@ -43,7 +45,8 @@ public:
   }
   size_t getBufferSize() { return m_bufferSize; }
 
-  flatbuffers::unique_ptr_t getBufferPointer(std::string &buffer);
+  flatbuffers::unique_ptr_t getBufferPointer(std::string &buffer,
+                                             uint64_t messageID);
 
   void addSEEvent(std::shared_ptr<SampleEnvironmentEvent> sEEvent) {
     m_sampleEnvironmentEvents.push_back(sEEvent);
@@ -66,7 +69,8 @@ private:
   std::vector<std::shared_ptr<SampleEnvironmentEvent>>
       m_sampleEnvironmentEvents = {};
   void decodeSampleEnvironmentEvents(
-      const flatbuffers::Vector<flatbuffers::Offset<ISISDAE::SEEvent>> *sEEventVector);
+      const flatbuffers::Vector<flatbuffers::Offset<ISISDAE::SEEvent>>
+          *sEEventVector);
 };
 
 #endif // ISIS_NEXUS_STREAMER_EVENTDATA_H
