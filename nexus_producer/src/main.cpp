@@ -22,9 +22,10 @@ int main(int argc, char **argv) {
   std::string compression = "";
   bool slow = false;
   bool quietMode = false;
+  bool randomMode = false;
   int maxEventsPerFramePart = 200;
 
-  while ((opt = getopt(argc, argv, "f:d:b:t:c:m:r:a:sq")) != -1) {
+  while ((opt = getopt(argc, argv, "f:d:b:t:c:m:r:a:squ")) != -1) {
     switch (opt) {
 
     case 'f':
@@ -67,6 +68,10 @@ int main(int argc, char **argv) {
       quietMode = true;
       break;
 
+    case 'u':
+      randomMode = true;
+      break;
+
     default:
       goto usage;
     }
@@ -93,6 +98,8 @@ int main(int argc, char **argv) {
             "[-s]    Slow mode, publishes data at approx realistic rate of 10 "
             "frames per second\n"
             "[-q]    Quiet mode, makes publisher less chatty on stdout\n"
+            "[-u]    Random mode, serve messages within each frame in a random "
+            "order\n"
             "\n",
             argv[0]);
     exit(1);
@@ -101,7 +108,7 @@ int main(int argc, char **argv) {
   auto publisher = std::make_shared<KafkaEventPublisher>(compression);
   int runNumber = 1;
   NexusPublisher streamer(publisher, broker, topic, runTopic, detSpecTopic,
-                          filename, detSpecFilename, quietMode);
+                          filename, detSpecFilename, quietMode, randomMode);
 
   // Publish the same data repeatedly, with incrementing run numbers
   while (true) {

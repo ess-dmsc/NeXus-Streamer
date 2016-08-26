@@ -15,9 +15,10 @@ main_nexusPublisher -f <filepath>    Full file path of nexus file to stream
 [-t <event_topic_name>]    Name of event data topic to publish to, default is 'test_event_topic'
 [-r <run_topic_name>]    Name of run data topic to publish to, default is 'test_run_topic'
 [-a <det_spec_topic_name>]    Name of detector-spectra map topic to publish to, default is 'test_det_spec_topic'
-[-m <messages_per_frame>]   Number of messages per frame to use, default is '1'
+[-m <events_per_message>]   Maximum number of events to send in a single message, default is '200'
 [-s]    Slow mode, publishes data at approx realistic rate of 10 frames per second
 [-q]    Quiet mode, makes publisher less chatty on stdout
+[-u]    Random mode, serve messages within each frame in a random order, for testing purposes
 ```
 
 ## Dependencies

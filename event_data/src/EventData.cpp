@@ -5,6 +5,12 @@
 #include <SampleEnvironmentEventString.h>
 #include <iostream>
 
+uint64_t getMessageID(const std::string &rawbuf) {
+  auto buf = reinterpret_cast<const uint8_t *>(rawbuf.c_str());
+  auto messageData = ISISDAE::GetEventMessage(buf);
+  return messageData->id();
+}
+
 void EventData::decodeSampleEnvironmentEvents(
     const flatbuffers::Vector<flatbuffers::Offset<ISISDAE::SEEvent>>
         *sEEventVector) {
@@ -66,7 +72,8 @@ bool EventData::decodeMessage(const uint8_t *buf) {
   return false; // this is not an EventData message
 }
 
-flatbuffers::unique_ptr_t EventData::getBufferPointer(std::string &buffer) {
+flatbuffers::unique_ptr_t EventData::getBufferPointer(std::string &buffer,
+                                                      uint64_t messageID) {
   flatbuffers::FlatBufferBuilder builder;
 
   std::vector<flatbuffers::Offset<ISISDAE::SEEvent>> sEEventsVector;
@@ -84,8 +91,9 @@ flatbuffers::unique_ptr_t EventData::getBufferPointer(std::string &buffer) {
       m_protonCharge, m_period, m_endOfFrame, m_endOfRun, messageNEvents,
       messageSEEvents);
 
-  auto messageFlatbuf = ISISDAE::CreateEventMessage(
-      builder, ISISDAE::MessageTypes_FramePart, messageFramePart.Union());
+  auto messageFlatbuf =
+      ISISDAE::CreateEventMessage(builder, ISISDAE::MessageTypes_FramePart,
+                                  messageFramePart.Union(), messageID);
   builder.Finish(messageFlatbuf);
 
   auto bufferpointer =

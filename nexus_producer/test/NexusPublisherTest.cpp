@@ -24,7 +24,8 @@ public:
 
     NexusPublisher streamer(publisher, broker, topic, runTopic, detSpecTopic,
                             testDataPath + "SANS_test_reduced.hdf5",
-                            testDataPath + "spectrum_gastubes_01.dat", quiet);
+                            testDataPath + "spectrum_gastubes_01.dat", quiet,
+                            false);
     return streamer;
   }
 };
@@ -38,7 +39,7 @@ TEST_F(NexusPublisherTest, test_create_message_data) {
   auto eventData = streamer.createMessageData(static_cast<hsize_t>(1), 1);
 
   std::string rawbuf;
-  eventData[0]->getBufferPointer(rawbuf);
+  eventData[0]->getBufferPointer(rawbuf, 0);
 
   auto receivedEventData = EventData();
   EXPECT_TRUE(receivedEventData.decodeMessage(
@@ -60,7 +61,7 @@ TEST_F(NexusPublisherTest, test_create_message_data_with_SE_events) {
       streamer.createMessageData(static_cast<hsize_t>(frameNumber), 1);
 
   std::string rawbuf;
-  eventData[0]->getBufferPointer(rawbuf);
+  eventData[0]->getBufferPointer(rawbuf, 0);
 
   auto receivedEventData = EventData();
   EXPECT_TRUE(receivedEventData.decodeMessage(
@@ -83,7 +84,7 @@ TEST_F(NexusPublisherTest, test_create_message_data_3_message_per_frame) {
       streamer.createMessageData(static_cast<hsize_t>(frameNumber), 3);
 
   std::string rawbuf;
-  eventData[0]->getBufferPointer(rawbuf);
+  eventData[0]->getBufferPointer(rawbuf, 0);
 
   auto receivedEventData = EventData();
   EXPECT_TRUE(receivedEventData.decodeMessage(
@@ -95,7 +96,7 @@ TEST_F(NexusPublisherTest, test_create_message_data_3_message_per_frame) {
   EXPECT_FALSE(receivedEventData.getEndOfFrame());
   EXPECT_FALSE(receivedEventData.getEndOfRun());
 
-  eventData[2]->getBufferPointer(rawbuf);
+  eventData[2]->getBufferPointer(rawbuf, 1);
   EXPECT_TRUE(receivedEventData.decodeMessage(
       reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
   // Last message in frame should have remaining 256 events
@@ -113,7 +114,7 @@ TEST_F(NexusPublisherTest,
       streamer.createMessageData(static_cast<hsize_t>(frameNumber), 3);
 
   std::string rawbuf;
-  eventData[0]->getBufferPointer(rawbuf);
+  eventData[0]->getBufferPointer(rawbuf, 0);
 
   auto receivedData = RunData();
   // Should return false as this is not run data
@@ -129,7 +130,7 @@ TEST_F(NexusPublisherTest,
   EXPECT_FALSE(receivedEventData.getEndOfFrame());
   EXPECT_FALSE(receivedEventData.getEndOfRun());
 
-  eventData[2]->getBufferPointer(rawbuf);
+  eventData[2]->getBufferPointer(rawbuf, 0);
   EXPECT_TRUE(receivedEventData.decodeMessage(
       reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
   // Last message should be the last message in the frame and in the run
@@ -137,7 +138,14 @@ TEST_F(NexusPublisherTest,
   EXPECT_TRUE(receivedEventData.getEndOfRun());
 }
 
+MATCHER_P(CheckMessageID, messageID, "") {
+  auto buf = reinterpret_cast<const uint8_t *>(arg);
+  auto messageData = ISISDAE::GetEventMessage(buf);
+  return (messageID == messageData->id());
+}
+
 TEST_F(NexusPublisherTest, test_stream_data) {
+  using ::testing::Sequence;
   extern std::string testDataPath;
 
   const std::string broker = "broker_name";
@@ -152,15 +160,23 @@ TEST_F(NexusPublisherTest, test_stream_data) {
 
   EXPECT_CALL(*publisher.get(), setUp(broker, topic, runTopic, detSpecTopic))
       .Times(AtLeast(1));
-  EXPECT_CALL(*publisher.get(), sendEventMessage(_, _))
-      .Times(numberOfFrames + 1); // +1 for run data message
+
+  // test that messages have sequential id numbers
+  Sequence s1;
+  for (uint64_t messageID = 0; messageID <= numberOfFrames; messageID++) {
+    EXPECT_CALL(*publisher.get(),
+                sendEventMessage(CheckMessageID(messageID), _))
+        .InSequence(s1);
+  }
+
   EXPECT_CALL(*publisher.get(), sendRunMessage(_, _)).Times(1);
   EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_, _)).Times(1);
   EXPECT_CALL(*publisher.get(), getCurrentOffset()).Times(1);
 
   NexusPublisher streamer(publisher, broker, topic, runTopic, detSpecTopic,
                           testDataPath + "SANS_test_reduced.hdf5",
-                          testDataPath + "spectrum_gastubes_01.dat", true);
+                          testDataPath + "spectrum_gastubes_01.dat", true,
+                          false);
   EXPECT_NO_THROW(streamer.streamData(maxEventsPerFramePart, 1, false));
 }
 
@@ -186,7 +202,8 @@ TEST_F(NexusPublisherTest, test_stream_data_multiple_messages_per_frame) {
 
   NexusPublisher streamer(publisher, broker, topic, runTopic, detSpecTopic,
                           testDataPath + "SANS_test_reduced.hdf5",
-                          testDataPath + "spectrum_gastubes_01.dat", true);
+                          testDataPath + "spectrum_gastubes_01.dat", true,
+                          true);
   EXPECT_NO_THROW(streamer.streamData(maxEventsPerFramePart, 1, false));
 }
 
@@ -196,7 +213,7 @@ TEST_F(NexusPublisherTest, test_create_run_message_data) {
   auto runData = streamer.createRunMessageData(runNumber);
 
   std::string rawbuf;
-  runData->getEventBufferPointer(rawbuf);
+  runData->getEventBufferPointer(rawbuf, 0);
 
   auto receivedData = EventData();
   // Should return false as this is not event data

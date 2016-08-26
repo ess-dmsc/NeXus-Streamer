@@ -17,13 +17,15 @@ void KafkaEventPublisher::setUp(const std::string &broker_str,
 
   std::string error_str;
 
-  RdKafka::Conf *conf = RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL);
-  RdKafka::Conf *tconf = RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC);
+  auto conf = std::unique_ptr<RdKafka::Conf>(RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL));
+  auto tconf = std::unique_ptr<RdKafka::Conf>(RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC));
 
   conf->set("metadata.broker.list", broker_str, error_str);
+  conf->set("message.send.max.retries", "3", error_str);
   conf->set("message.max.bytes", "10000000", error_str);
   conf->set("fetch.message.max.bytes", "10000000", error_str);
   conf->set("replica.fetch.max.bytes", "10000000", error_str);
+
   if (!m_compression.empty()) {
     if (conf->set("compression.codec", m_compression, error_str) !=
         RdKafka::Conf::CONF_OK) {
@@ -35,7 +37,7 @@ void KafkaEventPublisher::setUp(const std::string &broker_str,
 
   // Create producer
   m_producer_ptr = std::shared_ptr<RdKafka::Producer>(
-      RdKafka::Producer::create(conf, error_str));
+      RdKafka::Producer::create(conf.get(), error_str));
   if (!m_producer_ptr.get()) {
     std::cerr << "Failed to create producer: " << error_str << std::endl;
     exit(1);
@@ -43,7 +45,7 @@ void KafkaEventPublisher::setUp(const std::string &broker_str,
 
   // Create topic handle
   m_topic_ptr = std::shared_ptr<RdKafka::Topic>(RdKafka::Topic::create(
-      m_producer_ptr.get(), topic_str, tconf, error_str));
+      m_producer_ptr.get(), topic_str, tconf.get(), error_str));
   if (!m_topic_ptr.get()) {
     std::cerr << "Failed to create topic: " << error_str << std::endl;
     exit(1);
@@ -51,7 +53,7 @@ void KafkaEventPublisher::setUp(const std::string &broker_str,
 
   // Create run topic handle
   m_runTopic_ptr = std::shared_ptr<RdKafka::Topic>(RdKafka::Topic::create(
-      m_producer_ptr.get(), runTopic_str, tconf, error_str));
+      m_producer_ptr.get(), runTopic_str, tconf.get(), error_str));
   if (!m_runTopic_ptr.get()) {
     std::cerr << "Failed to create topic: " << error_str << std::endl;
     exit(1);
@@ -59,7 +61,7 @@ void KafkaEventPublisher::setUp(const std::string &broker_str,
 
   // Create detSpec topic handle
   m_detSpecTopic_ptr = std::shared_ptr<RdKafka::Topic>(RdKafka::Topic::create(
-      m_producer_ptr.get(), detSpecTopic_str, tconf, error_str));
+      m_producer_ptr.get(), detSpecTopic_str, tconf.get(), error_str));
   if (!m_detSpecTopic_ptr.get()) {
     std::cerr << "Failed to create topic: " << error_str << std::endl;
     exit(1);
