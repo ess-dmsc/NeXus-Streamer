@@ -9,6 +9,7 @@ table RunInfo {
 	run_number : int;
 	inst_name : string;
 	stream_offset : long;   // offset into kafka topic for start of current data collection run
+	n_periods : int;
 }
 
 root_type RunInfo;
