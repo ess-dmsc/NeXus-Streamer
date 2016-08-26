@@ -19,14 +19,18 @@
  * @return - a NeXusPublisher object, call streamData() on it to start streaming
  * data
  */
-NexusPublisher::NexusPublisher(
-    std::shared_ptr<EventPublisher> publisher, const std::string &brokerAddress,
-    const std::string &streamName, const std::string &runTopicName,
-    const std::string &detSpecTopicName, const std::string &filename,
-    const std::string &detSpecMapFilename, const bool quietMode)
+NexusPublisher::NexusPublisher(std::shared_ptr<EventPublisher> publisher,
+                               const std::string &brokerAddress,
+                               const std::string &streamName,
+                               const std::string &runTopicName,
+                               const std::string &detSpecTopicName,
+                               const std::string &filename,
+                               const std::string &detSpecMapFilename,
+                               const bool quietMode, const bool randomMode)
     : m_publisher(publisher),
       m_fileReader(std::make_shared<NexusFileReader>(filename)),
-      m_quietMode(quietMode), m_detSpecMapFilename(detSpecMapFilename) {
+      m_quietMode(quietMode), m_randomMode(randomMode),
+      m_detSpecMapFilename(detSpecMapFilename) {
   publisher->setUp(brokerAddress, streamName, runTopicName, detSpecTopicName);
   m_sEEventMap = m_fileReader->getSEEventMap();
 }
@@ -141,7 +145,6 @@ void NexusPublisher::streamData(const int maxEventsPerFramePart, int runNumber,
                                 bool slow) {
   std::string rawbuf;
   // frame numbers run from 0 to numberOfFrames-1
-  reportProgress(0.0);
   int64_t totalBytesSent = 0;
   const auto numberOfFrames = m_fileReader->getNumberOfFrames();
   auto framePartsPerFrame =
@@ -179,14 +182,22 @@ int64_t NexusPublisher::createAndSendMessage(std::string &rawbuf,
                                              size_t frameNumber,
                                              const int messagesPerFrame) {
   auto messageData = createMessageData(frameNumber, messagesPerFrame);
-  int64_t dataSize = 0;
-  for (const auto &message : messageData) {
-    auto buffer_uptr = message->getBufferPointer(rawbuf, m_messageID);
-    m_publisher->sendEventMessage(reinterpret_cast<char *>(buffer_uptr.get()),
-                                  message->getBufferSize());
-    dataSize += rawbuf.size();
-    m_messageID++;
+  std::vector<int> indexes;
+  indexes.reserve(messageData.size());
+  for (int i = 0; i < messageData.size(); ++i)
+    indexes.push_back(i);
+  if (m_randomMode && indexes.size() > 1) {
+    std::random_shuffle(indexes.begin() + 1, indexes.end());
   }
+  int64_t dataSize = 0;
+  for (const auto &index : indexes) {
+    auto buffer_uptr =
+        messageData[index]->getBufferPointer(rawbuf, m_messageID + index);
+    m_publisher->sendEventMessage(reinterpret_cast<char *>(buffer_uptr.get()),
+                                  messageData[index]->getBufferSize());
+    dataSize += rawbuf.size();
+  }
+  m_messageID += indexes.size();
   return dataSize;
 }
 

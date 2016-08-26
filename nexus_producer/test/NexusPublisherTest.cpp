@@ -24,7 +24,8 @@ public:
 
     NexusPublisher streamer(publisher, broker, topic, runTopic, detSpecTopic,
                             testDataPath + "SANS_test_reduced.hdf5",
-                            testDataPath + "spectrum_gastubes_01.dat", quiet);
+                            testDataPath + "spectrum_gastubes_01.dat", quiet,
+                            false);
     return streamer;
   }
 };
@@ -159,14 +160,12 @@ TEST_F(NexusPublisherTest, test_stream_data) {
 
   EXPECT_CALL(*publisher.get(), setUp(broker, topic, runTopic, detSpecTopic))
       .Times(AtLeast(1));
-  //EXPECT_CALL(*publisher.get(), sendEventMessage(_, _))
-  //    .Times(numberOfFrames + 1); // +1 for run data message
 
   // test that messages have sequential id numbers
   Sequence s1;
-  for (uint64_t messageID = 0; messageID <= numberOfFrames;
-       messageID++) {
-    EXPECT_CALL(*publisher.get(), sendEventMessage(CheckMessageID(messageID), _))
+  for (uint64_t messageID = 0; messageID <= numberOfFrames; messageID++) {
+    EXPECT_CALL(*publisher.get(),
+                sendEventMessage(CheckMessageID(messageID), _))
         .InSequence(s1);
   }
 
@@ -176,7 +175,8 @@ TEST_F(NexusPublisherTest, test_stream_data) {
 
   NexusPublisher streamer(publisher, broker, topic, runTopic, detSpecTopic,
                           testDataPath + "SANS_test_reduced.hdf5",
-                          testDataPath + "spectrum_gastubes_01.dat", true);
+                          testDataPath + "spectrum_gastubes_01.dat", true,
+                          false);
   EXPECT_NO_THROW(streamer.streamData(maxEventsPerFramePart, 1, false));
 }
 
@@ -202,7 +202,8 @@ TEST_F(NexusPublisherTest, test_stream_data_multiple_messages_per_frame) {
 
   NexusPublisher streamer(publisher, broker, topic, runTopic, detSpecTopic,
                           testDataPath + "SANS_test_reduced.hdf5",
-                          testDataPath + "spectrum_gastubes_01.dat", true);
+                          testDataPath + "spectrum_gastubes_01.dat", true,
+                          true);
   EXPECT_NO_THROW(streamer.streamData(maxEventsPerFramePart, 1, false));
 }
 

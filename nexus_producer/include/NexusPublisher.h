@@ -16,7 +16,8 @@ public:
                  const std::string &streamName, const std::string &runTopicName,
                  const std::string &detSpecTopicName,
                  const std::string &filename,
-                 const std::string &detSpecMapFilename, const bool quietMode);
+                 const std::string &detSpecMapFilename, const bool quietMode,
+                 const bool randomMode);
   std::vector<std::shared_ptr<EventData>>
   createMessageData(hsize_t frameNumber, const int messagesPerFrame);
   int64_t createAndSendRunMessage(std::string &rawbuf, int runNumber);
@@ -38,6 +39,7 @@ private:
   std::string m_detSpecMapFilename;
   std::unordered_map<hsize_t, sEEventVector> m_sEEventMap;
   uint64_t m_messageID = 0;
+  bool m_randomMode;
 };
 
 #endif // ISIS_NEXUS_STREAMER_NEXUSPUBLISHER_H
