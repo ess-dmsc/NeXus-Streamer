@@ -27,6 +27,7 @@ bool RunData::decodeMessage(const uint8_t *buf) {
     setStartTime(runData->start_time());
     setInstrumentName(runData->inst_name()->str());
     setRunNumber(runData->run_number());
+    setNumberOfPeriods(runData->n_periods());
 
     return true;
   }
@@ -38,11 +39,13 @@ flatbuffers::unique_ptr_t RunData::getEventBufferPointer(std::string &buffer,
   flatbuffers::FlatBufferBuilder builder;
 
   auto instrumentName = builder.CreateString(m_instrumentName);
-  auto messageRunInfo = ISISDAE::CreateRunInfo(
-      builder, m_startTime, m_runNumber, instrumentName, m_streamOffset);
+  auto messageRunInfo =
+      ISISDAE::CreateRunInfo(builder, m_startTime, m_runNumber, instrumentName,
+                             m_streamOffset, m_numberOfPeriods);
 
-  auto messageFlatbuf = ISISDAE::CreateEventMessage(
-      builder, ISISDAE::MessageTypes_RunInfo, messageRunInfo.Union(), messageID);
+  auto messageFlatbuf =
+      ISISDAE::CreateEventMessage(builder, ISISDAE::MessageTypes_RunInfo,
+                                  messageRunInfo.Union(), messageID);
   builder.Finish(messageFlatbuf);
 
   auto bufferpointer =
@@ -58,8 +61,9 @@ flatbuffers::unique_ptr_t RunData::getRunBufferPointer(std::string &buffer) {
   flatbuffers::FlatBufferBuilder builder;
 
   auto instrumentName = builder.CreateString(m_instrumentName);
-  auto messageRunInfo = ISISDAE::CreateRunInfo(
-      builder, m_startTime, m_runNumber, instrumentName, m_streamOffset);
+  auto messageRunInfo =
+      ISISDAE::CreateRunInfo(builder, m_startTime, m_runNumber, instrumentName,
+                             m_streamOffset, m_numberOfPeriods);
 
   builder.Finish(messageRunInfo);
 
