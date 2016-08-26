@@ -3,7 +3,9 @@
 # ISIS NeXus Streamer for Mantid
 Stream event data from a NeXus file from RAL/ISIS using Apache Kafka for the purpose of development of live data streaming in Mantid.
 
-Run metadata messages are sent to both the event stream and the run info stream. The offset recorded in the message is guaranteed to correspond to just before the RunInfo message in the event stream. Messages should be discarded until a RunInfo message with the same run number is encountered. In practice, at slow data rates and with a single producer the offset will match exactly.
+Run metadata messages are sent to both the event stream and the run info stream. The offset recorded in the message is guaranteed to correspond to just before the RunInfo message in the event stream. Messages should be discarded until a RunInfo message with the same run number is encountered.
+
+A variable number of messages are sent per frame, such that the number of events in a message does not exceed a limit. The limit is 200 by default and can be specified using the optional argument `-m <max_events_per_message>`.
 
 The client runs until the user terminates it, repeatedly sending data from the same file but with incrementing run numbers.
 
@@ -15,7 +17,7 @@ main_nexusPublisher -f <filepath>    Full file path of nexus file to stream
 [-t <event_topic_name>]    Name of event data topic to publish to, default is 'test_event_topic'
 [-r <run_topic_name>]    Name of run data topic to publish to, default is 'test_run_topic'
 [-a <det_spec_topic_name>]    Name of detector-spectra map topic to publish to, default is 'test_det_spec_topic'
-[-m <events_per_message>]   Maximum number of events to send in a single message, default is '200'
+[-m <max_events_per_message>]   Maximum number of events to send in a single message, default is '200'
 [-s]    Slow mode, publishes data at approx realistic rate of 10 frames per second
 [-q]    Quiet mode, makes publisher less chatty on stdout
 [-u]    Random mode, serve messages within each frame in a random order, for testing purposes
