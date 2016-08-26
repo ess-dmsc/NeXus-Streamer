@@ -137,7 +137,14 @@ TEST_F(NexusPublisherTest,
   EXPECT_TRUE(receivedEventData.getEndOfRun());
 }
 
+MATCHER_P(CheckMessageID, messageID, "") {
+  auto buf = reinterpret_cast<const uint8_t *>(arg);
+  auto messageData = ISISDAE::GetEventMessage(buf);
+  return (messageID == messageData->id());
+}
+
 TEST_F(NexusPublisherTest, test_stream_data) {
+  using ::testing::Sequence;
   extern std::string testDataPath;
 
   const std::string broker = "broker_name";
@@ -152,8 +159,17 @@ TEST_F(NexusPublisherTest, test_stream_data) {
 
   EXPECT_CALL(*publisher.get(), setUp(broker, topic, runTopic, detSpecTopic))
       .Times(AtLeast(1));
-  EXPECT_CALL(*publisher.get(), sendEventMessage(_, _))
-      .Times(numberOfFrames + 1); // +1 for run data message
+  //EXPECT_CALL(*publisher.get(), sendEventMessage(_, _))
+  //    .Times(numberOfFrames + 1); // +1 for run data message
+
+  // test that messages have sequential id numbers
+  Sequence s1;
+  for (uint64_t messageID = 0; messageID <= numberOfFrames;
+       messageID++) {
+    EXPECT_CALL(*publisher.get(), sendEventMessage(CheckMessageID(messageID), _))
+        .InSequence(s1);
+  }
+
   EXPECT_CALL(*publisher.get(), sendRunMessage(_, _)).Times(1);
   EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_, _)).Times(1);
   EXPECT_CALL(*publisher.get(), getCurrentOffset()).Times(1);
@@ -196,7 +212,7 @@ TEST_F(NexusPublisherTest, test_create_run_message_data) {
   auto runData = streamer.createRunMessageData(runNumber);
 
   std::string rawbuf;
-  runData->getEventBufferPointer(rawbuf);
+  runData->getEventBufferPointer(rawbuf, 0);
 
   auto receivedData = EventData();
   // Should return false as this is not event data
