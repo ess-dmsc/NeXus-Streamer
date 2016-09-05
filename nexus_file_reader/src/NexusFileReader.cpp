@@ -4,6 +4,7 @@
 #include "../../event_data/include/SampleEnvironmentEventLong.h"
 #include "../../event_data/include/SampleEnvironmentEventString.h"
 #include <ctime>
+#include <cmath>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
