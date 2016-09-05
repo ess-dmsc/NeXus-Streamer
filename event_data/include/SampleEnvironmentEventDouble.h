@@ -10,7 +10,7 @@ public:
                                double value)
       : m_name(name), m_time(time), m_value(value) {}
 
-  flatbuffers::Offset<ISISDAE::SEEvent>
+  flatbuffers::Offset<ISISStream::SEEvent>
   getSEEvent(flatbuffers::FlatBufferBuilder &builder) override;
 
   std::string getName() override { return m_name; }

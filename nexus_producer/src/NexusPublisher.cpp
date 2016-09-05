@@ -1,6 +1,7 @@
 #include <chrono>
 #include <iostream>
 #include <thread>
+#include <cmath>
 
 #include "../../event_data/include/DetectorSpectrumMapData.h"
 #include "NexusPublisher.h"

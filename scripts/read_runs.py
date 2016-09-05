@@ -1,5 +1,5 @@
 import datetime
-import ISISDAE.RunInfo
+import ISISStream.RunInfo
 from confluent_kafka import Consumer, KafkaError
 """
 Print published run information from Kafka stream
@@ -8,7 +8,7 @@ Print published run information from Kafka stream
 
 def parseMessage(buf):
     buf = bytearray(buf)
-    runInfo = ISISDAE.RunInfo.RunInfo.GetRootAsRunInfo(buf, 0)
+    runInfo = ISISStream.RunInfo.RunInfo.GetRootAsRunInfo(buf, 0)
     start_time = datetime.datetime.fromtimestamp(runInfo.StartTime()).strftime('%Y-%m-%d %H:%M:%S')
     string_to_print = "Run number: " + str(runInfo.RunNumber()) + \
         ", Start time: " + start_time + \

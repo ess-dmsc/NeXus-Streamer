@@ -140,7 +140,7 @@ TEST_F(NexusPublisherTest,
 
 MATCHER_P(CheckMessageID, messageID, "") {
   auto buf = reinterpret_cast<const uint8_t *>(arg);
-  auto messageData = ISISDAE::GetEventMessage(buf);
+  auto messageData = ISISStream::GetEventMessage(buf);
   return (messageID == messageData->id());
 }
 
