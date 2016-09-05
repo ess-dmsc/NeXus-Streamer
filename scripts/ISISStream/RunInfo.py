@@ -1,6 +1,6 @@
 # automatically generated, do not modify
 
-# namespace: ISISDAE
+# namespace: ISISStream
 
 import flatbuffers
 
@@ -47,9 +47,17 @@ class RunInfo(object):
             return self._tab.Get(flatbuffers.number_types.Int64Flags, o + self._tab.Pos)
         return 0
 
-def RunInfoStart(builder): builder.StartObject(4)
+    # RunInfo
+    def NPeriods(self):
+        o = flatbuffers.number_types.UOffsetTFlags.py_type(self._tab.Offset(12))
+        if o != 0:
+            return self._tab.Get(flatbuffers.number_types.Int32Flags, o + self._tab.Pos)
+        return 0
+
+def RunInfoStart(builder): builder.StartObject(5)
 def RunInfoAddStartTime(builder, startTime): builder.PrependUint64Slot(0, startTime, 0)
 def RunInfoAddRunNumber(builder, runNumber): builder.PrependInt32Slot(1, runNumber, 0)
 def RunInfoAddInstName(builder, instName): builder.PrependUOffsetTRelativeSlot(2, flatbuffers.number_types.UOffsetTFlags.py_type(instName), 0)
 def RunInfoAddStreamOffset(builder, streamOffset): builder.PrependInt64Slot(3, streamOffset, 0)
+def RunInfoAddNPeriods(builder, nPeriods): builder.PrependInt32Slot(4, nPeriods, 0)
 def RunInfoEnd(builder): return builder.EndObject()

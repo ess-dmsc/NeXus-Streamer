@@ -69,7 +69,7 @@ private:
   std::vector<std::shared_ptr<SampleEnvironmentEvent>>
       m_sampleEnvironmentEvents = {};
   void decodeSampleEnvironmentEvents(
-      const flatbuffers::Vector<flatbuffers::Offset<ISISDAE::SEEvent>>
+      const flatbuffers::Vector<flatbuffers::Offset<ISISStream::SEEvent>>
           *sEEventVector);
 };
 

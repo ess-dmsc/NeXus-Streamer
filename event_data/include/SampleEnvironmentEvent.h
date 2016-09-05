@@ -12,7 +12,7 @@
 class SampleEnvironmentEvent {
 public:
   virtual ~SampleEnvironmentEvent() {}
-  virtual flatbuffers::Offset<ISISDAE::SEEvent>
+  virtual flatbuffers::Offset<ISISStream::SEEvent>
   getSEEvent(flatbuffers::FlatBufferBuilder &builder) = 0;
 
   virtual std::string getName() = 0;

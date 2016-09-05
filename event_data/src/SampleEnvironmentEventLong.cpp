@@ -1,9 +1,9 @@
 #include "SampleEnvironmentEventLong.h"
 
-flatbuffers::Offset<ISISDAE::SEEvent>
+flatbuffers::Offset<ISISStream::SEEvent>
 SampleEnvironmentEventLong::getSEEvent(flatbuffers::FlatBufferBuilder &builder) {
   auto nameOffset = builder.CreateString(m_name);
-  auto valueOffset = ISISDAE::CreateLongValue(builder, m_value);
-  return ISISDAE::CreateSEEvent(builder, nameOffset, m_time,
-                                ISISDAE::SEValue_LongValue, valueOffset.Union());
+  auto valueOffset = ISISStream::CreateLongValue(builder, m_value);
+  return ISISStream::CreateSEEvent(builder, nameOffset, m_time,
+                                   ISISStream::SEValue_LongValue, valueOffset.Union());
 }
