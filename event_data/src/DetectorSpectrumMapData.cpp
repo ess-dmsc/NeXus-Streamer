@@ -13,8 +13,8 @@ void DetectorSpectrumMapData::readFile(const std::string &filename) {
   std::getline(infile, line); // line with the number of entries
   std::istringstream iss(line);
   iss >> m_numberOfEntries;
-  m_detectors.resize(m_numberOfEntries);
-  m_spectra.resize(m_numberOfEntries);
+  m_detectors.resize(static_cast<size_t>(m_numberOfEntries));
+  m_spectra.resize(static_cast<size_t>(m_numberOfEntries));
   std::getline(infile, line); // discard third line
   size_t entryNumber = 0;
   while (std::getline(infile, line)) {
@@ -32,9 +32,9 @@ void DetectorSpectrumMapData::decodeMessage(const uint8_t *buf) {
 
   auto detFBVector = messageData->det();
   auto specFBVector = messageData->spec();
-  setNumberOfEntries(detFBVector->size());
-  m_detectors.resize(m_numberOfEntries);
-  m_spectra.resize(m_numberOfEntries);
+  setNumberOfEntries(messageData->n_spectra());
+  m_detectors.resize(static_cast<size_t>(m_numberOfEntries));
+  m_spectra.resize(static_cast<size_t>(m_numberOfEntries));
   std::copy(detFBVector->begin(), detFBVector->end(), m_detectors.begin());
   std::copy(specFBVector->begin(), specFBVector->end(), m_spectra.begin());
 }
@@ -45,7 +45,7 @@ DetectorSpectrumMapData::getBufferPointer(std::string &buffer) {
 
   auto messageFlatbuf = ISISStream::CreateSpectraDetectorMapping(
       builder, builder.CreateVector(m_spectra),
-      builder.CreateVector(m_detectors));
+      builder.CreateVector(m_detectors), m_numberOfEntries);
   builder.Finish(messageFlatbuf);
 
   auto bufferpointer =
