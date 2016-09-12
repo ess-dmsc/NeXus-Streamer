@@ -7,6 +7,7 @@ namespace ISISStream;
 table SpectraDetectorMapping {
     spec : [int];
     det : [int];
+    n_spectra : int;
 }
 
 root_type SpectraDetectorMapping;
