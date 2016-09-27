@@ -75,7 +75,7 @@ TEST(NexusFileReaderTest, get_event_tofs_too_high_frame_number) {
 TEST(NexusFileReaderTest, get_period_number) {
   extern std::string testDataPath;
   auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs");
-  EXPECT_EQ(1, fileReader.getPeriodNumber());
+  EXPECT_EQ(0, fileReader.getPeriodNumber());
 }
 
 TEST(NexusFileReaderTest, get_proton_charge) {

@@ -156,7 +156,8 @@ int32_t NexusFileReader::getPeriodNumber() {
   int32_t periodNumber;
   dataset.read(&periodNumber, PredType::NATIVE_INT32);
 
-  return periodNumber;
+// -1 as period number starts at 1 in NeXus files but 0 everywhere else
+  return periodNumber - 1;
 }
 
 /**
