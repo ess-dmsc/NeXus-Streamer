@@ -47,7 +47,7 @@ TEST_F(NexusPublisherTest, test_create_message_data) {
   EXPECT_EQ(770, receivedEventData.getNumberOfEvents());
   EXPECT_EQ(1, receivedEventData.getFrameNumber());
   EXPECT_FLOAT_EQ(0.001105368, receivedEventData.getProtonCharge());
-  EXPECT_EQ(1, receivedEventData.getPeriod());
+  EXPECT_EQ(0, receivedEventData.getPeriod());
   EXPECT_FLOAT_EQ(3.0399999618530273, receivedEventData.getFrameTime());
   auto sEEventsVector = receivedEventData.getSEEvents();
   // Expect no sample environment events in this message
@@ -69,7 +69,7 @@ TEST_F(NexusPublisherTest, test_create_message_data_with_SE_events) {
   EXPECT_EQ(794, receivedEventData.getNumberOfEvents());
   EXPECT_EQ(frameNumber, receivedEventData.getFrameNumber());
   EXPECT_FLOAT_EQ(0.001105368, receivedEventData.getProtonCharge());
-  EXPECT_EQ(1, receivedEventData.getPeriod());
+  EXPECT_EQ(0, receivedEventData.getPeriod());
   EXPECT_FLOAT_EQ(3.9389999, receivedEventData.getFrameTime());
   auto sEEventsVector = receivedEventData.getSEEvents();
   // Expect some sample environment events in this message
