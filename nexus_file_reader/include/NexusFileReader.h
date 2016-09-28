@@ -35,6 +35,7 @@ public:
   std::vector<valueType> get1DDataset(H5::DataType dataType,
                                       const std::string &datasetName);
   std::vector<std::string> get1DStringDataset(const std::string &datasetName);
+  int32_t getNumberOfPeriods();
 
 private:
   size_t findFrameNumberOfTime(float time);

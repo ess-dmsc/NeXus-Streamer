@@ -153,3 +153,9 @@ TEST(NexusFileReaderTest, get_sEEvent_map) {
   EXPECT_EQ(4, eventVector.size());
   EXPECT_EQ("Guide_Pressure", eventVector[0]->getName());
 }
+
+TEST(NexusFileReaderTest, get_number_of_periods) {
+  extern std::string testDataPath;
+  auto fileReader = NexusFileReader(testDataPath + "SANS_test_reduced.hdf5");
+  EXPECT_EQ(1, fileReader.getNumberOfPeriods());
+}
