@@ -119,7 +119,7 @@ void NexusPublisher::addSEEventsToMessage(
  */
 std::shared_ptr<RunData> NexusPublisher::createRunMessageData(int runNumber) {
   auto runData = std::make_shared<RunData>();
-  runData->setNumberOfPeriods(m_fileReader->getPeriodNumber());
+  runData->setNumberOfPeriods(m_fileReader->getNumberOfPeriods());
   runData->setInstrumentName(m_fileReader->getInstrumentName());
   runData->setRunNumber(runNumber);
   auto now = std::chrono::system_clock::now();

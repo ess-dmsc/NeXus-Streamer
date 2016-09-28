@@ -95,7 +95,7 @@ DataType NexusFileReader::getDatasetType(const std::string &datasetName) {
   return dataset.getDataType();
 }
 
-template <typename valueType>
+template<typename valueType>
 std::vector<valueType>
 NexusFileReader::get1DDataset(DataType dataType,
                               const std::string &datasetName) {
@@ -158,6 +158,16 @@ int32_t NexusFileReader::getPeriodNumber() {
 
 // -1 as period number starts at 1 in NeXus files but 0 everywhere else
   return periodNumber - 1;
+}
+
+/**
+ * Get the number of DAE periods
+ *
+ * @return - the number of periods
+ */
+int32_t NexusFileReader::getNumberOfPeriods() {
+  auto periodNumbers = get1DDataset<int32_t>(PredType::NATIVE_INT32, "/raw_data_1/periods/number");
+  return static_cast<int32_t>(periodNumbers.size());
 }
 
 /**
@@ -244,7 +254,7 @@ double NexusFileReader::getFrameTime(hsize_t frameNumber) {
   return frameTime;
 }
 
-template <typename T>
+template<typename T>
 T NexusFileReader::getSingleValueFromDataset(const std::string &datasetName,
                                              H5::PredType datatype,
                                              hsize_t offset) {
