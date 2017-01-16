@@ -1,14 +1,12 @@
 project(isis_nexus_streamer)
 
-set( SRC_FILES
-        src/NexusPublisher.cpp)
+set( SRC_FILES  src/NexusPublisher.cpp
+                src/wingetopt.c)
 
-set( INC_FILES
-        include/EventPublisher.h
-        include/NexusPublisher.h)
+set( INC_FILES  include/EventPublisher.h
+                include/NexusPublisher.h)
 
-set( TEST_FILES
-        test/NexusPublisherTest.cpp)
+set( TEST_FILES test/NexusPublisherTest.cpp)
 
 #####################
 ## Libraries       ##
@@ -20,6 +18,7 @@ include_directories(
         ${PROJECT_SOURCE_DIR}/include)
 
 add_library(nexusPublisher_lib ${PROJECT_SOURCE_DIR}/src/NexusPublisher.cpp)
+
 add_library(eventPublisher_lib
         ${PROJECT_SOURCE_DIR}/src/KafkaEventPublisher.cpp)
 
@@ -39,7 +38,7 @@ set(core_libraries
 ## Main executable ##
 #####################
 
-add_executable(main_nexusPublisher ${PROJECT_SOURCE_DIR}/src/main.cpp)
+add_executable(main_nexusPublisher ${PROJECT_SOURCE_DIR}/src/main.cpp ${PROJECT_SOURCE_DIR}/src/wingetopt.c ${PROJECT_SOURCE_DIR}/include/win32/wingetopt.h)
 target_link_libraries(main_nexusPublisher
         ${core_libraries})
 
