@@ -1,7 +1,5 @@
-if (WIN32)
-
 find_path(HDF5_ROOT_DIR
-        NAMES third-party/include/hdf5.h
+        NAMES include/hdf5.h
         PATHS /usr/local
         )   
 find_path(HDF5_DIR
@@ -68,5 +66,3 @@ mark_as_advanced(
         HDF5_CXX_LIBRARIES
         HDF5_INCLUDE_DIRS
 )
-
-endif ()
