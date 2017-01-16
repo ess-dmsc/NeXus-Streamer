@@ -73,6 +73,9 @@ if(MSVC)
 
   # TreatWChar_tAsBuiltInType: true == /Zc:wchar_t  false == /Zc:wchar_t-
   set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:wchar_t-" )
+
+  set(CMAKE_MODULE_PATH
+         ${CMAKE_MODULE_PATH} ${THIRD_PARTY_DIR}/cmake)
 endif()
 
 set(CMAKE_MODULE_PATH
