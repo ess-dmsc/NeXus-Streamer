@@ -1,7 +1,6 @@
 project(isis_nexus_streamer)
 
-set( SRC_FILES  src/NexusPublisher.cpp
-                src/wingetopt.c)
+set( SRC_FILES  src/NexusPublisher.cpp)
 
 set( INC_FILES  include/EventPublisher.h
                 include/NexusPublisher.h)
@@ -38,7 +37,12 @@ set(core_libraries
 ## Main executable ##
 #####################
 
-add_executable(main_nexusPublisher ${PROJECT_SOURCE_DIR}/src/main.cpp ${PROJECT_SOURCE_DIR}/src/wingetopt.c ${PROJECT_SOURCE_DIR}/include/win32/wingetopt.h)
+if(MSVC)
+    add_executable(main_nexusPublisher ${PROJECT_SOURCE_DIR}/src/main.cpp ${PROJECT_SOURCE_DIR}/src/wingetopt.c ${PROJECT_SOURCE_DIR}/include/win32/wingetopt.h)
+else ()
+    add_executable(main_nexusPublisher ${PROJECT_SOURCE_DIR}/src/main.cpp)
+endif ()
+
 target_link_libraries(main_nexusPublisher
         ${core_libraries})
 
