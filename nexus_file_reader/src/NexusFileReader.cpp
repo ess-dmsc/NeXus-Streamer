@@ -201,9 +201,9 @@ int64_t NexusFileReader::getRunStartTime() {
 int64_t
 NexusFileReader::convertStringToUnixTime(const std::string &timeString) {
   std::tm tmb = {};
-#if defined(__GNUC__) && __GNUC__ >= 5
+#if (defined(__GNUC__) && __GNUC__ >= 5) || defined(_MSC_VER)
   std::istringstream ss(timeString);
-  ss.imbue(std::locale("en_GB.utf-8"));
+  ss.imbue(std::locale());
   ss >> std::get_time(&tmb, "%Y-%m-%dT%H:%M:%S");
 #else
   // gcc < 5 does not have std::get_time implemented
