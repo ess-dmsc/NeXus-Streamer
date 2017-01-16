@@ -1,3 +1,5 @@
+if (WIN32)
+
 find_path(HDF5_ROOT_DIR
         NAMES third-party/include/hdf5.h
         PATHS /usr/local
@@ -38,7 +40,7 @@ else ()
 
 set (HDF5_CXX_LIBRARIES ${HDF5_CXX})
 
-endif()
+endif ()
 
 if( HDF5_DEBUG )
 
@@ -66,3 +68,5 @@ mark_as_advanced(
         HDF5_CXX_LIBRARIES
         HDF5_INCLUDE_DIRS
 )
+
+endif ()
