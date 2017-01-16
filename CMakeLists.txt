@@ -3,6 +3,81 @@ project(isis_nexus_streamer_for_mantid)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pedantic-errors")
 
+if(MSVC)
+   # Git LFS does not work properly with <= 1.9
+  #find_package ( Git 1.9.5 REQUIRED )
+  #find_package ( GitLFS REQUIRED)
+
+  # Use ExternalProject functionality as it already knows how to do clone/update
+  include ( ExternalProject )
+  set( EXTERNAL_ROOT ${PROJECT_SOURCE_DIR}/external )
+  set( THIRD_PARTY_GIT_URL "https://github.com/ScreamingUdder/thirdparty-msvc.git" )
+  set ( THIRD_PARTY_GIT_SHA1 master)
+  set ( THIRD_PARTY_DIR ${EXTERNAL_ROOT}/src/ThirdParty)
+  # Generates a script to do the clone/update in tmp
+  set ( _project_name ThirdParty )
+  ExternalProject_Add( ${_project_name}
+    PREFIX ${EXTERNAL_ROOT}
+    GIT_REPOSITORY ${THIRD_PARTY_GIT_URL}
+    GIT_TAG ${THIRD_PARTY_GIT_SHA1}
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    INSTALL_COMMAND ""
+    TEST_COMMAND ""
+  )
+  set_target_properties ( ${_project_name} PROPERTIES
+                           EXCLUDE_FROM_DEFAULT_BUILD 1
+                           EXCLUDE_FROM_ALL 1)
+
+  # Do fetch/update now as we need the dependencies to configure
+  set ( _tmp_dir ${EXTERNAL_ROOT}/tmp )
+  if ( NOT EXISTS ${THIRD_PARTY_DIR}/.git )
+    message ( STATUS "Fetching third party dependencies" )
+    # As of git lfs 1.02 the default 'git checkout' behaviour is very slow for a large amount of data. Running the
+    # 'git lfs fetch' command however produces better suitable performance as it downloads everything in parallel.
+    # We there for first clone the bare repository containing the data pointers and update them manually
+    # see https://github.com/github/git-lfs/issues/376 for more information
+    set ( ENV{GIT_LFS_SKIP_SMUDGE} 1 )
+    execute_process ( COMMAND ${CMAKE_COMMAND} ARGS -P ${_tmp_dir}/${_project_name}-gitclone.cmake
+                      RESULT_VARIABLE error_code )
+    if ( error_code )
+      message(FATAL_ERROR "Failed to clone repository: '${THIRD_PARTY_GIT_URL}'")
+    endif ()
+    unset ( ENV{GIT_LFS_SKIP_SMUDGE} )
+    # Fetch the binary data
+    execute_process ( COMMAND ${GIT_EXECUTABLE} lfs fetch
+                      WORKING_DIRECTORY ${THIRD_PARTY_DIR}
+                      RESULT_VARIABLE error_code )
+    if ( error_code )
+      message(FATAL_ERROR "Failed to download third party binary data. Check your network connection")
+    endif ()
+    # Checkout the data from the index to the working directory
+    execute_process ( COMMAND ${GIT_EXECUTABLE} lfs checkout
+                      WORKING_DIRECTORY ${THIRD_PARTY_DIR}
+                      RESULT_VARIABLE error_code )
+  else ()
+    message ( STATUS "Updating third party dependencies" )
+    # Assume the updates are small & don't run git lfs fetch
+    execute_process ( COMMAND ${CMAKE_COMMAND} ARGS -P ${_tmp_dir}/${_project_name}-gitupdate.cmake
+                      RESULT_VARIABLE error_code )
+    if ( error_code )
+      message(FATAL_ERROR "Failed to update repository: '${THIRD_PARTY_GIT_URL}'")
+    endif ()
+  endif ()
+  unset ( _tmp_dir )
+
+  set ( THIRD_PARTY_BIN "${THIRD_PARTY_DIR}/bin;" )
+  message ( STATUS "Third party dependencies are in ${THIRD_PARTY_DIR}" )
+  # Add to the path so that cmake can configure correctly without the user having to do it
+  set ( ENV{PATH} "${THIRD_PARTY_BIN};$ENV{PATH}" )
+
+  # TreatWChar_tAsBuiltInType: true == /Zc:wchar_t  false == /Zc:wchar_t-
+  set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:wchar_t-" )
+
+  set(CMAKE_MODULE_PATH
+         ${CMAKE_MODULE_PATH} ${THIRD_PARTY_DIR}/cmake)
+endif()
+
 set(CMAKE_MODULE_PATH
         ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 

@@ -1,5 +1,5 @@
 #ifdef _MSC_VER
-#include "../win32/wingetopt.h"
+#include "win32/wingetopt.h"
 #elif _AIX
 #include <unistd.h>
 #else

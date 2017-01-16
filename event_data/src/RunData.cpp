@@ -4,12 +4,13 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+#include <array>
 
 void RunData::setStartTime(const std::string &inputTime) {
   std::tm tmb = {};
-#if defined(__GNUC__) && __GNUC__ >= 5
+#if (defined(__GNUC__) && __GNUC__ >= 5) || defined(_MSC_VER)
   std::istringstream ss(inputTime);
-  ss.imbue(std::locale("en_GB.utf-8"));
+  ss.imbue(std::locale());
   ss >> std::get_time(&tmb, "%Y-%m-%dT%H:%M:%S");
 #else
   // gcc < 5 does not have std::get_time implemented
@@ -78,7 +79,7 @@ flatbuffers::unique_ptr_t RunData::getRunBufferPointer(std::string &buffer) {
 
 std::string RunData::runInfo() {
   std::stringstream ssRunInfo;
-  ssRunInfo.imbue(std::locale("en_GB.utf-8"));
+  ssRunInfo.imbue(std::locale());
   ssRunInfo << "Run number: " << m_runNumber << ", "
             << "Instrument name: " << m_instrumentName << ", "
             << "Start time: ";
