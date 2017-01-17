@@ -34,11 +34,11 @@ before_build:
   - cmd: if "%platform%"=="x64"   set CMAKE_GENERATOR_NAME=Visual Studio 14 2015 Win64
   - cmd: cmake -G "%CMAKE_GENERATOR_NAME%" -DCMAKE_BUILD_TYPE=%configuration% -DDART_MSVC_DEFAULT_OPTIONS="%MSVC_DEFAULT_OPTIONS%" ..\isis_nexus_streamer
 
-build: off
-#build:
-#  project: C:\projects\dart\build\dart.sln # path to Visual Studio solution or project
-#  parallel: true                           # enable MSBuild parallel builds
-#  verbosity: quiet                         # MSBuild verbosity level (quiet|minimal|normal|detailed)
+#build: off
+build:
+  project: C:\projects\isis_nexus_streamer-build\isis_nexus_streamer.sln # path to Visual Studio solution or project
+  parallel: true                           # enable MSBuild parallel builds
+  verbosity: quiet                         # MSBuild verbosity level (quiet|minimal|normal|detailed)
 
 test: off
 #test_script:
