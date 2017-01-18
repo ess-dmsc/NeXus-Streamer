@@ -43,7 +43,7 @@ before_build:
 build:
   project: C:\projects\isis_nexus_streamer-build\isis_nexus_streamer.sln # path to Visual Studio solution or project
   parallel: true                           # enable MSBuild parallel builds
-  verbosity: quiet                         # MSBuild verbosity level (quiet|minimal|normal|detailed)
+  verbosity: detailed                         # MSBuild verbosity level (quiet|minimal|normal|detailed)
 
 test: off
 #test_script:
