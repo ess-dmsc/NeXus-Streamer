@@ -46,6 +46,6 @@ build:
 
 test_script:
   - cmd: cd C:\projects\isis_nexus_streamer-build\Release
-  - cmd: ctest -VV
-#  - cmd: unitTests.exe C:\projects\isis_nexus_streamer\data
+  - cmd: set PATH=%PATH%;C:\projects\isis_nexus_streamer\external\src\ThirdParty\bin
+  - cmd: unitTests.exe C:\projects\isis_nexus_streamer\data\
 
