@@ -45,6 +45,6 @@ build:
   verbosity: quiet                         # MSBuild verbosity level (quiet|minimal|normal|detailed)
 
 test_script:
-  - cmd: cd C:\projects\isis_nexus_streamer-build
+  - cmd: cd C:\projects\isis_nexus_streamer-build\Release
   - cmd: unitTests.exe C:\projects\isis_nexus_streamer\data
 
