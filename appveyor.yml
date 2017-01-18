@@ -46,5 +46,5 @@ build:
 
 test_script:
   - cmd: cd C:\projects\isis_nexus_streamer-build
-  - cmd: unitTests C:\projects\isis_nexus_streamer\data
+  - cmd: unitTests.exe C:\projects\isis_nexus_streamer\data
 
