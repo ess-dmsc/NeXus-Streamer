@@ -42,7 +42,7 @@ before_build:
 build:
   project: C:\projects\isis_nexus_streamer-build\isis_nexus_streamer_for_mantid.sln # path to Visual Studio solution or project
   parallel: true                           # enable MSBuild parallel builds
-  verbosity: detailed                         # MSBuild verbosity level (quiet|minimal|normal|detailed)
+  verbosity: quiet                         # MSBuild verbosity level (quiet|minimal|normal|detailed)
 
 test: off
 #test_script:
