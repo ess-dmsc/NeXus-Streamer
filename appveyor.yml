@@ -44,9 +44,7 @@ build:
   parallel: true                           # enable MSBuild parallel builds
   verbosity: quiet                         # MSBuild verbosity level (quiet|minimal|normal|detailed)
 
-after_build:
-  - cmd: msbuild C:\projects\isis_nexus_streamer-build\isis_nexus_streamer_for_mantid.sln /t:isis_nexus_streamer_for_mantid:unitTests
-
 test_script:
-  - cmd: ctest -VV
+  - cmd: cd C:\projects\isis_nexus_streamer-build
+  - cmd: unitTests C:\projects\isis_nexus_streamer\data
 
