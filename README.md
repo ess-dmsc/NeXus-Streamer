@@ -21,6 +21,7 @@ main_nexusPublisher -f <filepath>    Full file path of nexus file to stream
 [-s]    Slow mode, publishes data at approx realistic rate of 10 frames per second
 [-q]    Quiet mode, makes publisher less chatty on stdout
 [-u]    Random mode, serve messages within each frame in a random order, for testing purposes
+[-z]    Produce only a single run (otherwise repeats until interrupted)
 ```
 
 ## Dependencies
