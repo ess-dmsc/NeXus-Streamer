@@ -35,7 +35,7 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
 
   auto groupNames = getNamesInGroup("/raw_data_1/selog");
   for (auto const name : groupNames) {
-    if (name != "SECI_OUT_OF_RANGE_BLOCK") {
+    if ((name != "SECI_OUT_OF_RANGE_BLOCK") && (name != "gas_control")) {
       std::vector<float> floatValues;
       std::vector<int32_t> intValues;
       std::vector<int64_t> longValues;
