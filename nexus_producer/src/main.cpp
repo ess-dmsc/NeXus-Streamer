@@ -23,9 +23,10 @@ int main(int argc, char **argv) {
   bool slow = false;
   bool quietMode = false;
   bool randomMode = false;
+  bool singleRun = false;
   int maxEventsPerFramePart = 200;
 
-  while ((opt = getopt(argc, argv, "f:d:b:t:c:m:r:a:squ")) != -1) {
+  while ((opt = getopt(argc, argv, "f:d:b:t:c:m:r:a:squz")) != -1) {
     switch (opt) {
 
     case 'f':
@@ -72,6 +73,10 @@ int main(int argc, char **argv) {
       randomMode = true;
       break;
 
+    case 'z':
+      singleRun = true;
+      break;
+
     default:
       goto usage;
     }
@@ -100,6 +105,7 @@ int main(int argc, char **argv) {
             "[-q]    Quiet mode, makes publisher less chatty on stdout\n"
             "[-u]    Random mode, serve messages within each frame in a random "
             "order\n"
+            "[-z]    Produce only a single run (otherwise repeats until interrupted)"
             "\n",
             argv[0]);
     exit(1);
@@ -111,9 +117,13 @@ int main(int argc, char **argv) {
                           filename, detSpecFilename, quietMode, randomMode);
 
   // Publish the same data repeatedly, with incrementing run numbers
-  while (true) {
+  if (singleRun) {
     streamer.streamData(maxEventsPerFramePart, runNumber, slow);
-    runNumber++;
+  } else {
+    while (true) {
+      streamer.streamData(maxEventsPerFramePart, runNumber, slow);
+      runNumber++;
+    }
   }
 
   return 0;
