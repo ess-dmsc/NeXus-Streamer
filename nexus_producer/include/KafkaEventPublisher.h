@@ -13,6 +13,9 @@ public:
       : m_compression(compression){};
   ~KafkaEventPublisher() { RdKafka::wait_destroyed(5000); };
 
+  std::shared_ptr<RdKafka::Topic>
+  createTopicHandle(const std::string &topic_str,
+                    std::shared_ptr<RdKafka::Conf> tconf);
   void setUp(const std::string &broker_str, const std::string &topic_str,
              const std::string &runTopic_str,
              const std::string &detSpecTopic) override;

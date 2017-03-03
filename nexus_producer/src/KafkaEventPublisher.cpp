@@ -17,8 +17,10 @@ void KafkaEventPublisher::setUp(const std::string &broker_str,
 
   std::string error_str;
 
-  auto conf = std::unique_ptr<RdKafka::Conf>(RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL));
-  auto tconf = std::unique_ptr<RdKafka::Conf>(RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC));
+  auto conf = std::unique_ptr<RdKafka::Conf>(
+      RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL));
+  auto tconf = std::shared_ptr<RdKafka::Conf>(
+      RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC));
 
   conf->set("metadata.broker.list", broker_str, error_str);
   conf->set("message.send.max.retries", "3", error_str);
@@ -43,33 +45,33 @@ void KafkaEventPublisher::setUp(const std::string &broker_str,
     exit(1);
   }
 
-  // Create topic handle
-  m_topic_ptr = std::shared_ptr<RdKafka::Topic>(RdKafka::Topic::create(
-      m_producer_ptr.get(), topic_str, tconf.get(), error_str));
-  if (!m_topic_ptr.get()) {
-    std::cerr << "Failed to create topic: " << error_str << std::endl;
-    exit(1);
-  }
-
-  // Create run topic handle
-  m_runTopic_ptr = std::shared_ptr<RdKafka::Topic>(RdKafka::Topic::create(
-      m_producer_ptr.get(), runTopic_str, tconf.get(), error_str));
-  if (!m_runTopic_ptr.get()) {
-    std::cerr << "Failed to create topic: " << error_str << std::endl;
-    exit(1);
-  }
-
-  // Create detSpec topic handle
-  m_detSpecTopic_ptr = std::shared_ptr<RdKafka::Topic>(RdKafka::Topic::create(
-      m_producer_ptr.get(), detSpecTopic_str, tconf.get(), error_str));
-  if (!m_detSpecTopic_ptr.get()) {
-    std::cerr << "Failed to create topic: " << error_str << std::endl;
-    exit(1);
-  }
+  // Create topics
+  m_topic_ptr = createTopicHandle(topic_str, tconf);
+  m_runTopic_ptr = createTopicHandle(runTopic_str, tconf);
+  m_detSpecTopic_ptr = createTopicHandle(detSpecTopic_str, tconf);
 
   // This ensures everything is ready when we need to query offset information
   // later
   m_producer_ptr->poll(1000);
+}
+
+/**
+ * Create a topic handle
+ *
+ * @param topic_str : name of the topic
+ * @param topicConfig : configuration of the topic
+ * @return topic handle
+ */
+std::shared_ptr<RdKafka::Topic> KafkaEventPublisher::createTopicHandle(
+    const std::string &topic_str, std::shared_ptr<RdKafka::Conf> topicConfig) {
+  std::string error_str;
+  auto topic_ptr = std::shared_ptr<RdKafka::Topic>(RdKafka::Topic::create(
+      m_producer_ptr.get(), topic_str, topicConfig.get(), error_str));
+  if (!topic_ptr.get()) {
+    std::cerr << "Failed to create topic: " << error_str << std::endl;
+    exit(1);
+  }
+  return topic_ptr;
 }
 
 /**
