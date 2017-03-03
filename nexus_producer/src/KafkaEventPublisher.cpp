@@ -8,10 +8,8 @@
  * @param broker_str - the IP or hostname of the broker
  * @param topic_str - the name of the datastream (topic) to publish the data to
  */
-void KafkaEventPublisher::setUp(const std::string &broker_str,
-                                const std::string &topic_str,
-                                const std::string &runTopic_str,
-                                const std::string &detSpecTopic_str) {
+void KafkaEventPublisher::setUp(const std::string &broker,
+                                const std::string &instrumentName) {
 
   std::cout << "Setting up Kafka producer" << std::endl;
 
@@ -22,7 +20,7 @@ void KafkaEventPublisher::setUp(const std::string &broker_str,
   auto tconf = std::shared_ptr<RdKafka::Conf>(
       RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC));
 
-  conf->set("metadata.broker.list", broker_str, error_str);
+  conf->set("metadata.broker.list", broker, error_str);
   conf->set("message.send.max.retries", "3", error_str);
   conf->set("message.max.bytes", "10000000", error_str);
   conf->set("fetch.message.max.bytes", "10000000", error_str);
@@ -46,9 +44,10 @@ void KafkaEventPublisher::setUp(const std::string &broker_str,
   }
 
   // Create topics
-  m_topic_ptr = createTopicHandle(topic_str, tconf);
-  m_runTopic_ptr = createTopicHandle(runTopic_str, tconf);
-  m_detSpecTopic_ptr = createTopicHandle(detSpecTopic_str, tconf);
+  m_topic_ptr = createTopicHandle(instrumentName, "_events", tconf);
+  m_runTopic_ptr = createTopicHandle(instrumentName, "_runInfo", tconf);
+  m_detSpecTopic_ptr = createTopicHandle(instrumentName, "_detSpecMap", tconf);
+  m_sampleEnvTopic_ptr = createTopicHandle(instrumentName, "_sampleEnv", tconf);
 
   // This ensures everything is ready when we need to query offset information
   // later
@@ -63,7 +62,9 @@ void KafkaEventPublisher::setUp(const std::string &broker_str,
  * @return topic handle
  */
 std::shared_ptr<RdKafka::Topic> KafkaEventPublisher::createTopicHandle(
-    const std::string &topic_str, std::shared_ptr<RdKafka::Conf> topicConfig) {
+    const std::string &topicPrefix, const std::string &topicSuffix,
+    std::shared_ptr<RdKafka::Conf> topicConfig) {
+  std::string topic_str = topicPrefix + topicSuffix;
   std::string error_str;
   auto topic_ptr = std::shared_ptr<RdKafka::Topic>(RdKafka::Topic::create(
       m_producer_ptr.get(), topic_str, topicConfig.get(), error_str));

@@ -13,8 +13,7 @@ class NexusPublisher {
 public:
   NexusPublisher(std::shared_ptr<EventPublisher> publisher,
                  const std::string &brokerAddress,
-                 const std::string &streamName, const std::string &runTopicName,
-                 const std::string &detSpecTopicName,
+                 const std::string &instrumentName,
                  const std::string &filename,
                  const std::string &detSpecMapFilename, const bool quietMode,
                  const bool randomMode);
