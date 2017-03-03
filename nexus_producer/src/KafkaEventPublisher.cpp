@@ -93,6 +93,10 @@ void KafkaEventPublisher::sendDetSpecMessage(char *buf, size_t messageSize) {
   sendMessage(buf, messageSize, m_detSpecTopic_ptr);
 }
 
+void KafkaEventPublisher::sendSampleEnvMessage(char *buf, size_t messageSize) {
+  sendMessage(buf, messageSize, m_sampleEnvTopic_ptr);
+}
+
 void KafkaEventPublisher::sendMessage(char *buf, size_t messageSize,
                                       std::shared_ptr<RdKafka::Topic> topic) {
   RdKafka::ErrorCode resp;

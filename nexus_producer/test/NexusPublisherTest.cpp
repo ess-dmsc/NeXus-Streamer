@@ -14,15 +14,13 @@ public:
     extern std::string testDataPath;
 
     const std::string broker = "broker_name";
-    const std::string topic = "topic_name";
-    const std::string runTopic = "run_topic_name";
-    const std::string detSpecTopic = "det_spec_topic_name";
+    const std::string instrumentName = "unitTest";
 
     auto publisher = std::make_shared<MockEventPublisher>();
-    EXPECT_CALL(*publisher.get(), setUp(broker, topic, runTopic, detSpecTopic))
+    EXPECT_CALL(*publisher.get(), setUp(broker, instrumentName))
         .Times(AtLeast(1));
 
-    NexusPublisher streamer(publisher, broker, topic, runTopic, detSpecTopic,
+    NexusPublisher streamer(publisher, broker, instrumentName,
                             testDataPath + "SANS_test_reduced.hdf5",
                             testDataPath + "spectrum_gastubes_01.dat", quiet,
                             false);
@@ -149,16 +147,14 @@ TEST_F(NexusPublisherTest, test_stream_data) {
   extern std::string testDataPath;
 
   const std::string broker = "broker_name";
-  const std::string topic = "topic_name";
-  const std::string runTopic = "run_topic_name";
-  const std::string detSpecTopic = "det_spec_topic_name";
+  const std::string instrumentName = "unitTest";
 
   auto publisher = std::make_shared<MockEventPublisher>();
 
   const int numberOfFrames = 300;
   const int maxEventsPerFramePart = 1000000;
 
-  EXPECT_CALL(*publisher.get(), setUp(broker, topic, runTopic, detSpecTopic))
+  EXPECT_CALL(*publisher.get(), setUp(broker, instrumentName))
       .Times(AtLeast(1));
 
   // test that messages have sequential id numbers
@@ -173,7 +169,7 @@ TEST_F(NexusPublisherTest, test_stream_data) {
   EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_, _)).Times(1);
   EXPECT_CALL(*publisher.get(), getCurrentOffset()).Times(1);
 
-  NexusPublisher streamer(publisher, broker, topic, runTopic, detSpecTopic,
+  NexusPublisher streamer(publisher, broker, instrumentName,
                           testDataPath + "SANS_test_reduced.hdf5",
                           testDataPath + "spectrum_gastubes_01.dat", true,
                           false);
@@ -185,22 +181,20 @@ TEST_F(NexusPublisherTest, test_stream_data_multiple_messages_per_frame) {
   extern std::string testDataPath;
 
   const std::string broker = "broker_name";
-  const std::string topic = "topic_name";
-  const std::string runTopic = "run_topic_name";
-  const std::string detSpecTopic = "det_spec_topic_name";
+  const std::string instrumentName = "unitTest";
 
   auto publisher = std::make_shared<MockEventPublisher>();
 
   const int maxEventsPerFramePart = 200;
 
-  EXPECT_CALL(*publisher.get(), setUp(broker, topic, runTopic, detSpecTopic))
+  EXPECT_CALL(*publisher.get(), setUp(broker, instrumentName))
       .Times(AtLeast(1));
   EXPECT_CALL(*publisher.get(), sendEventMessage(_, _)).Times(1292);
   EXPECT_CALL(*publisher.get(), sendRunMessage(_, _)).Times(1);
   EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_, _)).Times(1);
   EXPECT_CALL(*publisher.get(), getCurrentOffset()).Times(1);
 
-  NexusPublisher streamer(publisher, broker, topic, runTopic, detSpecTopic,
+  NexusPublisher streamer(publisher, broker, instrumentName,
                           testDataPath + "SANS_test_reduced.hdf5",
                           testDataPath + "spectrum_gastubes_01.dat", true,
                           true);

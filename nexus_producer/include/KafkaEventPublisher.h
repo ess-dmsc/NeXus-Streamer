@@ -22,6 +22,7 @@ public:
   void sendEventMessage(char *buf, size_t messageSize) override;
   void sendRunMessage(char *buf, size_t messageSize) override;
   void sendDetSpecMessage(char *buf, size_t messageSize) override;
+  void sendSampleEnvMessage(char *buf, size_t messageSize) override;
   int64_t getCurrentOffset() override;
 
 private:
