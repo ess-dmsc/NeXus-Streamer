@@ -29,8 +29,6 @@ private:
   int64_t createAndSendMessage(std::string &rawbuf, size_t frameNumber,
                                const int messagesPerFrame);
   void reportProgress(const float progress);
-  void addSEEventsToMessage(hsize_t frameNumber,
-                            std::shared_ptr<EventData> eventData);
 
   std::shared_ptr<EventPublisher> m_publisher;
   std::shared_ptr<NexusFileReader> m_fileReader;

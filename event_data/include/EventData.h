@@ -4,7 +4,6 @@
 #include <cstdint>
 #include <vector>
 
-#include "SampleEnvironmentEvent.h"
 #include "event_schema_generated.h"
 
 uint64_t getMessageID(const std::string &rawbuf);
@@ -40,17 +39,10 @@ public:
   float getProtonCharge() { return m_protonCharge; }
   int32_t getPeriod() { return m_period; }
   float getFrameTime() { return m_frameTime; }
-  std::vector<std::shared_ptr<SampleEnvironmentEvent>> getSEEvents() {
-    return m_sampleEnvironmentEvents;
-  }
   size_t getBufferSize() { return m_bufferSize; }
 
   flatbuffers::unique_ptr_t getBufferPointer(std::string &buffer,
                                              uint64_t messageID);
-
-  void addSEEvent(std::shared_ptr<SampleEnvironmentEvent> sEEvent) {
-    m_sampleEnvironmentEvents.push_back(sEEvent);
-  }
 
 private:
   // Default values here should match default values in the schema
@@ -66,11 +58,6 @@ private:
   int32_t m_period = 0;
   bool m_endOfFrame = false;
   bool m_endOfRun = false;
-  std::vector<std::shared_ptr<SampleEnvironmentEvent>>
-      m_sampleEnvironmentEvents = {};
-  void decodeSampleEnvironmentEvents(
-      const flatbuffers::Vector<flatbuffers::Offset<ISISStream::SEEvent>>
-          *sEEventVector);
 };
 
 #endif // ISIS_NEXUS_STREAMER_EVENTDATA_H

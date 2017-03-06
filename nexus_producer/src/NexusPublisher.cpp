@@ -69,10 +69,6 @@ NexusPublisher::createMessageData(hsize_t frameNumber,
     eventData->setPeriod(period);
     eventData->setFrameTime(frameTime);
 
-    if (messageNumber == 0) {
-      addSEEventsToMessage(frameNumber, eventData);
-    }
-
     auto upToDetId = detIds.begin() + ((messageNumber + 1) * eventsPerMessage);
     auto upToTof = tofs.begin() + ((messageNumber + 1) * eventsPerMessage);
 
@@ -100,13 +96,6 @@ NexusPublisher::createMessageData(hsize_t frameNumber,
   }
 
   return eventDataVector;
-}
-
-void NexusPublisher::addSEEventsToMessage(
-    hsize_t frameNumber, std::shared_ptr<EventData> eventData) {
-  for (auto sEEvent : m_sEEventMap[frameNumber]) {
-    eventData->addSEEvent(sEEvent);
-  }
 }
 
 /**
