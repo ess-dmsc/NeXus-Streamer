@@ -16,3 +16,17 @@ SampleEnvironmentEvent::getTimestamp() {
   timeStamp_t timestamp(static_cast<uint64_t>(secondsPastRunStart), 0);
   return timestamp;
 }
+
+flatbuffers::unique_ptr_t
+SampleEnvironmentEvent::getBufferPointer(std::string &buffer) {
+  flatbuffers::FlatBufferBuilder builder;
+
+  auto sEEventMessage = getSEEvent(builder);
+  builder.Finish(sEEventMessage);
+
+  auto bufferpointer =
+    reinterpret_cast<const char *>(builder.GetBufferPointer());
+  buffer.assign(bufferpointer, bufferpointer + builder.GetSize());
+
+  return builder.ReleaseBufferPointer();
+}

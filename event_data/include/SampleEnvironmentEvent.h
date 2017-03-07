@@ -22,6 +22,7 @@ public:
   std::string getName() { return m_name; }
   float getTime() { return m_time; }
   BrightnESS::FlatBufs::f141_epics_nt::timeStamp_t getTimestamp();
+  flatbuffers::unique_ptr_t getBufferPointer(std::string &buffer);
 
 protected:
   std::string m_name;
