@@ -28,6 +28,7 @@ public:
 private:
   int64_t createAndSendMessage(std::string &rawbuf, size_t frameNumber,
                                const int messagesPerFrame);
+  void createAndSendSampleEnvMessages(std::string &sampleEnvBuf, size_t frameNumber);
   void reportProgress(const float progress);
 
   std::shared_ptr<EventPublisher> m_publisher;

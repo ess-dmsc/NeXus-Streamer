@@ -1,7 +1,7 @@
 #include <chrono>
+#include <cmath>
 #include <iostream>
 #include <thread>
-#include <cmath>
 
 #include "../../event_data/include/DetectorSpectrumMapData.h"
 #include "NexusPublisher.h"
@@ -133,6 +133,7 @@ NexusPublisher::createDetSpecMessageData() {
 void NexusPublisher::streamData(const int maxEventsPerFramePart, int runNumber,
                                 bool slow) {
   std::string rawbuf;
+  std::string sampleEnvBuf;
   // frame numbers run from 0 to numberOfFrames-1
   int64_t totalBytesSent = 0;
   const auto numberOfFrames = m_fileReader->getNumberOfFrames();
@@ -145,6 +146,7 @@ void NexusPublisher::streamData(const int maxEventsPerFramePart, int runNumber,
   for (size_t frameNumber = 0; frameNumber < numberOfFrames; frameNumber++) {
     totalBytesSent += createAndSendMessage(rawbuf, frameNumber,
                                            framePartsPerFrame[frameNumber]);
+    createAndSendSampleEnvMessages(sampleEnvBuf, frameNumber);
     reportProgress(static_cast<float>(frameNumber) /
                    static_cast<float>(numberOfFrames));
 
@@ -188,6 +190,21 @@ int64_t NexusPublisher::createAndSendMessage(std::string &rawbuf,
   }
   m_messageID += indexes.size();
   return dataSize;
+}
+
+/**
+ * Create a flatbuffer payload for sample environment log messages
+ *
+ * @param sampleEnvBuf - a buffer for the message
+ * @param frameNumber - the number of the frame for which data will be sent
+ */
+void NexusPublisher::createAndSendSampleEnvMessages(std::string &sampleEnvBuf,
+                                                    size_t frameNumber) {
+  for (auto sEEvent : m_sEEventMap[frameNumber]) {
+    auto buffer_uptr = sEEvent->getBufferPointer(sampleEnvBuf);
+    m_publisher->sendSampleEnvMessage(
+        reinterpret_cast<char *>(buffer_uptr.get()), sEEvent->getBufferSize());
+  }
 }
 
 /**

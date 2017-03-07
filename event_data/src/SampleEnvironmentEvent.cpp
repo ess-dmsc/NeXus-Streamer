@@ -28,5 +28,7 @@ SampleEnvironmentEvent::getBufferPointer(std::string &buffer) {
     reinterpret_cast<const char *>(builder.GetBufferPointer());
   buffer.assign(bufferpointer, bufferpointer + builder.GetSize());
 
+  m_bufferSize = builder.GetSize();
+
   return builder.ReleaseBufferPointer();
 }

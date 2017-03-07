@@ -23,8 +23,10 @@ public:
   float getTime() { return m_time; }
   BrightnESS::FlatBufs::f141_epics_nt::timeStamp_t getTimestamp();
   flatbuffers::unique_ptr_t getBufferPointer(std::string &buffer);
+  size_t getBufferSize() { return m_bufferSize; }
 
 protected:
+  size_t m_bufferSize;
   std::string m_name;
   int64_t m_runStartSecondsPastUnixEpoch;
   float m_time;
