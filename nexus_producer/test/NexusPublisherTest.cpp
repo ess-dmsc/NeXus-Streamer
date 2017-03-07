@@ -139,6 +139,7 @@ TEST_F(NexusPublisherTest, test_stream_data) {
         .InSequence(s1);
   }
 
+  EXPECT_CALL(*publisher.get(), sendSampleEnvMessage(_, _)).Times(16);
   EXPECT_CALL(*publisher.get(), sendRunMessage(_, _)).Times(1);
   EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_, _)).Times(1);
   EXPECT_CALL(*publisher.get(), getCurrentOffset()).Times(1);
@@ -164,6 +165,7 @@ TEST_F(NexusPublisherTest, test_stream_data_multiple_messages_per_frame) {
   EXPECT_CALL(*publisher.get(), setUp(broker, instrumentName))
       .Times(AtLeast(1));
   EXPECT_CALL(*publisher.get(), sendEventMessage(_, _)).Times(1292);
+  EXPECT_CALL(*publisher.get(), sendSampleEnvMessage(_, _)).Times(16);
   EXPECT_CALL(*publisher.get(), sendRunMessage(_, _)).Times(1);
   EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_, _)).Times(1);
   EXPECT_CALL(*publisher.get(), getCurrentOffset()).Times(1);
