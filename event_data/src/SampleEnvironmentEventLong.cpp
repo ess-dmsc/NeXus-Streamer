@@ -1,4 +1,5 @@
 #include "SampleEnvironmentEventLong.h"
+#include <cmath>
 
 flatbuffers::Offset<BrightnESS::FlatBufs::f141_epics_nt::EpicsPV>
 SampleEnvironmentEventLong::getSEEvent(

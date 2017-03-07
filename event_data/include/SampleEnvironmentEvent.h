@@ -11,13 +11,22 @@
 
 class SampleEnvironmentEvent {
 public:
+  SampleEnvironmentEvent(int64_t runStart, float eventTime,
+                         const std::string &name)
+      : m_runStartSecondsPastUnixEpoch(runStart), m_time(eventTime),
+        m_name(name) {}
   virtual ~SampleEnvironmentEvent() {}
+
   virtual flatbuffers::Offset<BrightnESS::FlatBufs::f141_epics_nt::EpicsPV>
   getSEEvent(flatbuffers::FlatBufferBuilder &builder) = 0;
-
+  std::string getName() { return m_name; }
+  float getTime() { return m_time; }
   BrightnESS::FlatBufs::f141_epics_nt::timeStamp_t getTimestamp();
-  virtual std::string getName() = 0;
-  virtual float getTime() = 0;
+
+protected:
+  std::string m_name;
+  int64_t m_runStartSecondsPastUnixEpoch;
+  float m_time;
 };
 
 #endif // ISIS_NEXUS_STREAMER_FOR_MANTID_SAMPLEENVIRONMENTEVENT_H

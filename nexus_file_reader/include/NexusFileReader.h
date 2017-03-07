@@ -38,6 +38,7 @@ public:
   int32_t getNumberOfPeriods();
 
 private:
+  int64_t m_runStart;
   size_t findFrameNumberOfTime(float time);
   template <typename T>
   T getSingleValueFromDataset(const std::string &dataset, H5::PredType datatype,
