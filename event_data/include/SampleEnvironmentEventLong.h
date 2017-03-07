@@ -9,9 +9,8 @@ public:
   SampleEnvironmentEventLong(const std::string &name, float time, int64_t value)
       : m_name(name), m_time(time), m_value(value) {}
 
-  flatbuffers::Offset<ISISStream::SEEvent>
+  flatbuffers::Offset<BrightnESS::FlatBufs::f141_epics_nt::EpicsPV>
   getSEEvent(flatbuffers::FlatBufferBuilder &builder) override;
-
   std::string getName() override { return m_name; }
   float getTime() override { return m_time; }
 

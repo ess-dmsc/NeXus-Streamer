@@ -152,6 +152,7 @@ TEST(NexusFileReaderTest, get_sEEvent_map) {
   auto eventVector = eventMap[10];
   EXPECT_EQ(4, eventVector.size());
   EXPECT_EQ("Guide_Pressure", eventVector[0]->getName());
+  EXPECT_EQ("TEMP1", eventVector[3]->getName());
 }
 
 TEST(NexusFileReaderTest, get_number_of_periods) {

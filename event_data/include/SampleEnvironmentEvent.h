@@ -1,7 +1,7 @@
 #ifndef ISIS_NEXUS_STREAMER_FOR_MANTID_SAMPLEENVIRONMENTEVENT_H
 #define ISIS_NEXUS_STREAMER_FOR_MANTID_SAMPLEENVIRONMENTEVENT_H
 
-#include "event_schema_generated.h"
+#include "f141_epics_nt_generated.h"
 #include <type_traits>
 
 /*
@@ -12,9 +12,10 @@
 class SampleEnvironmentEvent {
 public:
   virtual ~SampleEnvironmentEvent() {}
-  virtual flatbuffers::Offset<ISISStream::SEEvent>
+  virtual flatbuffers::Offset<BrightnESS::FlatBufs::f141_epics_nt::EpicsPV>
   getSEEvent(flatbuffers::FlatBufferBuilder &builder) = 0;
 
+  BrightnESS::FlatBufs::f141_epics_nt::timeStamp_t getTimestamp();
   virtual std::string getName() = 0;
   virtual float getTime() = 0;
 };

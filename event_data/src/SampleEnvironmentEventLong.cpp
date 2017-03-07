@@ -1,9 +1,12 @@
 #include "SampleEnvironmentEventLong.h"
 
-flatbuffers::Offset<ISISStream::SEEvent>
-SampleEnvironmentEventLong::getSEEvent(flatbuffers::FlatBufferBuilder &builder) {
+flatbuffers::Offset<BrightnESS::FlatBufs::f141_epics_nt::EpicsPV>
+SampleEnvironmentEventLong::getSEEvent(
+    flatbuffers::FlatBufferBuilder &builder) {
+  using namespace BrightnESS::FlatBufs::f141_epics_nt;
   auto nameOffset = builder.CreateString(m_name);
-  auto valueOffset = ISISStream::CreateLongValue(builder, m_value);
-  return ISISStream::CreateSEEvent(builder, nameOffset, m_time,
-                                   ISISStream::SEValue_LongValue, valueOffset.Union());
+  auto valueOffset = CreateNTScalarLong(builder, m_value);
+  auto timestamp = getTimestamp();
+  return CreateEpicsPV(builder, nameOffset, PV_NTScalarLong,
+                       valueOffset.Union(), &timestamp);
 }

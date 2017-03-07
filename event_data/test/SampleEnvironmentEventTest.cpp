@@ -2,7 +2,6 @@
 #include "SampleEnvironmentEventDouble.h"
 #include "SampleEnvironmentEventInt.h"
 #include "SampleEnvironmentEventLong.h"
-#include "SampleEnvironmentEventString.h"
 #include <gtest/gtest.h>
 
 class SampleEnvironmentEventTest : public ::testing::Test {};
@@ -41,16 +40,4 @@ TEST(SampleEnvironmentEventTest, get_double_event) {
   auto doubleEvent = SampleEnvironmentEventDouble("TEMP_1", 0.242, value);
   flatbuffers::FlatBufferBuilder builder;
   EXPECT_NO_THROW(doubleEvent.getSEEvent(builder));
-}
-
-TEST(SampleEnvironmentEventTest, create_string_event) {
-  std::string value = "test_string";
-  EXPECT_NO_THROW(SampleEnvironmentEventString("TEMP_1", 0.242, value));
-}
-
-TEST(SampleEnvironmentEventTest, get_string_event) {
-  std::string value = "test_string";
-  auto stringEvent = SampleEnvironmentEventString("TEMP_1", 0.242, value);
-  flatbuffers::FlatBufferBuilder builder;
-  EXPECT_NO_THROW(stringEvent.getSEEvent(builder));
 }

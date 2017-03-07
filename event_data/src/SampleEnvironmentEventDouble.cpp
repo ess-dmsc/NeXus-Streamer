@@ -1,10 +1,12 @@
 #include "SampleEnvironmentEventDouble.h"
 
-flatbuffers::Offset<ISISStream::SEEvent> SampleEnvironmentEventDouble::getSEEvent(
+flatbuffers::Offset<BrightnESS::FlatBufs::f141_epics_nt::EpicsPV>
+SampleEnvironmentEventDouble::getSEEvent(
     flatbuffers::FlatBufferBuilder &builder) {
+  using namespace BrightnESS::FlatBufs::f141_epics_nt;
   auto nameOffset = builder.CreateString(m_name);
-  auto valueOffset = ISISStream::CreateDoubleValue(builder, m_value);
-  return ISISStream::CreateSEEvent(builder, nameOffset, m_time,
-                                   ISISStream::SEValue_DoubleValue,
-                                valueOffset.Union());
+  auto valueOffset = CreateNTScalarDouble(builder, m_value);
+  auto timestamp = getTimestamp();
+  return CreateEpicsPV(builder, nameOffset, PV_NTScalarDouble,
+                       valueOffset.Union(), &timestamp);
 }

@@ -1,8 +1,4 @@
 #include "EventData.h"
-#include <SampleEnvironmentEventDouble.h>
-#include <SampleEnvironmentEventInt.h>
-#include <SampleEnvironmentEventLong.h>
-#include <SampleEnvironmentEventString.h>
 #include <gtest/gtest.h>
 
 class EventDataTest : public ::testing::Test {};
@@ -63,51 +59,4 @@ TEST(EventDataTest, get_buffer_size) {
   std::string rawbuf;
   EXPECT_NO_THROW(events.getBufferPointer(rawbuf, 0));
   EXPECT_TRUE(events.getBufferSize() > 0);
-}
-
-TEST(EventDataTest, add_sample_environment_event) {
-
-  int32_t testInt = 42;
-  int64_t testLong = 42;
-  double testDouble = 42.42;
-  std::string testString = "test_string";
-
-  auto sEEventInt =
-      std::make_shared<SampleEnvironmentEventInt>("device1", 0.24, testInt);
-  auto sEEventLong =
-      std::make_shared<SampleEnvironmentEventLong>("device2", 0.25, testLong);
-  auto sEEventDouble = std::make_shared<SampleEnvironmentEventDouble>(
-      "device3", 0.26, testDouble);
-  auto sEEventString = std::make_shared<SampleEnvironmentEventString>(
-      "device4", 0.27, testString);
-
-  auto events = EventData();
-
-  std::vector<int32_t> detIds = {1, 2, 3, 4};
-  std::vector<float> tofs = {4, 3, 2, 1};
-
-  events.setDetId(detIds);
-  events.setTof(tofs);
-
-  EXPECT_NO_THROW(events.addSEEvent(sEEventInt));
-  EXPECT_NO_THROW(events.addSEEvent(sEEventLong));
-  EXPECT_NO_THROW(events.addSEEvent(sEEventDouble));
-  EXPECT_NO_THROW(events.addSEEvent(sEEventString));
-
-  std::string rawbuf;
-  EXPECT_NO_THROW(events.getBufferPointer(rawbuf, 0));
-  auto receivedEventData = EventData();
-  EXPECT_TRUE(receivedEventData.decodeMessage(
-      reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
-  EXPECT_EQ(4, receivedEventData.getNumberOfEvents());
-  auto sEEvents = receivedEventData.getSEEvents();
-  EXPECT_EQ(4, sEEvents.size());
-  EXPECT_EQ("device1", sEEvents[0]->getName());
-  EXPECT_EQ("device2", sEEvents[1]->getName());
-  EXPECT_EQ("device3", sEEvents[2]->getName());
-  EXPECT_EQ("device4", sEEvents[3]->getName());
-  EXPECT_FLOAT_EQ(0.24, sEEvents[0]->getTime());
-  EXPECT_FLOAT_EQ(0.25, sEEvents[1]->getTime());
-  EXPECT_FLOAT_EQ(0.26, sEEvents[2]->getTime());
-  EXPECT_FLOAT_EQ(0.27, sEEvents[3]->getTime());
 }

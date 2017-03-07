@@ -47,32 +47,6 @@ TEST_F(NexusPublisherTest, test_create_message_data) {
   EXPECT_FLOAT_EQ(0.001105368, receivedEventData.getProtonCharge());
   EXPECT_EQ(0, receivedEventData.getPeriod());
   EXPECT_FLOAT_EQ(3.0399999618530273, receivedEventData.getFrameTime());
-  auto sEEventsVector = receivedEventData.getSEEvents();
-  // Expect no sample environment events in this message
-  EXPECT_EQ(0, sEEventsVector.size());
-}
-
-TEST_F(NexusPublisherTest, test_create_message_data_with_SE_events) {
-  int frameNumber = 10;
-  auto streamer = createStreamer(true);
-  auto eventData =
-      streamer.createMessageData(static_cast<hsize_t>(frameNumber), 1);
-
-  std::string rawbuf;
-  eventData[0]->getBufferPointer(rawbuf, 0);
-
-  auto receivedEventData = EventData();
-  EXPECT_TRUE(receivedEventData.decodeMessage(
-      reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
-  EXPECT_EQ(794, receivedEventData.getNumberOfEvents());
-  EXPECT_EQ(frameNumber, receivedEventData.getFrameNumber());
-  EXPECT_FLOAT_EQ(0.001105368, receivedEventData.getProtonCharge());
-  EXPECT_EQ(0, receivedEventData.getPeriod());
-  EXPECT_FLOAT_EQ(3.9389999, receivedEventData.getFrameTime());
-  auto sEEventsVector = receivedEventData.getSEEvents();
-  // Expect some sample environment events in this message
-  EXPECT_TRUE(sEEventsVector.size() > 0);
-  EXPECT_EQ("Guide_Pressure", receivedEventData.getSEEvents()[0]->getName());
 }
 
 TEST_F(NexusPublisherTest, test_create_message_data_3_message_per_frame) {

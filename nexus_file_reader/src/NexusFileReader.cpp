@@ -2,7 +2,6 @@
 #include "../../event_data/include/SampleEnvironmentEventDouble.h"
 #include "../../event_data/include/SampleEnvironmentEventInt.h"
 #include "../../event_data/include/SampleEnvironmentEventLong.h"
-#include "../../event_data/include/SampleEnvironmentEventString.h"
 #include <ctime>
 #include <cmath>
 #include <iomanip>
@@ -39,7 +38,6 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
       std::vector<float> floatValues;
       std::vector<int32_t> intValues;
       std::vector<int64_t> longValues;
-      std::vector<std::string> stringValues;
       std::string valueDatasetName =
           "/raw_data_1/selog/" + name + "/value_log/value";
       auto times =
@@ -53,7 +51,8 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
       } else if (valueType == PredType::NATIVE_INT64) {
         longValues = get1DDataset<int64_t>(valueType, valueDatasetName);
       } else {
-        stringValues = get1DStringDataset(valueDatasetName);
+        std::cout << "Unsupported datatype in dataset " << name << std::endl;
+        continue;
       }
 
       for (size_t i = 0; i < times.size(); i++) {
@@ -78,10 +77,6 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
             sEEventMap[frameNumber].push_back(
                 std::make_shared<SampleEnvironmentEventLong>(name, times[i],
                                                              longValues[i]));
-          else
-            sEEventMap[frameNumber].push_back(
-                std::make_shared<SampleEnvironmentEventString>(
-                    name, times[i], stringValues[i]));
         }
       }
     }
