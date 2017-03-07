@@ -1,3 +1,4 @@
+#include <cmath>
 #include "SampleEnvironmentEvent.h"
 
 BrightnESS::FlatBufs::f141_epics_nt::timeStamp_t
