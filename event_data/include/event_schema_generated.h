@@ -13,12 +13,7 @@ struct RunInfo;
 
 namespace ISISStream {
 
-struct IntValue;
-struct LongValue;
-struct DoubleValue;
-struct StringValue;
 struct NEvents;
-struct SEEvent;
 struct FramePart;
 struct EventMessage;
 
@@ -36,25 +31,6 @@ inline const char **EnumNamesRunState() {
 
 inline const char *EnumNameRunState(RunState e) { return EnumNamesRunState()[static_cast<int>(e)]; }
 
-enum SEValue {
-  SEValue_NONE = 0,
-  SEValue_IntValue = 1,
-  SEValue_LongValue = 2,
-  SEValue_DoubleValue = 3,
-  SEValue_StringValue = 4,
-  SEValue_MIN = SEValue_NONE,
-  SEValue_MAX = SEValue_StringValue
-};
-
-inline const char **EnumNamesSEValue() {
-  static const char *names[] = { "NONE", "IntValue", "LongValue", "DoubleValue", "StringValue", nullptr };
-  return names;
-}
-
-inline const char *EnumNameSEValue(SEValue e) { return EnumNamesSEValue()[static_cast<int>(e)]; }
-
-inline bool VerifySEValue(flatbuffers::Verifier &verifier, const void *union_obj, SEValue type);
-
 enum MessageTypes {
   MessageTypes_NONE = 0,
   MessageTypes_FramePart = 1,
@@ -71,131 +47,6 @@ inline const char **EnumNamesMessageTypes() {
 inline const char *EnumNameMessageTypes(MessageTypes e) { return EnumNamesMessageTypes()[static_cast<int>(e)]; }
 
 inline bool VerifyMessageTypes(flatbuffers::Verifier &verifier, const void *union_obj, MessageTypes type);
-
-struct IntValue FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
-    VT_VALUE = 4
-  };
-  int32_t value() const { return GetField<int32_t>(VT_VALUE, 0); }
-  bool Verify(flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<int32_t>(verifier, VT_VALUE) &&
-           verifier.EndTable();
-  }
-};
-
-struct IntValueBuilder {
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_value(int32_t value) { fbb_.AddElement<int32_t>(IntValue::VT_VALUE, value, 0); }
-  IntValueBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
-  IntValueBuilder &operator=(const IntValueBuilder &);
-  flatbuffers::Offset<IntValue> Finish() {
-    auto o = flatbuffers::Offset<IntValue>(fbb_.EndTable(start_, 1));
-    return o;
-  }
-};
-
-inline flatbuffers::Offset<IntValue> CreateIntValue(flatbuffers::FlatBufferBuilder &_fbb,
-   int32_t value = 0) {
-  IntValueBuilder builder_(_fbb);
-  builder_.add_value(value);
-  return builder_.Finish();
-}
-
-struct LongValue FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
-    VT_VALUE = 4
-  };
-  int64_t value() const { return GetField<int64_t>(VT_VALUE, 0); }
-  bool Verify(flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<int64_t>(verifier, VT_VALUE) &&
-           verifier.EndTable();
-  }
-};
-
-struct LongValueBuilder {
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_value(int64_t value) { fbb_.AddElement<int64_t>(LongValue::VT_VALUE, value, 0); }
-  LongValueBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
-  LongValueBuilder &operator=(const LongValueBuilder &);
-  flatbuffers::Offset<LongValue> Finish() {
-    auto o = flatbuffers::Offset<LongValue>(fbb_.EndTable(start_, 1));
-    return o;
-  }
-};
-
-inline flatbuffers::Offset<LongValue> CreateLongValue(flatbuffers::FlatBufferBuilder &_fbb,
-   int64_t value = 0) {
-  LongValueBuilder builder_(_fbb);
-  builder_.add_value(value);
-  return builder_.Finish();
-}
-
-struct DoubleValue FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
-    VT_VALUE = 4
-  };
-  double value() const { return GetField<double>(VT_VALUE, 0); }
-  bool Verify(flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<double>(verifier, VT_VALUE) &&
-           verifier.EndTable();
-  }
-};
-
-struct DoubleValueBuilder {
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_value(double value) { fbb_.AddElement<double>(DoubleValue::VT_VALUE, value, 0); }
-  DoubleValueBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
-  DoubleValueBuilder &operator=(const DoubleValueBuilder &);
-  flatbuffers::Offset<DoubleValue> Finish() {
-    auto o = flatbuffers::Offset<DoubleValue>(fbb_.EndTable(start_, 1));
-    return o;
-  }
-};
-
-inline flatbuffers::Offset<DoubleValue> CreateDoubleValue(flatbuffers::FlatBufferBuilder &_fbb,
-   double value = 0) {
-  DoubleValueBuilder builder_(_fbb);
-  builder_.add_value(value);
-  return builder_.Finish();
-}
-
-struct StringValue FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
-    VT_VALUE = 4
-  };
-  const flatbuffers::String *value() const { return GetPointer<const flatbuffers::String *>(VT_VALUE); }
-  bool Verify(flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<flatbuffers::uoffset_t>(verifier, VT_VALUE) &&
-           verifier.Verify(value()) &&
-           verifier.EndTable();
-  }
-};
-
-struct StringValueBuilder {
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_value(flatbuffers::Offset<flatbuffers::String> value) { fbb_.AddOffset(StringValue::VT_VALUE, value); }
-  StringValueBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
-  StringValueBuilder &operator=(const StringValueBuilder &);
-  flatbuffers::Offset<StringValue> Finish() {
-    auto o = flatbuffers::Offset<StringValue>(fbb_.EndTable(start_, 1));
-    return o;
-  }
-};
-
-inline flatbuffers::Offset<StringValue> CreateStringValue(flatbuffers::FlatBufferBuilder &_fbb,
-   flatbuffers::Offset<flatbuffers::String> value = 0) {
-  StringValueBuilder builder_(_fbb);
-  builder_.add_value(value);
-  return builder_.Finish();
-}
 
 struct NEvents FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
@@ -236,57 +87,6 @@ inline flatbuffers::Offset<NEvents> CreateNEvents(flatbuffers::FlatBufferBuilder
   return builder_.Finish();
 }
 
-struct SEEvent FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum {
-    VT_NAME = 4,
-    VT_TIME_OFFSET = 6,
-    VT_VALUE_TYPE = 8,
-    VT_VALUE = 10
-  };
-  const flatbuffers::String *name() const { return GetPointer<const flatbuffers::String *>(VT_NAME); }
-  float time_offset() const { return GetField<float>(VT_TIME_OFFSET, 0); }
-  SEValue value_type() const { return static_cast<SEValue>(GetField<uint8_t>(VT_VALUE_TYPE, 0)); }
-  const void *value() const { return GetPointer<const void *>(VT_VALUE); }
-  bool Verify(flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<flatbuffers::uoffset_t>(verifier, VT_NAME) &&
-           verifier.Verify(name()) &&
-           VerifyField<float>(verifier, VT_TIME_OFFSET) &&
-           VerifyField<uint8_t>(verifier, VT_VALUE_TYPE) &&
-           VerifyField<flatbuffers::uoffset_t>(verifier, VT_VALUE) &&
-           VerifySEValue(verifier, value(), value_type()) &&
-           verifier.EndTable();
-  }
-};
-
-struct SEEventBuilder {
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_name(flatbuffers::Offset<flatbuffers::String> name) { fbb_.AddOffset(SEEvent::VT_NAME, name); }
-  void add_time_offset(float time_offset) { fbb_.AddElement<float>(SEEvent::VT_TIME_OFFSET, time_offset, 0); }
-  void add_value_type(SEValue value_type) { fbb_.AddElement<uint8_t>(SEEvent::VT_VALUE_TYPE, static_cast<uint8_t>(value_type), 0); }
-  void add_value(flatbuffers::Offset<void> value) { fbb_.AddOffset(SEEvent::VT_VALUE, value); }
-  SEEventBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
-  SEEventBuilder &operator=(const SEEventBuilder &);
-  flatbuffers::Offset<SEEvent> Finish() {
-    auto o = flatbuffers::Offset<SEEvent>(fbb_.EndTable(start_, 4));
-    return o;
-  }
-};
-
-inline flatbuffers::Offset<SEEvent> CreateSEEvent(flatbuffers::FlatBufferBuilder &_fbb,
-   flatbuffers::Offset<flatbuffers::String> name = 0,
-   float time_offset = 0,
-   SEValue value_type = SEValue_NONE,
-   flatbuffers::Offset<void> value = 0) {
-  SEEventBuilder builder_(_fbb);
-  builder_.add_value(value);
-  builder_.add_time_offset(time_offset);
-  builder_.add_name(name);
-  builder_.add_value_type(value_type);
-  return builder_.Finish();
-}
-
 struct FramePart FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum {
     VT_FRAME_NUMBER = 4,
@@ -296,8 +96,7 @@ struct FramePart FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
     VT_PERIOD = 12,
     VT_END_OF_FRAME = 14,
     VT_END_OF_RUN = 16,
-    VT_N_EVENTS = 18,
-    VT_SE_EVENTS = 20
+    VT_N_EVENTS = 18
   };
   int32_t frame_number() const { return GetField<int32_t>(VT_FRAME_NUMBER, 0); }
   float frame_time() const { return GetField<float>(VT_FRAME_TIME, 0); }
@@ -307,7 +106,6 @@ struct FramePart FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   bool end_of_frame() const { return GetField<uint8_t>(VT_END_OF_FRAME, 0) != 0; }
   bool end_of_run() const { return GetField<uint8_t>(VT_END_OF_RUN, 0) != 0; }
   const NEvents *n_events() const { return GetPointer<const NEvents *>(VT_N_EVENTS); }
-  const flatbuffers::Vector<flatbuffers::Offset<SEEvent>> *se_events() const { return GetPointer<const flatbuffers::Vector<flatbuffers::Offset<SEEvent>> *>(VT_SE_EVENTS); }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
            VerifyField<int32_t>(verifier, VT_FRAME_NUMBER) &&
@@ -319,9 +117,6 @@ struct FramePart FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
            VerifyField<uint8_t>(verifier, VT_END_OF_RUN) &&
            VerifyField<flatbuffers::uoffset_t>(verifier, VT_N_EVENTS) &&
            verifier.VerifyTable(n_events()) &&
-           VerifyField<flatbuffers::uoffset_t>(verifier, VT_SE_EVENTS) &&
-           verifier.Verify(se_events()) &&
-           verifier.VerifyVectorOfTables(se_events()) &&
            verifier.EndTable();
   }
 };
@@ -337,11 +132,10 @@ struct FramePartBuilder {
   void add_end_of_frame(bool end_of_frame) { fbb_.AddElement<uint8_t>(FramePart::VT_END_OF_FRAME, static_cast<uint8_t>(end_of_frame), 0); }
   void add_end_of_run(bool end_of_run) { fbb_.AddElement<uint8_t>(FramePart::VT_END_OF_RUN, static_cast<uint8_t>(end_of_run), 0); }
   void add_n_events(flatbuffers::Offset<NEvents> n_events) { fbb_.AddOffset(FramePart::VT_N_EVENTS, n_events); }
-  void add_se_events(flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<SEEvent>>> se_events) { fbb_.AddOffset(FramePart::VT_SE_EVENTS, se_events); }
   FramePartBuilder(flatbuffers::FlatBufferBuilder &_fbb) : fbb_(_fbb) { start_ = fbb_.StartTable(); }
   FramePartBuilder &operator=(const FramePartBuilder &);
   flatbuffers::Offset<FramePart> Finish() {
-    auto o = flatbuffers::Offset<FramePart>(fbb_.EndTable(start_, 9));
+    auto o = flatbuffers::Offset<FramePart>(fbb_.EndTable(start_, 8));
     return o;
   }
 };
@@ -354,10 +148,8 @@ inline flatbuffers::Offset<FramePart> CreateFramePart(flatbuffers::FlatBufferBui
    int32_t period = 0,
    bool end_of_frame = false,
    bool end_of_run = false,
-   flatbuffers::Offset<NEvents> n_events = 0,
-   flatbuffers::Offset<flatbuffers::Vector<flatbuffers::Offset<SEEvent>>> se_events = 0) {
+   flatbuffers::Offset<NEvents> n_events = 0) {
   FramePartBuilder builder_(_fbb);
-  builder_.add_se_events(se_events);
   builder_.add_n_events(n_events);
   builder_.add_period(period);
   builder_.add_proton_charge(proton_charge);
@@ -411,17 +203,6 @@ inline flatbuffers::Offset<EventMessage> CreateEventMessage(flatbuffers::FlatBuf
   builder_.add_message(message);
   builder_.add_message_type(message_type);
   return builder_.Finish();
-}
-
-inline bool VerifySEValue(flatbuffers::Verifier &verifier, const void *union_obj, SEValue type) {
-  switch (type) {
-    case SEValue_NONE: return true;
-    case SEValue_IntValue: return verifier.VerifyTable(reinterpret_cast<const IntValue *>(union_obj));
-    case SEValue_LongValue: return verifier.VerifyTable(reinterpret_cast<const LongValue *>(union_obj));
-    case SEValue_DoubleValue: return verifier.VerifyTable(reinterpret_cast<const DoubleValue *>(union_obj));
-    case SEValue_StringValue: return verifier.VerifyTable(reinterpret_cast<const StringValue *>(union_obj));
-    default: return false;
-  }
 }
 
 inline bool VerifyMessageTypes(flatbuffers::Verifier &verifier, const void *union_obj, MessageTypes type) {

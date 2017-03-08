@@ -2,9 +2,8 @@
 #include "../../event_data/include/SampleEnvironmentEventDouble.h"
 #include "../../event_data/include/SampleEnvironmentEventInt.h"
 #include "../../event_data/include/SampleEnvironmentEventLong.h"
-#include "../../event_data/include/SampleEnvironmentEventString.h"
-#include <ctime>
 #include <cmath>
+#include <ctime>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
@@ -23,6 +22,7 @@ NexusFileReader::NexusFileReader(const std::string &filename)
   size_t numOfFrames;
   dataset.read(&numOfFrames, PredType::NATIVE_UINT64);
   m_numberOfFrames = numOfFrames;
+  m_runStart = getRunStartTime();
 }
 
 size_t NexusFileReader::findFrameNumberOfTime(float time) {
@@ -39,7 +39,6 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
       std::vector<float> floatValues;
       std::vector<int32_t> intValues;
       std::vector<int64_t> longValues;
-      std::vector<std::string> stringValues;
       std::string valueDatasetName =
           "/raw_data_1/selog/" + name + "/value_log/value";
       auto times =
@@ -53,7 +52,8 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
       } else if (valueType == PredType::NATIVE_INT64) {
         longValues = get1DDataset<int64_t>(valueType, valueDatasetName);
       } else {
-        stringValues = get1DStringDataset(valueDatasetName);
+        std::cout << "Unsupported datatype in dataset " << name << std::endl;
+        continue;
       }
 
       for (size_t i = 0; i < times.size(); i++) {
@@ -68,20 +68,16 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
             sEEventMap[frameNumber] = sEEventVector();
           if (valueType == PredType::NATIVE_FLOAT)
             sEEventMap[frameNumber].push_back(
-                std::make_shared<SampleEnvironmentEventDouble>(name, times[i],
-                                                               floatValues[i]));
+                std::make_shared<SampleEnvironmentEventDouble>(
+                    name, times[i], floatValues[i], m_runStart));
           else if (valueType == PredType::NATIVE_INT32)
             sEEventMap[frameNumber].push_back(
-                std::make_shared<SampleEnvironmentEventInt>(name, times[i],
-                                                            intValues[i]));
+                std::make_shared<SampleEnvironmentEventInt>(
+                    name, times[i], intValues[i], m_runStart));
           else if (valueType == PredType::NATIVE_INT64)
             sEEventMap[frameNumber].push_back(
-                std::make_shared<SampleEnvironmentEventLong>(name, times[i],
-                                                             longValues[i]));
-          else
-            sEEventMap[frameNumber].push_back(
-                std::make_shared<SampleEnvironmentEventString>(
-                    name, times[i], stringValues[i]));
+                std::make_shared<SampleEnvironmentEventLong>(
+                    name, times[i], longValues[i], m_runStart));
         }
       }
     }
@@ -95,7 +91,7 @@ DataType NexusFileReader::getDatasetType(const std::string &datasetName) {
   return dataset.getDataType();
 }
 
-template<typename valueType>
+template <typename valueType>
 std::vector<valueType>
 NexusFileReader::get1DDataset(DataType dataType,
                               const std::string &datasetName) {
@@ -156,7 +152,7 @@ int32_t NexusFileReader::getPeriodNumber() {
   int32_t periodNumber;
   dataset.read(&periodNumber, PredType::NATIVE_INT32);
 
-// -1 as period number starts at 1 in NeXus files but 0 everywhere else
+  // -1 as period number starts at 1 in NeXus files but 0 everywhere else
   return periodNumber - 1;
 }
 
@@ -166,7 +162,8 @@ int32_t NexusFileReader::getPeriodNumber() {
  * @return - the number of periods
  */
 int32_t NexusFileReader::getNumberOfPeriods() {
-  auto periodNumbers = get1DDataset<int32_t>(PredType::NATIVE_INT32, "/raw_data_1/periods/number");
+  auto periodNumbers = get1DDataset<int32_t>(PredType::NATIVE_INT32,
+                                             "/raw_data_1/periods/number");
   return static_cast<int32_t>(periodNumbers.size());
 }
 
@@ -254,7 +251,7 @@ double NexusFileReader::getFrameTime(hsize_t frameNumber) {
   return frameTime;
 }
 
-template<typename T>
+template <typename T>
 T NexusFileReader::getSingleValueFromDataset(const std::string &datasetName,
                                              H5::PredType datatype,
                                              hsize_t offset) {

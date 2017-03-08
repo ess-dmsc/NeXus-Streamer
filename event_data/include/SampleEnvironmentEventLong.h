@@ -5,19 +5,14 @@
 
 class SampleEnvironmentEventLong : public SampleEnvironmentEvent {
 public:
-  SampleEnvironmentEventLong() {}
-  SampleEnvironmentEventLong(const std::string &name, float time, int64_t value)
-      : m_name(name), m_time(time), m_value(value) {}
+  SampleEnvironmentEventLong(const std::string &name, float time, int64_t value,
+                             int64_t runStart)
+      : m_value(value), SampleEnvironmentEvent(runStart, time, name) {}
 
-  flatbuffers::Offset<ISISStream::SEEvent>
+  flatbuffers::Offset<BrightnESS::FlatBufs::f141_epics_nt::EpicsPV>
   getSEEvent(flatbuffers::FlatBufferBuilder &builder) override;
 
-  std::string getName() override { return m_name; }
-  float getTime() override { return m_time; }
-
 private:
-  std::string m_name;
-  float m_time;
   int64_t m_value;
 };
 

@@ -8,19 +8,19 @@
  * @param broker_str - the IP or hostname of the broker
  * @param topic_str - the name of the datastream (topic) to publish the data to
  */
-void KafkaEventPublisher::setUp(const std::string &broker_str,
-                                const std::string &topic_str,
-                                const std::string &runTopic_str,
-                                const std::string &detSpecTopic_str) {
+void KafkaEventPublisher::setUp(const std::string &broker,
+                                const std::string &instrumentName) {
 
   std::cout << "Setting up Kafka producer" << std::endl;
 
   std::string error_str;
 
-  auto conf = std::unique_ptr<RdKafka::Conf>(RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL));
-  auto tconf = std::unique_ptr<RdKafka::Conf>(RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC));
+  auto conf = std::unique_ptr<RdKafka::Conf>(
+      RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL));
+  auto tconf = std::shared_ptr<RdKafka::Conf>(
+      RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC));
 
-  conf->set("metadata.broker.list", broker_str, error_str);
+  conf->set("metadata.broker.list", broker, error_str);
   conf->set("message.send.max.retries", "3", error_str);
   conf->set("message.max.bytes", "10000000", error_str);
   conf->set("fetch.message.max.bytes", "10000000", error_str);
@@ -43,33 +43,36 @@ void KafkaEventPublisher::setUp(const std::string &broker_str,
     exit(1);
   }
 
-  // Create topic handle
-  m_topic_ptr = std::shared_ptr<RdKafka::Topic>(RdKafka::Topic::create(
-      m_producer_ptr.get(), topic_str, tconf.get(), error_str));
-  if (!m_topic_ptr.get()) {
-    std::cerr << "Failed to create topic: " << error_str << std::endl;
-    exit(1);
-  }
-
-  // Create run topic handle
-  m_runTopic_ptr = std::shared_ptr<RdKafka::Topic>(RdKafka::Topic::create(
-      m_producer_ptr.get(), runTopic_str, tconf.get(), error_str));
-  if (!m_runTopic_ptr.get()) {
-    std::cerr << "Failed to create topic: " << error_str << std::endl;
-    exit(1);
-  }
-
-  // Create detSpec topic handle
-  m_detSpecTopic_ptr = std::shared_ptr<RdKafka::Topic>(RdKafka::Topic::create(
-      m_producer_ptr.get(), detSpecTopic_str, tconf.get(), error_str));
-  if (!m_detSpecTopic_ptr.get()) {
-    std::cerr << "Failed to create topic: " << error_str << std::endl;
-    exit(1);
-  }
+  // Create topics
+  m_topic_ptr = createTopicHandle(instrumentName, "_events", tconf);
+  m_runTopic_ptr = createTopicHandle(instrumentName, "_runInfo", tconf);
+  m_detSpecTopic_ptr = createTopicHandle(instrumentName, "_detSpecMap", tconf);
+  m_sampleEnvTopic_ptr = createTopicHandle(instrumentName, "_sampleEnv", tconf);
 
   // This ensures everything is ready when we need to query offset information
   // later
   m_producer_ptr->poll(1000);
+}
+
+/**
+ * Create a topic handle
+ *
+ * @param topic_str : name of the topic
+ * @param topicConfig : configuration of the topic
+ * @return topic handle
+ */
+std::shared_ptr<RdKafka::Topic> KafkaEventPublisher::createTopicHandle(
+    const std::string &topicPrefix, const std::string &topicSuffix,
+    std::shared_ptr<RdKafka::Conf> topicConfig) {
+  std::string topic_str = topicPrefix + topicSuffix;
+  std::string error_str;
+  auto topic_ptr = std::shared_ptr<RdKafka::Topic>(RdKafka::Topic::create(
+      m_producer_ptr.get(), topic_str, topicConfig.get(), error_str));
+  if (!topic_ptr.get()) {
+    std::cerr << "Failed to create topic: " << error_str << std::endl;
+    exit(1);
+  }
+  return topic_ptr;
 }
 
 /**
@@ -88,6 +91,10 @@ void KafkaEventPublisher::sendRunMessage(char *buf, size_t messageSize) {
 
 void KafkaEventPublisher::sendDetSpecMessage(char *buf, size_t messageSize) {
   sendMessage(buf, messageSize, m_detSpecTopic_ptr);
+}
+
+void KafkaEventPublisher::sendSampleEnvMessage(char *buf, size_t messageSize) {
+  sendMessage(buf, messageSize, m_sampleEnvTopic_ptr);
 }
 
 void KafkaEventPublisher::sendMessage(char *buf, size_t messageSize,

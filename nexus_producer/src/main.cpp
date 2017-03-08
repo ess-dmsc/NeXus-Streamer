@@ -16,9 +16,7 @@ int main(int argc, char **argv) {
   std::string filename;
   std::string detSpecFilename;
   std::string broker = "sakura";
-  std::string topic = "test_event_topic";
-  std::string runTopic = "test_run_topic";
-  std::string detSpecTopic = "test_det_spec_topic";
+  std::string instrumentName = "test";
   std::string compression = "";
   bool slow = false;
   bool quietMode = false;
@@ -26,7 +24,7 @@ int main(int argc, char **argv) {
   bool singleRun = false;
   int maxEventsPerFramePart = 200;
 
-  while ((opt = getopt(argc, argv, "f:d:b:t:c:m:r:a:squz")) != -1) {
+  while ((opt = getopt(argc, argv, "f:d:b:i:c:m:squz")) != -1) {
     switch (opt) {
 
     case 'f':
@@ -41,8 +39,8 @@ int main(int argc, char **argv) {
       broker = optarg;
       break;
 
-    case 't':
-      topic = optarg;
+    case 'i':
+      instrumentName = optarg;
       break;
 
     case 'c':
@@ -51,14 +49,6 @@ int main(int argc, char **argv) {
 
     case 'm':
       maxEventsPerFramePart = std::stoi(optarg);
-      break;
-
-    case 'r':
-      runTopic = optarg;
-      break;
-
-    case 'a':
-      detSpecTopic = optarg;
       break;
 
     case 's':
@@ -91,13 +81,7 @@ int main(int argc, char **argv) {
             "det-spec mapping\n"
             "[-b <host>]    Broker IP address or hostname, default is "
             "'sakura'\n"
-            "[-t <event_topic_name>]    Name of event data topic to "
-            "publish to, default is 'test_event_topic'\n"
-            "[-r <run_topic_name>]    Name of run data topic to "
-            "publish to, default is 'test_run_topic'\n"
-            "[-a <det_spec_topic_name>]    Name of detector-spectra "
-            "map topic to "
-            "publish to, default is 'test_det_spec_topic'\n"
+            "[-i <instrument_name>]    Used as prefix for topic names\n"
             "[-m <max_events_per_message>]   Maximum number of events to send "
             "in a single message, default is 200\n"
             "[-s]    Slow mode, publishes data at approx realistic rate of 10 "
@@ -105,7 +89,8 @@ int main(int argc, char **argv) {
             "[-q]    Quiet mode, makes publisher less chatty on stdout\n"
             "[-u]    Random mode, serve messages within each frame in a random "
             "order\n"
-            "[-z]    Produce only a single run (otherwise repeats until interrupted)"
+            "[-z]    Produce only a single run (otherwise repeats until "
+            "interrupted)"
             "\n",
             argv[0]);
     exit(1);
@@ -113,8 +98,8 @@ int main(int argc, char **argv) {
 
   auto publisher = std::make_shared<KafkaEventPublisher>(compression);
   int runNumber = 1;
-  NexusPublisher streamer(publisher, broker, topic, runTopic, detSpecTopic,
-                          filename, detSpecFilename, quietMode, randomMode);
+  NexusPublisher streamer(publisher, broker, instrumentName, filename,
+                          detSpecFilename, quietMode, randomMode);
 
   // Publish the same data repeatedly, with incrementing run numbers
   if (singleRun) {

@@ -39,3 +39,6 @@ Alternatively, run all units tests using ctest with
 ctest -VV
 ```
 from the build directory.
+
+## Schema
+The schema files are located in https://github.com/ess-dmsc/streaming-data-types
