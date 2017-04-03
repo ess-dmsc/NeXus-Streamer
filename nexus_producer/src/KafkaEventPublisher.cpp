@@ -25,6 +25,7 @@ void KafkaEventPublisher::setUp(const std::string &broker,
   conf->set("message.max.bytes", "10000000", error_str);
   conf->set("fetch.message.max.bytes", "10000000", error_str);
   conf->set("replica.fetch.max.bytes", "10000000", error_str);
+  conf->set("api.version.request", "true", error_str);
 
   if (!m_compression.empty()) {
     if (conf->set("compression.codec", m_compression, error_str) !=
