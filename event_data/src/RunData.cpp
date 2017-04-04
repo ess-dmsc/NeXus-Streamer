@@ -1,12 +1,20 @@
 #include "RunData.h"
 
+#include <array>
 #include <ctime>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
-#include <array>
 
 void RunData::setStartTime(const std::string &inputTime) {
+  m_startTime = timeStringToUint64(inputTime);
+}
+
+void RunData::setStopTime(const std::string &inputTime) {
+  m_stopTime = timeStringToUint64(inputTime);
+}
+
+uint64_t RunData::timeStringToUint64(const std::string &inputTime) {
   std::tm tmb = {};
 #if (defined(__GNUC__) && __GNUC__ >= 5) || defined(_MSC_VER)
   std::istringstream ss(inputTime);
@@ -16,7 +24,7 @@ void RunData::setStartTime(const std::string &inputTime) {
   // gcc < 5 does not have std::get_time implemented
   strptime(inputTime.c_str(), "%Y-%m-%dT%H:%M:%S", &tmb);
 #endif
-  m_startTime = static_cast<uint64_t>(std::mktime(&tmb));
+  return static_cast<uint64_t>(std::mktime(&tmb));
 }
 
 bool RunData::decodeMessage(const uint8_t *buf) {
@@ -25,12 +33,22 @@ bool RunData::decodeMessage(const uint8_t *buf) {
     auto runData =
         static_cast<const ISISStream::RunInfo *>(messageData->message());
 
-    setStartTime(runData->start_time());
-    setInstrumentName(runData->inst_name()->str());
-    setRunNumber(runData->run_number());
-    setNumberOfPeriods(runData->n_periods());
+    if (runData->info_type_type() == ISISStream::InfoTypes_RunStart) {
+      auto runStartData =
+          static_cast<const ISISStream::RunStart *>(runData->info_type());
+      setStartTime(runStartData->start_time());
+      setInstrumentName(runStartData->inst_name()->str());
+      setRunNumber(runStartData->run_number());
+      setNumberOfPeriods(runStartData->n_periods());
 
-    return true;
+      return true;
+    } else if (runData->info_type_type() == ISISStream::InfoTypes_RunStop) {
+      auto runStopData =
+          static_cast<const ISISStream::RunStop *>(runData->info_type());
+      setStopTime(runStopData->stop_time());
+
+      return true;
+    }
   }
   return false; // this is not a RunData message
 }
@@ -40,13 +58,14 @@ flatbuffers::unique_ptr_t RunData::getEventBufferPointer(std::string &buffer,
   flatbuffers::FlatBufferBuilder builder;
 
   auto instrumentName = builder.CreateString(m_instrumentName);
-  auto messageRunInfo =
-      ISISStream::CreateRunInfo(builder, m_startTime, m_runNumber, instrumentName,
-                             m_streamOffset, m_numberOfPeriods);
+  auto messageRunStart = ISISStream::CreateRunStart(
+      builder, m_startTime, m_runNumber, instrumentName, m_numberOfPeriods);
+  auto messageRunInfo = ISISStream::CreateRunInfo(
+      builder, ISISStream::InfoTypes_RunStart, messageRunStart.Union());
 
   auto messageFlatbuf =
       ISISStream::CreateEventMessage(builder, ISISStream::MessageTypes_RunInfo,
-                                  messageRunInfo.Union(), messageID);
+                                     messageRunInfo.Union(), messageID);
   builder.Finish(messageFlatbuf);
 
   auto bufferpointer =
@@ -58,13 +77,34 @@ flatbuffers::unique_ptr_t RunData::getEventBufferPointer(std::string &buffer,
   return builder.ReleaseBufferPointer();
 }
 
-flatbuffers::unique_ptr_t RunData::getRunBufferPointer(std::string &buffer) {
+flatbuffers::unique_ptr_t
+RunData::getRunStartBufferPointer(std::string &buffer) {
   flatbuffers::FlatBufferBuilder builder;
 
   auto instrumentName = builder.CreateString(m_instrumentName);
-  auto messageRunInfo =
-      ISISStream::CreateRunInfo(builder, m_startTime, m_runNumber, instrumentName,
-                             m_streamOffset, m_numberOfPeriods);
+  auto messageRunStart = ISISStream::CreateRunStart(
+      builder, m_startTime, m_runNumber, instrumentName, m_numberOfPeriods);
+  auto messageRunInfo = ISISStream::CreateRunInfo(
+      builder, ISISStream::InfoTypes_RunStart, messageRunStart.Union());
+
+  builder.Finish(messageRunInfo);
+
+  auto bufferpointer =
+      reinterpret_cast<const char *>(builder.GetBufferPointer());
+  buffer.assign(bufferpointer, bufferpointer + builder.GetSize());
+
+  m_bufferSize = builder.GetSize();
+
+  return builder.ReleaseBufferPointer();
+}
+
+flatbuffers::unique_ptr_t
+RunData::getRunStopBufferPointer(std::string &buffer) {
+  flatbuffers::FlatBufferBuilder builder;
+
+  auto messageRunStop = ISISStream::CreateRunStop(builder, m_stopTime);
+  auto messageRunInfo = ISISStream::CreateRunInfo(
+      builder, ISISStream::InfoTypes_RunStop, messageRunStop.Union());
 
   builder.Finish(messageRunInfo);
 
@@ -93,6 +133,5 @@ std::string RunData::runInfo() {
   strftime(buffer.data(), 20, "%Y-%m-%dT%H:%M:%S", tmb);
   ssRunInfo << buffer.data();
 #endif
-  ssRunInfo << ", Run offset: " << m_streamOffset;
   return ssRunInfo.str();
 }

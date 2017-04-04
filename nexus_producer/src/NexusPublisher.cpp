@@ -156,6 +156,7 @@ void NexusPublisher::streamData(const int maxEventsPerFramePart, int runNumber,
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
   }
+  totalBytesSent += createAndSendRunStopMessage(rawbuf);
   reportProgress(1.0);
   std::cout << std::endl
             << "Frames sent: " << m_fileReader->getNumberOfFrames() << std::endl
@@ -217,17 +218,35 @@ void NexusPublisher::createAndSendSampleEnvMessages(std::string &sampleEnvBuf,
 int64_t NexusPublisher::createAndSendRunMessage(std::string &rawbuf,
                                                 int runNumber) {
   auto messageData = createRunMessageData(runNumber);
-  messageData->setStreamOffset(m_publisher->getCurrentOffset());
   auto buffer_uptr = messageData->getEventBufferPointer(rawbuf, m_messageID);
   m_messageID++;
   // publish to both topics
   m_publisher->sendEventMessage(reinterpret_cast<char *>(buffer_uptr.get()),
                                 messageData->getBufferSize());
-  buffer_uptr = messageData->getRunBufferPointer(rawbuf);
+  buffer_uptr = messageData->getRunStartBufferPointer(rawbuf);
   m_publisher->sendRunMessage(reinterpret_cast<char *>(buffer_uptr.get()),
                               messageData->getBufferSize());
   std::cout << std::endl << "Publishing new run:" << std::endl;
   std::cout << messageData->runInfo() << std::endl;
+  return rawbuf.size();
+}
+
+/**
+ * Signal that the end of the run has been reached
+ *
+ * @param rawbuf - a buffer for the message
+ * @return - size of the buffer
+ */
+int64_t NexusPublisher::createAndSendRunStopMessage(std::string &rawbuf) {
+  auto runData = std::make_shared<RunData>();
+  auto now = std::chrono::system_clock::now();
+  auto now_c = std::chrono::system_clock::to_time_t(now);
+  runData->setStopTime(static_cast<uint64_t>(now_c));
+
+  auto buffer_uptr = runData->getRunStopBufferPointer(rawbuf);
+  m_publisher->sendRunMessage(reinterpret_cast<char *>(buffer_uptr.get()),
+                              runData->getBufferSize());
+  std::cout << std::endl << "Publishing end of run message" << std::endl;
   return rawbuf.size();
 }
 

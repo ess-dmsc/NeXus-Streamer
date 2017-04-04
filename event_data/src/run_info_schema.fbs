@@ -3,13 +3,22 @@
 namespace ISISStream;
 
 // this will be used in a separate kafka topic, used to pick up where current run starts
-// if you join late 
-table RunInfo {
+// if you join late
+table RunStart {
     start_time : ulong;
-	run_number : int;
-	inst_name : string;
-	stream_offset : long;   // offset into kafka topic for start of current data collection run
-	n_periods : int;
+    run_number : int;
+    inst_name : string;
+    n_periods : int;
+}
+
+table RunStop {
+    stop_time : ulong;
+}
+
+union InfoTypes { RunStart, RunStop }
+
+table RunInfo {
+    info_type : InfoTypes;
 }
 
 root_type RunInfo;

@@ -8,6 +8,8 @@
 #include "run_info_schema_generated.h"
 
 namespace ISISStream {
+struct RunStart;
+struct RunStop;
 struct RunInfo;
 }  // namespace ISISStream
 
