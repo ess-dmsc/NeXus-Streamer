@@ -142,7 +142,6 @@ TEST_F(NexusPublisherTest, test_stream_data) {
   EXPECT_CALL(*publisher.get(), sendSampleEnvMessage(_, _)).Times(16);
   EXPECT_CALL(*publisher.get(), sendRunMessage(_, _)).Times(1);
   EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_, _)).Times(1);
-  EXPECT_CALL(*publisher.get(), getCurrentOffset()).Times(1);
 
   NexusPublisher streamer(publisher, broker, instrumentName,
                           testDataPath + "SANS_test_reduced.hdf5",
@@ -168,7 +167,6 @@ TEST_F(NexusPublisherTest, test_stream_data_multiple_messages_per_frame) {
   EXPECT_CALL(*publisher.get(), sendSampleEnvMessage(_, _)).Times(16);
   EXPECT_CALL(*publisher.get(), sendRunMessage(_, _)).Times(1);
   EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_, _)).Times(1);
-  EXPECT_CALL(*publisher.get(), getCurrentOffset()).Times(1);
 
   NexusPublisher streamer(publisher, broker, instrumentName,
                           testDataPath + "SANS_test_reduced.hdf5",

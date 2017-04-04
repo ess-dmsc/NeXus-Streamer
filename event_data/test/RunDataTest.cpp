@@ -12,16 +12,19 @@ TEST(RunDataTest, set_and_get_start_time) {
   EXPECT_EQ(1470905418, rundata.getStartTime());
 }
 
+TEST(RunDataTest, set_and_get_stop_time) {
+  auto rundata = RunData();
+  EXPECT_NO_THROW(rundata.setStopTime("2016-08-13T13:32:09"));
+  EXPECT_EQ(1471095129, rundata.getStopTime());
+
+  EXPECT_NO_THROW(rundata.setStopTime(1471095129));
+  EXPECT_EQ(1471095129, rundata.getStopTime());
+}
+
 TEST(RunDataTest, set_and_get_run_number) {
   auto rundata = RunData();
   EXPECT_NO_THROW(rundata.setRunNumber(42));
   EXPECT_EQ(42, rundata.getRunNumber());
-}
-
-TEST(RunDataTest, set_and_get_stream_offset) {
-  auto rundata = RunData();
-  EXPECT_NO_THROW(rundata.setStreamOffset(42));
-  EXPECT_EQ(42, rundata.getStreamOffset());
 }
 
 TEST(RunDataTest, set_and_get_instrument_name) {
@@ -37,7 +40,7 @@ TEST(RunDataTest, get_RunInfo) {
   EXPECT_NO_THROW(rundata.setStartTime("2016-08-11T08:50:18"));
 
   EXPECT_EQ("Run number: 42, Instrument name: SANS2D, Start time: "
-            "2016-08-11T08:50:18, Run offset: 0",
+            "2016-08-11T08:50:18",
             rundata.runInfo());
 }
 

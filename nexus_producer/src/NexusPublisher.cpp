@@ -217,13 +217,12 @@ void NexusPublisher::createAndSendSampleEnvMessages(std::string &sampleEnvBuf,
 int64_t NexusPublisher::createAndSendRunMessage(std::string &rawbuf,
                                                 int runNumber) {
   auto messageData = createRunMessageData(runNumber);
-  messageData->setStreamOffset(m_publisher->getCurrentOffset());
   auto buffer_uptr = messageData->getEventBufferPointer(rawbuf, m_messageID);
   m_messageID++;
   // publish to both topics
   m_publisher->sendEventMessage(reinterpret_cast<char *>(buffer_uptr.get()),
                                 messageData->getBufferSize());
-  buffer_uptr = messageData->getRunBufferPointer(rawbuf);
+  buffer_uptr = messageData->getRunStartBufferPointer(rawbuf);
   m_publisher->sendRunMessage(reinterpret_cast<char *>(buffer_uptr.get()),
                               messageData->getBufferSize());
   std::cout << std::endl << "Publishing new run:" << std::endl;
