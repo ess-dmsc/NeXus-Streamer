@@ -10,6 +10,12 @@ TEST(DetectorSpectrumMapDataTest, read_detector_spectrum_map_file) {
       DetectorSpectrumMapData(testDataPath + "spectrum_gastubes_01.dat"));
 }
 
+TEST(DetectorSpectrumMapDataTest, non_existent_detector_spectrum_file) {
+  extern std::string testDataPath;
+  EXPECT_THROW(
+    DetectorSpectrumMapData(testDataPath + "NON_EXISTENT_FILE.dat"), std::runtime_error);
+}
+
 TEST(DetectorSpectrumMapDataTest, read_detector_spectrum_map_detectors) {
   extern std::string testDataPath;
   auto detSpecMap =

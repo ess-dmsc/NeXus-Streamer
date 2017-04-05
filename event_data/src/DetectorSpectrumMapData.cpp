@@ -2,7 +2,20 @@
 #include <fstream>
 #include <sstream>
 
+bool file_exists(const std::string &name) {
+  if (FILE *file = fopen(name.c_str(), "r")) {
+    fclose(file);
+    return true;
+  } else {
+    return false;
+  }
+}
+
 DetectorSpectrumMapData::DetectorSpectrumMapData(const std::string &filename) {
+  if (!file_exists(filename))
+    throw std::runtime_error(
+        filename +
+        " cannot be found, please check full path is given and correct.");
   readFile(filename);
 }
 
