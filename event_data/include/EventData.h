@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "event_schema_generated.h"
+#include "ev42_events_generated.h"
 
 uint64_t getMessageID(const std::string &rawbuf);
 
@@ -18,27 +18,21 @@ public:
   bool decodeMessage(const uint8_t *buf);
 
   // Setters
-  void setDetId(std::vector<int32_t> detIds) { m_detId = detIds; }
-  void setTof(std::vector<float> tofs) { m_tof = tofs; }
-  void setFrameNumber(int32_t frameNumber) { m_frameNumber = frameNumber; }
+  void setDetId(std::vector<uint32_t> detIds) { m_detId = detIds; }
+  void setTof(std::vector<uint32_t> tofs) { m_tof = tofs; }
   void setTotalCounts(uint64_t totalCounts) { m_totalCounts = totalCounts; }
-  void setEndOfFrame(bool lastInFrame) { m_endOfFrame = lastInFrame; }
-  void setEndOfRun(bool lastInRun) { m_endOfRun = lastInRun; }
   void setProtonCharge(float protonCharge) { m_protonCharge = protonCharge; }
-  void setPeriod(int32_t period) { m_period = period; }
-  void setFrameTime(float frameTime) { m_frameTime = frameTime; }
+  void setPeriod(uint32_t period) { m_period = period; }
+  void setFrameTime(uint64_t frameTime) { m_frameTime = frameTime; }
 
   // Getters
-  std::vector<int32_t> getDetId() { return m_detId; }
-  std::vector<float> getTof() { return m_tof; }
-  uint32_t getFrameNumber() { return m_frameNumber; }
+  std::vector<uint32_t> getDetId() { return m_detId; }
+  std::vector<uint32_t> getTof() { return m_tof; }
   uint32_t getNumberOfEvents() { return m_tof.size(); }
   uint64_t getTotalCounts() { return m_totalCounts; }
-  bool getEndOfFrame() { return m_endOfFrame; }
-  bool getEndOfRun() { return m_endOfRun; }
   float getProtonCharge() { return m_protonCharge; }
-  int32_t getPeriod() { return m_period; }
-  float getFrameTime() { return m_frameTime; }
+  uint32_t getPeriod() { return m_period; }
+  uint64_t getFrameTime() { return m_frameTime; }
   size_t getBufferSize() { return m_bufferSize; }
 
   flatbuffers::unique_ptr_t getBufferPointer(std::string &buffer,
@@ -48,16 +42,13 @@ private:
   // Default values here should match default values in the schema
   // if the values are then used to create the buffer they are omitted by
   // flatbuffers to reduce the message size
-  std::vector<int32_t> m_detId = {};
-  std::vector<float> m_tof = {};
-  int32_t m_frameNumber = 0;
+  std::vector<uint32_t> m_detId = {};
+  std::vector<uint32_t> m_tof = {};
   uint64_t m_totalCounts = 0;
   size_t m_bufferSize = 0;
-  float m_frameTime = 0;
+  uint64_t m_frameTime = 0;
   float m_protonCharge = 0;
-  int32_t m_period = 0;
-  bool m_endOfFrame = false;
-  bool m_endOfRun = false;
+  uint32_t m_period = 0;
 };
 
 #endif // ISIS_NEXUS_STREAMER_EVENTDATA_H
