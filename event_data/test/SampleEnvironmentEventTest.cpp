@@ -88,8 +88,7 @@ TEST_F(SampleEnvironmentEventTest, get_double_event) {
   double value = 42.12;
   int64_t runStart = 0;
   std::string name = "TEMP_1";
-  auto doubleEvent =
-      SampleEnvironmentEventDouble(name, 0.242, value, runStart);
+  auto doubleEvent = SampleEnvironmentEventDouble(name, 0.242, value, runStart);
   flatbuffers::FlatBufferBuilder builder;
   EXPECT_NO_THROW(doubleEvent.getSEEvent(builder));
 

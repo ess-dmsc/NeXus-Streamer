@@ -72,6 +72,6 @@ TEST(RunDataTest, encode_and_decode_RunStop) {
 
   auto receivedRunData = RunData();
   EXPECT_TRUE(receivedRunData.decodeMessage(
-    reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
+      reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
   EXPECT_EQ(1470905418, receivedRunData.getStopTime());
 }

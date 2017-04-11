@@ -1,5 +1,5 @@
-#include <cmath>
 #include "SampleEnvironmentEvent.h"
+#include <cmath>
 
 BrightnESS::FlatBufs::f141_epics_nt::timeStamp_t
 SampleEnvironmentEvent::getTimestamp() {
@@ -26,7 +26,7 @@ SampleEnvironmentEvent::getBufferPointer(std::string &buffer) {
   builder.Finish(sEEventMessage);
 
   auto bufferpointer =
-    reinterpret_cast<const char *>(builder.GetBufferPointer());
+      reinterpret_cast<const char *>(builder.GetBufferPointer());
   buffer.assign(bufferpointer, bufferpointer + builder.GetSize());
 
   m_bufferSize = builder.GetSize();

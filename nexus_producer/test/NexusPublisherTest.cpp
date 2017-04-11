@@ -109,8 +109,7 @@ TEST_F(NexusPublisherTest, test_stream_data) {
   EXPECT_CALL(*publisher.get(), setUp(broker, instrumentName))
       .Times(AtLeast(1));
 
-  EXPECT_CALL(*publisher.get(),
-              sendEventMessage(_, _)).Times(numberOfFrames);
+  EXPECT_CALL(*publisher.get(), sendEventMessage(_, _)).Times(numberOfFrames);
 
   EXPECT_CALL(*publisher.get(), sendSampleEnvMessage(_, _)).Times(16);
   EXPECT_CALL(*publisher.get(), sendRunMessage(_, _))
