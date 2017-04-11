@@ -1,5 +1,4 @@
 #include <gmock/gmock.h>
-#include <gtest/gtest.h>
 
 #include "../include/NexusFileReader.h"
 
@@ -43,32 +42,32 @@ TEST(NexusFileReaderTest, nexus_read_number_frames) {
 TEST(NexusFileReaderTest, get_detIds_first_frame) {
   extern std::string testDataPath;
   auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs");
-  std::vector<int32_t> detIds;
+  std::vector<uint32_t> detIds;
   EXPECT_TRUE(fileReader.getEventDetIds(detIds, 0));
-  EXPECT_FLOAT_EQ(99406, detIds[0]);
-  EXPECT_FLOAT_EQ(87829, detIds[150]);
+  EXPECT_EQ(99406, detIds[0]);
+  EXPECT_EQ(87829, detIds[150]);
 }
 
 TEST(NexusFileReaderTest, get_event_tofs) {
   extern std::string testDataPath;
   auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs");
-  std::vector<float> eventTofs;
+  std::vector<uint32_t> eventTofs;
   EXPECT_TRUE(fileReader.getEventTofs(eventTofs, 0));
-  EXPECT_FLOAT_EQ(11660.505, eventTofs[0]);
-  EXPECT_FLOAT_EQ(46247.304, eventTofs[150]);
+  EXPECT_EQ(11660506, eventTofs[0]);
+  EXPECT_EQ(46247304, eventTofs[150]);
 }
 
 TEST(NexusFileReaderTest, get_detIds_too_high_frame_number) {
   extern std::string testDataPath;
   auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs");
-  std::vector<int32_t> detIds;
+  std::vector<uint32_t> detIds;
   EXPECT_FALSE(fileReader.getEventDetIds(detIds, 3000000));
 }
 
 TEST(NexusFileReaderTest, get_event_tofs_too_high_frame_number) {
   extern std::string testDataPath;
   auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs");
-  std::vector<float> eventTofs;
+  std::vector<uint32_t> eventTofs;
   EXPECT_FALSE(fileReader.getEventTofs(eventTofs, 3000000));
 }
 
@@ -95,8 +94,8 @@ TEST(NexusFileReaderTest, get_number_of_events_in_frame) {
 TEST(NexusFileReaderTest, get_frame_time) {
   extern std::string testDataPath;
   auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs");
-  EXPECT_FLOAT_EQ(2.940000057220459, fileReader.getFrameTime(0));
-  EXPECT_FLOAT_EQ(3.6389999389648438, fileReader.getFrameTime(7));
+  EXPECT_EQ(1460429934940000057, fileReader.getFrameTime(0));
+  EXPECT_EQ(1460429935638999939, fileReader.getFrameTime(7));
 }
 
 TEST(NexusFileReaderTest, get_run_start_time) {

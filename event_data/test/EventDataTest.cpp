@@ -16,7 +16,7 @@ TEST(EventDataTest, get_buffer_pointer) {
   std::vector<uint32_t> detIds = {1, 2, 3, 4};
   std::vector<uint32_t> tofs = {4, 3, 2, 1};
   float protonCharge = 0.001142;
-  float frameTime = 4.1389;
+  float frameTime = 41389;
   int32_t period = 1;
 
   EXPECT_NO_THROW(events.setDetId(detIds));

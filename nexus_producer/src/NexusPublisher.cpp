@@ -46,9 +46,9 @@ NexusPublisher::createMessageData(hsize_t frameNumber,
                                   const int messagesPerFrame) {
   std::vector<std::shared_ptr<EventData>> eventDataVector;
 
-  std::vector<int32_t> detIds;
+  std::vector<uint32_t> detIds;
   m_fileReader->getEventDetIds(detIds, frameNumber);
-  std::vector<float> tofs;
+  std::vector<uint32_t> tofs;
   m_fileReader->getEventTofs(tofs, frameNumber);
 
   auto numberOfFrames = m_fileReader->getNumberOfFrames();
@@ -76,20 +76,15 @@ NexusPublisher::createMessageData(hsize_t frameNumber,
     if (messageNumber == (messagesPerFrame - 1)) {
       upToDetId = detIds.end();
       upToTof = tofs.end();
-      eventData->setEndOfFrame(true);
-      if (frameNumber == (numberOfFrames - 1)) {
-        eventData->setEndOfRun(true);
-      }
     }
 
-    std::vector<int32_t> detIdsCurrentMessage(
+    std::vector<uint32_t> detIdsCurrentMessage(
         detIds.begin() + (messageNumber * eventsPerMessage), upToDetId);
-    std::vector<float> tofsCurrentMessage(
+    std::vector<uint32_t> tofsCurrentMessage(
         tofs.begin() + (messageNumber * eventsPerMessage), upToTof);
 
     eventData->setDetId(detIdsCurrentMessage);
     eventData->setTof(tofsCurrentMessage);
-    eventData->setFrameNumber(static_cast<uint32_t>(frameNumber));
     eventData->setTotalCounts(m_fileReader->getTotalEventCount());
 
     eventDataVector.push_back(eventData);
