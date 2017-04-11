@@ -52,7 +52,7 @@ TEST(RunDataTest, encode_and_decode_RunData) {
   EXPECT_NO_THROW(rundata.setNumberOfPeriods(1));
 
   std::string rawbuf;
-  EXPECT_NO_THROW(rundata.getEventBufferPointer(rawbuf, 0));
+  EXPECT_NO_THROW(rundata.getRunStartBufferPointer(rawbuf));
 
   auto receivedRunData = RunData();
   EXPECT_TRUE(receivedRunData.decodeMessage(
@@ -61,4 +61,17 @@ TEST(RunDataTest, encode_and_decode_RunData) {
   EXPECT_EQ("SANS2D", receivedRunData.getInstrumentName());
   EXPECT_EQ(1470905418, receivedRunData.getStartTime());
   EXPECT_EQ(1, receivedRunData.getNumberOfPeriods());
+}
+
+TEST(RunDataTest, encode_and_decode_RunStop) {
+  auto rundata = RunData();
+  EXPECT_NO_THROW(rundata.setStopTime("2016-08-11T08:50:18"));
+
+  std::string rawbuf;
+  EXPECT_NO_THROW(rundata.getRunStopBufferPointer(rawbuf));
+
+  auto receivedRunData = RunData();
+  EXPECT_TRUE(receivedRunData.decodeMessage(
+    reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
+  EXPECT_EQ(1470905418, receivedRunData.getStopTime());
 }

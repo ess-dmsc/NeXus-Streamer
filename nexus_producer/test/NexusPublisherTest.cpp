@@ -94,12 +94,6 @@ TEST_F(NexusPublisherTest,
       reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
 }
 
-MATCHER_P(CheckMessageID, messageID, "") {
-  auto buf = reinterpret_cast<const uint8_t *>(arg);
-  auto messageData = ISISStream::GetEventMessage(buf);
-  return (messageID == messageData->id());
-}
-
 TEST_F(NexusPublisherTest, test_stream_data) {
   using ::testing::Sequence;
   extern std::string testDataPath;
@@ -116,14 +110,7 @@ TEST_F(NexusPublisherTest, test_stream_data) {
       .Times(AtLeast(1));
 
   EXPECT_CALL(*publisher.get(),
-              sendEventMessage(_, _)).Times(numberOfFrames + 1);
-  // test that messages have sequential id numbers
-  //Sequence s1;
-  //for (uint64_t messageID = 0; messageID <= numberOfFrames; messageID++) {
-  //  EXPECT_CALL(*publisher.get(),
-  //              sendEventMessage(CheckMessageID(messageID), _))
-  //      .InSequence(s1);
-  //}
+              sendEventMessage(_, _)).Times(numberOfFrames);
 
   EXPECT_CALL(*publisher.get(), sendSampleEnvMessage(_, _)).Times(16);
   EXPECT_CALL(*publisher.get(), sendRunMessage(_, _))
@@ -150,7 +137,7 @@ TEST_F(NexusPublisherTest, test_stream_data_multiple_messages_per_frame) {
 
   EXPECT_CALL(*publisher.get(), setUp(broker, instrumentName))
       .Times(AtLeast(1));
-  EXPECT_CALL(*publisher.get(), sendEventMessage(_, _)).Times(1292);
+  EXPECT_CALL(*publisher.get(), sendEventMessage(_, _)).Times(1291);
   EXPECT_CALL(*publisher.get(), sendSampleEnvMessage(_, _)).Times(16);
   EXPECT_CALL(*publisher.get(), sendRunMessage(_, _))
       .Times(2); // Start and stop messages
@@ -169,7 +156,7 @@ TEST_F(NexusPublisherTest, test_create_run_message_data) {
   auto runData = streamer.createRunMessageData(runNumber);
 
   std::string rawbuf;
-  runData->getEventBufferPointer(rawbuf, 0);
+  runData->getRunStartBufferPointer(rawbuf);
 
   auto receivedData = EventData();
   // Should return false as this is not event data
