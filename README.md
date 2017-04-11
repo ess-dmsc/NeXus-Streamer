@@ -3,20 +3,18 @@
 # ISIS NeXus Streamer for Mantid
 Stream event data from a NeXus file from RAL/ISIS using Apache Kafka for the purpose of development of live data streaming in Mantid.
 
-Run metadata messages are sent to both the event stream and the run info stream. The offset recorded in the message is guaranteed to correspond to just before the RunInfo message in the event stream. Messages should be discarded until a RunInfo message with the same run number is encountered.
+Run start and stop messages are produced, to make use of these and consume from a specified timestamp Kafka version >0.10.2.0 is required.
 
 A variable number of messages are sent per frame, such that the number of events in a message does not exceed a limit. The limit is 200 by default and can be specified using the optional argument `-m <max_events_per_message>`.
 
-The client runs until the user terminates it, repeatedly sending data from the same file but with incrementing run numbers.
+The client runs until the user terminates it, repeatedly sending data from the same file but with incrementing run numbers. Unless the `-z` flag is used to produce only a single run.
 
 Usage:
 ```
 main_nexusPublisher -f <filepath>    Full file path of nexus file to stream
 -d <det_spec_map_filepath>    Full file path of file defining the det-spec mapping
 [-b <host>]    Broker IP address or hostname, default is 'sakura'
-[-t <event_topic_name>]    Name of event data topic to publish to, default is 'test_event_topic'
-[-r <run_topic_name>]    Name of run data topic to publish to, default is 'test_run_topic'
-[-a <det_spec_topic_name>]    Name of detector-spectra map topic to publish to, default is 'test_det_spec_topic'
+[-i <instrument_name>]    Used as prefix for topic names
 [-m <max_events_per_message>]   Maximum number of events to send in a single message, default is '200'
 [-s]    Slow mode, publishes data at approx realistic rate of 10 frames per second
 [-q]    Quiet mode, makes publisher less chatty on stdout
