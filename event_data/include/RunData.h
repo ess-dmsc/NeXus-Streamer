@@ -1,7 +1,7 @@
 #ifndef ISIS_NEXUS_STREAMER_FOR_MANTID_RUNDATA_H
 #define ISIS_NEXUS_STREAMER_FOR_MANTID_RUNDATA_H
 
-#include "event_schema_generated.h"
+#include "run_info_schema_generated.h"
 
 class RunData {
 

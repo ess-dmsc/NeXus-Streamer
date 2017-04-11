@@ -23,6 +23,7 @@ NexusFileReader::NexusFileReader(const std::string &filename)
   dataset.read(&numOfFrames, PredType::NATIVE_UINT64);
   m_numberOfFrames = numOfFrames;
   m_runStart = getRunStartTime();
+  m_frameStartOffset = getFrameStartOffset();
 }
 
 size_t NexusFileReader::findFrameNumberOfTime(float time) {
@@ -147,13 +148,17 @@ uint64_t NexusFileReader::getTotalEventCount() {
  *
  * @return - the DAE period number
  */
-int32_t NexusFileReader::getPeriodNumber() {
+uint32_t NexusFileReader::getPeriodNumber() {
   DataSet dataset = m_file->openDataSet("/raw_data_1/periods/number");
   int32_t periodNumber;
   dataset.read(&periodNumber, PredType::NATIVE_INT32);
-
   // -1 as period number starts at 1 in NeXus files but 0 everywhere else
-  return periodNumber - 1;
+  periodNumber -= 1;
+  if (periodNumber < 0)
+    throw std::runtime_error(
+        "Period number in NeXus file is expected to be > 0");
+
+  return static_cast<uint32_t>(periodNumber);
 }
 
 /**
@@ -237,18 +242,31 @@ float NexusFileReader::getProtonCharge(hsize_t frameNumber) {
 }
 
 /**
- * Gets the event index of the start of the specified frame
+ * Gets the absolute time of the start of the specified frame
  *
  * @param frameNumber - find the event index for the start of this frame
- * @return - event index corresponding to the start of the specified frame
+ * @return - absolute time of frame start in nanoseconds since 1 Jan 1970
  */
-double NexusFileReader::getFrameTime(hsize_t frameNumber) {
+uint64_t NexusFileReader::getFrameTime(hsize_t frameNumber) {
   std::string datasetName = "/raw_data_1/detector_1_events/event_time_zero";
 
   auto frameTime = getSingleValueFromDataset<double>(
       datasetName, PredType::NATIVE_DOUBLE, frameNumber);
+  auto frameTimeFromOffsetNanoseconds =
+      static_cast<uint64_t>(floor((frameTime * 1e9) + 0.5));
+  return m_frameStartOffset + frameTimeFromOffsetNanoseconds;
+}
 
-  return frameTime;
+uint64_t NexusFileReader::getFrameStartOffset() {
+  std::string datasetName = "/raw_data_1/detector_1_events/event_time_zero";
+  auto dataset = m_file->openDataSet(datasetName);
+  auto offsetAttr = dataset.openAttribute("offset");
+
+  std::string value;
+  offsetAttr.read(offsetAttr.getDataType(), value);
+
+  // * 1e9 for seconds since epoch to nanoseconds since epoch
+  return static_cast<uint64_t>(convertStringToUnixTime(value) * 1e9);
 }
 
 template <typename T>
@@ -313,7 +331,7 @@ hsize_t NexusFileReader::getNumberOfEventsInFrame(hsize_t frameNumber) {
  * @return - false if the specified frame number is not the data range, true
  * otherwise
  */
-bool NexusFileReader::getEventDetIds(std::vector<int32_t> &detIds,
+bool NexusFileReader::getEventDetIds(std::vector<uint32_t> &detIds,
                                      hsize_t frameNumber) {
   if (frameNumber >= m_numberOfFrames)
     return false;
@@ -335,7 +353,7 @@ bool NexusFileReader::getEventDetIds(std::vector<int32_t> &detIds,
   hsize_t dimsm = numberOfEventsInFrame;
   DataSpace memspace(1, &dimsm);
 
-  dataset.read(detIds.data(), PredType::NATIVE_INT32, memspace, dataspace);
+  dataset.read(detIds.data(), PredType::NATIVE_UINT32, memspace, dataspace);
 
   return true;
 }
@@ -349,7 +367,7 @@ bool NexusFileReader::getEventDetIds(std::vector<int32_t> &detIds,
  * @return - false if the specified frame number is not the data range, true
  * otherwise
  */
-bool NexusFileReader::getEventTofs(std::vector<float> &tofs,
+bool NexusFileReader::getEventTofs(std::vector<uint32_t> &tofs,
                                    hsize_t frameNumber) {
   if (frameNumber >= m_numberOfFrames)
     return false;
@@ -363,15 +381,23 @@ bool NexusFileReader::getEventTofs(std::vector<float> &tofs,
   hsize_t stride = 1;
   hsize_t block = 1;
 
+  std::vector<float> tof_floats;
+
   auto dataspace = dataset.getSpace();
   dataspace.selectHyperslab(H5S_SELECT_SET, &count, &offset, &stride, &block);
 
   tofs.resize(numberOfEventsInFrame);
+  tof_floats.resize(numberOfEventsInFrame);
 
   hsize_t dimsm = numberOfEventsInFrame;
   DataSpace memspace(1, &dimsm);
 
-  dataset.read(tofs.data(), PredType::NATIVE_FLOAT, memspace, dataspace);
+  dataset.read(tof_floats.data(), PredType::NATIVE_FLOAT, memspace, dataspace);
+  // transform float in microseconds to uint32 in nanoseconds
+  std::transform(tof_floats.begin(), tof_floats.end(), tofs.begin(),
+                 [](float tof) {
+                   return static_cast<uint32_t>(floor((tof * 1000) + 0.5));
+                 });
 
   return true;
 }

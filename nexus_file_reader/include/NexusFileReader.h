@@ -18,13 +18,13 @@ public:
 
   hsize_t getFileSize();
   uint64_t getTotalEventCount();
-  int32_t getPeriodNumber();
+  uint32_t getPeriodNumber();
   float getProtonCharge(hsize_t frameNumber);
-  bool getEventDetIds(std::vector<int32_t> &detIds, hsize_t frameNumber);
-  bool getEventTofs(std::vector<float> &tofs, hsize_t frameNumber);
+  bool getEventDetIds(std::vector<uint32_t> &detIds, hsize_t frameNumber);
+  bool getEventTofs(std::vector<uint32_t> &tofs, hsize_t frameNumber);
   size_t getNumberOfFrames() { return m_numberOfFrames; };
   hsize_t getNumberOfEventsInFrame(hsize_t frameNumber);
-  double getFrameTime(hsize_t frameNumber);
+  uint64_t getFrameTime(hsize_t frameNumber);
   std::vector<int> getFramePartsPerFrame(int maxEventsPerMessage);
   int64_t getRunStartTime();
   std::string getInstrumentName();
@@ -36,6 +36,7 @@ public:
                                       const std::string &datasetName);
   std::vector<std::string> get1DStringDataset(const std::string &datasetName);
   int32_t getNumberOfPeriods();
+  uint64_t getFrameStartOffset();
 
 private:
   int64_t m_runStart;
@@ -47,6 +48,7 @@ private:
   H5FilePtr m_file = nullptr;
   size_t m_numberOfFrames;
   int64_t convertStringToUnixTime(const std::string &timeString);
+  uint64_t m_frameStartOffset;
 };
 
 #endif // ISIS_NEXUS_STREAMER_NEXUSFILEREADER_H
