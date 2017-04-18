@@ -33,7 +33,7 @@ bool RunData::decodeMessage(const uint8_t *buf) {
   if (runData->info_type_type() == InfoTypes_RunStart) {
     auto runStartData = static_cast<const RunStart *>(runData->info_type());
     setStartTime(runStartData->start_time());
-    setInstrumentName(runStartData->inst_name()->str());
+    setInstrumentName(runStartData->instrument_name()->str());
     setRunNumber(runStartData->run_number());
     setNumberOfPeriods(runStartData->n_periods());
 

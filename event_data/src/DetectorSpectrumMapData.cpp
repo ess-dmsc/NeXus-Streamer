@@ -41,10 +41,10 @@ void DetectorSpectrumMapData::readFile(const std::string &filename) {
 }
 
 void DetectorSpectrumMapData::decodeMessage(const uint8_t *buf) {
-  auto messageData = ISISStream::GetSpectraDetectorMapping(buf);
+  auto messageData = GetSpectraDetectorMapping(buf);
 
-  auto detFBVector = messageData->det();
-  auto specFBVector = messageData->spec();
+  auto detFBVector = messageData->detector_id();
+  auto specFBVector = messageData->spectrum();
   setNumberOfEntries(messageData->n_spectra());
   m_detectors.resize(static_cast<size_t>(m_numberOfEntries));
   m_spectra.resize(static_cast<size_t>(m_numberOfEntries));
@@ -56,7 +56,7 @@ flatbuffers::unique_ptr_t
 DetectorSpectrumMapData::getBufferPointer(std::string &buffer) {
   flatbuffers::FlatBufferBuilder builder;
 
-  auto messageFlatbuf = ISISStream::CreateSpectraDetectorMapping(
+  auto messageFlatbuf = CreateSpectraDetectorMapping(
       builder, builder.CreateVector(m_spectra),
       builder.CreateVector(m_detectors), m_numberOfEntries);
   builder.Finish(messageFlatbuf);
