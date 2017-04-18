@@ -1,7 +1,7 @@
 #ifndef ISIS_NEXUS_STREAMER_FOR_MANTID_DETECTORSPECTRUMMAPDATA_H
 #define ISIS_NEXUS_STREAMER_FOR_MANTID_DETECTORSPECTRUMMAPDATA_H
 
-#include "det_spec_mapping_schema_generated.h"
+#include "df12_det_spec_map_generated.h"
 
 class DetectorSpectrumMapData {
 public:
