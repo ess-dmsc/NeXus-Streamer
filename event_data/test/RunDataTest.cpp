@@ -75,3 +75,15 @@ TEST(RunDataTest, encode_and_decode_RunStop) {
       reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
   EXPECT_EQ(1470905418, receivedRunData.getStopTime());
 }
+
+TEST(RunDataTest, check_buffer_includes_file_identifier) {
+  auto rundata = RunData();
+  EXPECT_NO_THROW(rundata.setStopTime("2016-08-11T08:50:18"));
+
+  std::string rawbuf;
+  EXPECT_NO_THROW(rundata.getRunStopBufferPointer(rawbuf));
+
+  auto runIdentifier = RunInfoIdentifier();
+  EXPECT_TRUE(flatbuffers::BufferHasIdentifier(
+      reinterpret_cast<const uint8_t *>(rawbuf.c_str()), runIdentifier));
+}

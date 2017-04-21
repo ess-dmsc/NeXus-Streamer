@@ -51,9 +51,21 @@ TEST(EventDataTest, get_buffer_size) {
   std::string rawbuf;
   EXPECT_NO_THROW(events.getBufferPointer(rawbuf, 0));
   EXPECT_TRUE(events.getBufferSize() > 0);
-  std::string eventIdentifier = "ev42";
+}
+
+TEST(EventDataTest, check_buffer_includes_file_identifier) {
+  auto events = EventData();
+
+  std::vector<uint32_t> detIds = {1, 2, 3, 4};
+  std::vector<uint32_t> tofs = {4, 3, 2, 1};
+
+  events.setDetId(detIds);
+  events.setTof(tofs);
+
+  std::string rawbuf;
+  EXPECT_NO_THROW(events.getBufferPointer(rawbuf, 0));
+
+  auto eventIdentifier = EventMessageIdentifier();
   EXPECT_TRUE(flatbuffers::BufferHasIdentifier(
-      reinterpret_cast<const uint8_t *>(rawbuf.c_str()),
-      eventIdentifier.c_str()));
-  EXPECT_EQ(rawbuf.at(5), eventIdentifier.at(1));
+      reinterpret_cast<const uint8_t *>(rawbuf.c_str()), eventIdentifier));
 }
