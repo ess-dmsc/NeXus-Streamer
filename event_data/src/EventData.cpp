@@ -42,7 +42,7 @@ flatbuffers::unique_ptr_t EventData::getBufferPointer(std::string &buffer,
       builder.CreateVector(m_detId), FacilityData_ISISData,
       isisDataMessage.Union());
 
-  builder.Finish(eventMessage);
+  FinishEventMessageBuffer(builder, eventMessage);
 
   auto bufferpointer =
       reinterpret_cast<const char *>(builder.GetBufferPointer());

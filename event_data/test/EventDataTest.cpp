@@ -51,4 +51,9 @@ TEST(EventDataTest, get_buffer_size) {
   std::string rawbuf;
   EXPECT_NO_THROW(events.getBufferPointer(rawbuf, 0));
   EXPECT_TRUE(events.getBufferSize() > 0);
+  std::string eventIdentifier = "ev42";
+  EXPECT_TRUE(flatbuffers::BufferHasIdentifier(
+      reinterpret_cast<const uint8_t *>(rawbuf.c_str()),
+      eventIdentifier.c_str()));
+  EXPECT_EQ(rawbuf.at(5), eventIdentifier.at(1));
 }

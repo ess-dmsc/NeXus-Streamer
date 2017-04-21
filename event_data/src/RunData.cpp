@@ -58,7 +58,7 @@ RunData::getRunStartBufferPointer(std::string &buffer) {
   auto messageRunInfo =
       CreateRunInfo(builder, InfoTypes_RunStart, messageRunStart.Union());
 
-  builder.Finish(messageRunInfo);
+  FinishRunInfoBuffer(builder, messageRunInfo);
 
   auto bufferpointer =
       reinterpret_cast<const char *>(builder.GetBufferPointer());
@@ -77,7 +77,7 @@ RunData::getRunStopBufferPointer(std::string &buffer) {
   auto messageRunInfo =
       CreateRunInfo(builder, InfoTypes_RunStop, messageRunStop.Union());
 
-  builder.Finish(messageRunInfo);
+  FinishRunInfoBuffer(builder, messageRunInfo);
 
   auto bufferpointer =
       reinterpret_cast<const char *>(builder.GetBufferPointer());
