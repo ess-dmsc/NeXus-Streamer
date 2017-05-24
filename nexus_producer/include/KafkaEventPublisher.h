@@ -36,8 +36,8 @@ private:
   std::shared_ptr<RdKafka::Topic> m_sampleEnvTopic_ptr;
   std::string m_compression = "";
 
-  // We require messages to be in order, therefore always publish to partition 0
-  int m_partitionNumber = 0;
+  // Use default partition assignment for messages
+  int m_partitionNumber = RdKafka::Topic::PARTITION_UA;
 };
 
 #endif // ISIS_NEXUS_STREAMER_KAFKAEVENTPUBLISHER_H
