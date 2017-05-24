@@ -9,22 +9,21 @@ public:
   template <typename T>
   void decodeSampleEnvMessage(const std::string &messageBuffer,
                               const std::string &inputName, T inputValue) {
-    using namespace BrightnESS::FlatBufs::f141_epics_nt;
     auto messageData =
-        GetEpicsPV(reinterpret_cast<const uint8_t *>(messageBuffer.c_str()));
-    std::string name = messageData->name()->str();
-    auto timestamp = messageData->timeStamp();
+        GetLogData(reinterpret_cast<const uint8_t *>(messageBuffer.c_str()));
+    std::string name = messageData->source_name()->str();
+    auto timestamp = messageData->timestamp();
 
     EXPECT_EQ(inputName, name);
 
-    if (messageData->pv_type() == PV_NTScalarInt) {
-      auto value = static_cast<const NTScalarInt *>(messageData->pv());
+    if (messageData->value_type() == Value_Int) {
+      auto value = static_cast<const Int *>(messageData->value());
       EXPECT_EQ(inputValue, value->value());
-    } else if (messageData->pv_type() == PV_NTScalarLong) {
-      auto value = static_cast<const NTScalarLong *>(messageData->pv());
+    } else if (messageData->value_type() == Value_Long) {
+      auto value = static_cast<const Long *>(messageData->value());
       EXPECT_EQ(inputValue, value->value());
-    } else if (messageData->pv_type() == PV_NTScalarDouble) {
-      auto value = static_cast<const NTScalarDouble *>(messageData->pv());
+    } else if (messageData->value_type() == Value_Double) {
+      auto value = static_cast<const Double *>(messageData->value());
       EXPECT_EQ(inputValue, value->value());
     } else {
       throw std::runtime_error(

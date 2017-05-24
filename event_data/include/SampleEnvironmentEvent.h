@@ -1,7 +1,7 @@
 #ifndef ISIS_NEXUS_STREAMER_FOR_MANTID_SAMPLEENVIRONMENTEVENT_H
 #define ISIS_NEXUS_STREAMER_FOR_MANTID_SAMPLEENVIRONMENTEVENT_H
 
-#include "f141_epics_nt_generated.h"
+#include "f142_logdata_generated.h"
 #include <type_traits>
 
 /*
@@ -17,11 +17,11 @@ public:
         m_name(name) {}
   virtual ~SampleEnvironmentEvent() {}
 
-  virtual flatbuffers::Offset<BrightnESS::FlatBufs::f141_epics_nt::EpicsPV>
+  virtual flatbuffers::Offset<LogData>
   getSEEvent(flatbuffers::FlatBufferBuilder &builder) = 0;
   std::string getName() { return m_name; }
   float getTime() { return m_time; }
-  BrightnESS::FlatBufs::f141_epics_nt::timeStamp_t getTimestamp();
+  uint64_t getTimestamp();
   flatbuffers::unique_ptr_t getBufferPointer(std::string &buffer);
   size_t getBufferSize() { return m_bufferSize; }
 
