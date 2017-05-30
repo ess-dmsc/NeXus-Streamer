@@ -9,7 +9,7 @@ public:
                                double value, int64_t runStart)
       : m_value(value), SampleEnvironmentEvent(runStart, time, name) {}
 
-  flatbuffers::Offset<BrightnESS::FlatBufs::f141_epics_nt::EpicsPV>
+  flatbuffers::Offset<LogData>
   getSEEvent(flatbuffers::FlatBufferBuilder &builder) override;
 
 private:
