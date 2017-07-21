@@ -35,7 +35,7 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
   std::unordered_map<hsize_t, sEEventVector> sEEventMap;
 
   auto groupNames = getNamesInGroup("/raw_data_1/selog");
-  for (auto const name : groupNames) {
+  for (auto const &name : groupNames) {
     if ((name != "SECI_OUT_OF_RANGE_BLOCK") && (name != "gas_control")) {
       std::vector<float> floatValues;
       std::vector<int32_t> intValues;
@@ -400,16 +400,4 @@ bool NexusFileReader::getEventTofs(std::vector<uint32_t> &tofs,
                  });
 
   return true;
-}
-
-std::vector<int>
-NexusFileReader::getFramePartsPerFrame(int maxEventsPerMessage) {
-  std::vector<int> framePartsPerFrame;
-  framePartsPerFrame.resize(m_numberOfFrames);
-  for (hsize_t frameNumber = 0; frameNumber < m_numberOfFrames; frameNumber++) {
-    framePartsPerFrame[frameNumber] = static_cast<int>(
-        std::ceil(static_cast<float>(getNumberOfEventsInFrame(frameNumber)) /
-                  static_cast<float>(maxEventsPerMessage)));
-  }
-  return framePartsPerFrame;
 }

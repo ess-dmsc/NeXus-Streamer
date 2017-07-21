@@ -39,7 +39,7 @@ void KafkaEventPublisher::setUp(const std::string &broker,
   // Create producer
   m_producer_ptr = std::shared_ptr<RdKafka::Producer>(
       RdKafka::Producer::create(conf.get(), error_str));
-  if (!m_producer_ptr.get()) {
+  if (m_producer_ptr == nullptr) {
     std::cerr << "Failed to create producer: " << error_str << std::endl;
     exit(1);
   }
@@ -69,7 +69,7 @@ std::shared_ptr<RdKafka::Topic> KafkaEventPublisher::createTopicHandle(
   std::string error_str;
   auto topic_ptr = std::shared_ptr<RdKafka::Topic>(RdKafka::Topic::create(
       m_producer_ptr.get(), topic_str, topicConfig.get(), error_str));
-  if (!topic_ptr.get()) {
+  if (topic_ptr == nullptr) {
     std::cerr << "Failed to create topic: " << error_str << std::endl;
     exit(1);
   }
@@ -105,7 +105,7 @@ void KafkaEventPublisher::sendMessage(char *buf, size_t messageSize,
 
     resp = m_producer_ptr->produce(topic.get(), m_partitionNumber,
                                    RdKafka::Producer::RK_MSG_COPY, buf,
-                                   messageSize, NULL, NULL);
+                                   messageSize, nullptr, nullptr);
 
     if (resp != RdKafka::ERR_NO_ERROR) {
       if (resp != RdKafka::ERR__QUEUE_FULL) {

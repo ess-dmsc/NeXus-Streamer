@@ -11,12 +11,10 @@ Usage:
 ```
 main_nexusPublisher -f <filepath>    Full file path of nexus file to stream
 -d <det_spec_map_filepath>    Full file path of file defining the det-spec mapping
-[-b <host>]    Broker IP address or hostname, default is 'sakura'
+-b <host>    Broker IP address or hostname
 [-i <instrument_name>]    Used as prefix for topic names
-[-m <max_events_per_message>]   Maximum number of events to send in a single message, default is '200'
 [-s]    Slow mode, publishes data at approx realistic rate of 10 frames per second
 [-q]    Quiet mode, makes publisher less chatty on stdout
-[-u]    Random mode, serve messages within each frame in a random order, for testing purposes
 [-z]    Produce only a single run (otherwise repeats until interrupted)
 ```
 

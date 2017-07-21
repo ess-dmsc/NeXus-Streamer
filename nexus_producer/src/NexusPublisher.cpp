@@ -25,10 +25,10 @@ NexusPublisher::NexusPublisher(std::shared_ptr<EventPublisher> publisher,
                                const std::string &instrumentName,
                                const std::string &filename,
                                const std::string &detSpecMapFilename,
-                               const bool quietMode, const bool randomMode)
+                               const bool quietMode)
     : m_publisher(publisher),
       m_fileReader(std::make_shared<NexusFileReader>(filename)),
-      m_quietMode(quietMode), m_randomMode(randomMode),
+      m_quietMode(quietMode),
       m_detSpecMapFilename(detSpecMapFilename) {
   publisher->setUp(brokerAddress, instrumentName);
   m_sEEventMap = m_fileReader->getSEEventMap();
@@ -42,8 +42,7 @@ NexusPublisher::NexusPublisher(std::shared_ptr<EventPublisher> publisher,
  * @return - an object containing the data from the specified frame
  */
 std::vector<std::shared_ptr<EventData>>
-NexusPublisher::createMessageData(hsize_t frameNumber,
-                                  const int messagesPerFrame) {
+NexusPublisher::createMessageData(hsize_t frameNumber) {
   std::vector<std::shared_ptr<EventData>> eventDataVector;
 
   std::vector<uint32_t> detIds;
@@ -51,44 +50,19 @@ NexusPublisher::createMessageData(hsize_t frameNumber,
   std::vector<uint32_t> tofs;
   m_fileReader->getEventTofs(tofs, frameNumber);
 
-  auto numberOfFrames = m_fileReader->getNumberOfFrames();
-  // this assumes constant current during frame, which I think is all I can do
-  // with data in the nexus file
-  auto protonCharge =
-      m_fileReader->getProtonCharge(frameNumber) / messagesPerFrame;
+  auto protonCharge = m_fileReader->getProtonCharge(frameNumber);
   auto period = m_fileReader->getPeriodNumber();
   auto frameTime = m_fileReader->getFrameTime(frameNumber);
 
-  uint32_t eventsPerMessage =
-      static_cast<uint32_t>(ceil(static_cast<double>(detIds.size()) /
-                                 static_cast<double>(messagesPerFrame)));
-  for (int messageNumber = 0; messageNumber < messagesPerFrame;
-       messageNumber++) {
-    auto eventData = std::make_shared<EventData>();
-    eventData->setProtonCharge(protonCharge);
-    eventData->setPeriod(period);
-    eventData->setFrameTime(frameTime);
+  auto eventData = std::make_shared<EventData>();
+  eventData->setProtonCharge(protonCharge);
+  eventData->setPeriod(period);
+  eventData->setFrameTime(frameTime);
+  eventData->setDetId(detIds);
+  eventData->setTof(tofs);
+  eventData->setTotalCounts(m_fileReader->getTotalEventCount());
 
-    auto upToDetId = detIds.begin() + ((messageNumber + 1) * eventsPerMessage);
-    auto upToTof = tofs.begin() + ((messageNumber + 1) * eventsPerMessage);
-
-    // The last message of the frame will contain any remaining events
-    if (messageNumber == (messagesPerFrame - 1)) {
-      upToDetId = detIds.end();
-      upToTof = tofs.end();
-    }
-
-    std::vector<uint32_t> detIdsCurrentMessage(
-        detIds.begin() + (messageNumber * eventsPerMessage), upToDetId);
-    std::vector<uint32_t> tofsCurrentMessage(
-        tofs.begin() + (messageNumber * eventsPerMessage), upToTof);
-
-    eventData->setDetId(detIdsCurrentMessage);
-    eventData->setTof(tofsCurrentMessage);
-    eventData->setTotalCounts(m_fileReader->getTotalEventCount());
-
-    eventDataVector.push_back(eventData);
-  }
+  eventDataVector.push_back(eventData);
 
   return eventDataVector;
 }
@@ -125,22 +99,18 @@ NexusPublisher::createDetSpecMessageData() {
 /**
  * Start streaming all the data from the file
  */
-void NexusPublisher::streamData(const int maxEventsPerFramePart, int runNumber,
-                                bool slow) {
+void NexusPublisher::streamData(int runNumber, bool slow) {
   std::string rawbuf;
   std::string sampleEnvBuf;
   // frame numbers run from 0 to numberOfFrames-1
   int64_t totalBytesSent = 0;
   const auto numberOfFrames = m_fileReader->getNumberOfFrames();
-  auto framePartsPerFrame =
-      m_fileReader->getFramePartsPerFrame(maxEventsPerFramePart);
 
   totalBytesSent += createAndSendRunMessage(rawbuf, runNumber);
   totalBytesSent += createAndSendDetSpecMessage(rawbuf);
 
   for (size_t frameNumber = 0; frameNumber < numberOfFrames; frameNumber++) {
-    totalBytesSent += createAndSendMessage(rawbuf, frameNumber,
-                                           framePartsPerFrame[frameNumber]);
+    totalBytesSent += createAndSendMessage(rawbuf, frameNumber);
     createAndSendSampleEnvMessages(sampleEnvBuf, frameNumber);
     reportProgress(static_cast<float>(frameNumber) /
                    static_cast<float>(numberOfFrames));
@@ -165,18 +135,14 @@ void NexusPublisher::streamData(const int maxEventsPerFramePart, int runNumber,
  * @param frameNumber - the number of the frame for which data will be sent
  * @return - size of the buffer
  */
-int64_t NexusPublisher::createAndSendMessage(std::string &rawbuf,
-                                             size_t frameNumber,
-                                             const int messagesPerFrame) {
-  auto messageData = createMessageData(frameNumber, messagesPerFrame);
+size_t NexusPublisher::createAndSendMessage(std::string &rawbuf,
+                                             size_t frameNumber) {
+  auto messageData = createMessageData(frameNumber);
   std::vector<int> indexes;
   indexes.reserve(messageData.size());
   for (int i = 0; i < messageData.size(); ++i)
     indexes.push_back(i);
-  if (m_randomMode && indexes.size() > 1) {
-    std::random_shuffle(indexes.begin() + 1, indexes.end());
-  }
-  int64_t dataSize = 0;
+  size_t dataSize = 0;
   for (const auto &index : indexes) {
     auto buffer_uptr =
         messageData[index]->getBufferPointer(rawbuf, m_messageID + index);
@@ -196,7 +162,7 @@ int64_t NexusPublisher::createAndSendMessage(std::string &rawbuf,
  */
 void NexusPublisher::createAndSendSampleEnvMessages(std::string &sampleEnvBuf,
                                                     size_t frameNumber) {
-  for (auto sEEvent : m_sEEventMap[frameNumber]) {
+  for (const auto &sEEvent : m_sEEventMap[frameNumber]) {
     auto buffer_uptr = sEEvent->getBufferPointer(sampleEnvBuf);
     m_publisher->sendSampleEnvMessage(
         reinterpret_cast<char *>(buffer_uptr.get()), sEEvent->getBufferSize());
@@ -210,7 +176,7 @@ void NexusPublisher::createAndSendSampleEnvMessages(std::string &sampleEnvBuf,
  * @param runNumber - integer to identify the run
  * @return - size of the buffer
  */
-int64_t NexusPublisher::createAndSendRunMessage(std::string &rawbuf,
+size_t NexusPublisher::createAndSendRunMessage(std::string &rawbuf,
                                                 int runNumber) {
   auto messageData = createRunMessageData(runNumber);
   auto buffer_uptr = messageData->getRunStartBufferPointer(rawbuf);
@@ -227,7 +193,7 @@ int64_t NexusPublisher::createAndSendRunMessage(std::string &rawbuf,
  * @param rawbuf - a buffer for the message
  * @return - size of the buffer
  */
-int64_t NexusPublisher::createAndSendRunStopMessage(std::string &rawbuf) {
+size_t NexusPublisher::createAndSendRunStopMessage(std::string &rawbuf) {
   auto runData = std::make_shared<RunData>();
   auto now = std::chrono::system_clock::now();
   auto now_c = std::chrono::system_clock::to_time_t(now);
@@ -236,11 +202,10 @@ int64_t NexusPublisher::createAndSendRunStopMessage(std::string &rawbuf) {
   auto buffer_uptr = runData->getRunStopBufferPointer(rawbuf);
   m_publisher->sendRunMessage(reinterpret_cast<char *>(buffer_uptr.get()),
                               runData->getBufferSize());
-  std::cout << std::endl << "Publishing end of run message" << std::endl;
   return rawbuf.size();
 }
 
-int64_t NexusPublisher::createAndSendDetSpecMessage(std::string &rawbuf) {
+size_t NexusPublisher::createAndSendDetSpecMessage(std::string &rawbuf) {
   auto messageData = createDetSpecMessageData();
   auto buffer_uptr = messageData->getBufferPointer(rawbuf);
   m_publisher->sendDetSpecMessage(reinterpret_cast<char *>(buffer_uptr.get()),

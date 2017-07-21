@@ -15,21 +15,19 @@ public:
                  const std::string &brokerAddress,
                  const std::string &instrumentName,
                  const std::string &filename,
-                 const std::string &detSpecMapFilename, const bool quietMode,
-                 const bool randomMode);
+                 const std::string &detSpecMapFilename, const bool quietMode);
   std::vector<std::shared_ptr<EventData>>
-  createMessageData(hsize_t frameNumber, const int messagesPerFrame);
-  int64_t createAndSendRunMessage(std::string &rawbuf, int runNumber);
-  int64_t createAndSendDetSpecMessage(std::string &rawbuf);
+  createMessageData(hsize_t frameNumber);
+  size_t createAndSendRunMessage(std::string &rawbuf, int runNumber);
+  size_t createAndSendDetSpecMessage(std::string &rawbuf);
   std::shared_ptr<RunData> createRunMessageData(int runNumber);
   std::shared_ptr<DetectorSpectrumMapData> createDetSpecMessageData();
-  void streamData(const int maxEventsPerFramePart, int runNumber, bool slow);
+  void streamData(int runNumber, bool slow);
 
 private:
-  int64_t createAndSendMessage(std::string &rawbuf, size_t frameNumber,
-                               const int messagesPerFrame);
+  size_t createAndSendMessage(std::string &rawbuf, size_t frameNumber);
   void createAndSendSampleEnvMessages(std::string &sampleEnvBuf, size_t frameNumber);
-  int64_t createAndSendRunStopMessage(std::string &rawbuf);
+  size_t createAndSendRunStopMessage(std::string &rawbuf);
   void reportProgress(const float progress);
 
   std::shared_ptr<EventPublisher> m_publisher;
@@ -38,7 +36,6 @@ private:
   std::string m_detSpecMapFilename;
   std::unordered_map<hsize_t, sEEventVector> m_sEEventMap;
   uint64_t m_messageID = 0;
-  bool m_randomMode;
 };
 
 #endif // ISIS_NEXUS_STREAMER_NEXUSPUBLISHER_H

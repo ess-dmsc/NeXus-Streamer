@@ -6,9 +6,8 @@ bool file_exists(const std::string &name) {
   if (FILE *file = fopen(name.c_str(), "r")) {
     fclose(file);
     return true;
-  } else {
-    return false;
   }
+  return false;
 }
 
 DetectorSpectrumMapData::DetectorSpectrumMapData(const std::string &filename) {
@@ -31,8 +30,8 @@ void DetectorSpectrumMapData::readFile(const std::string &filename) {
   std::getline(infile, line); // discard third line
   size_t entryNumber = 0;
   while (std::getline(infile, line)) {
-    std::istringstream iss(line);
-    if (!(iss >> m_detectors[entryNumber] >> m_spectra[entryNumber])) {
+    std::istringstream isstream(line);
+    if (!(isstream >> m_detectors[entryNumber] >> m_spectra[entryNumber])) {
       break;
     } // error
 
