@@ -1,9 +1,7 @@
 [![Build Status](https://travis-ci.org/ScreamingUdder/isis_nexus_streamer_for_mantid.svg?branch=master)](https://travis-ci.org/ScreamingUdder/isis_nexus_streamer_for_mantid) [![Build Status](https://ci.appveyor.com/api/projects/status/1oqx295j13frpj9w?svg=true)](https://ci.appveyor.com/project/matthew-d-jones/isis-nexus-streamer-for-mantid) [![Coverage Status](https://coveralls.io/repos/github/ScreamingUdder/isis_nexus_streamer_for_mantid/badge.svg?branch=master)](https://coveralls.io/github/ScreamingUdder/isis_nexus_streamer_for_mantid?branch=master) [![License (2-Clause BSD)](https://img.shields.io/badge/license-BSD%202--Clause-blue.svg)](https://github.com/ScreamingUdder/isis_nexus_streamer_for_mantid/blob/master/LICENSE)
 
 # ISIS NeXus Streamer for Mantid
-Stream event data from a NeXus file from RAL/ISIS using Apache Kafka for the purpose of development of live data streaming in Mantid.
-
-A variable number of messages are sent per frame, such that the number of events in a message does not exceed a limit. The limit is 200 by default and can be specified using the optional argument `-m <max_events_per_message>`.
+Stream event data from a NeXus file from RAL/ISIS using Apache Kafka for the purpose of development of live data streaming in Mantid. Each message sent over Kafka comprises the event data from a single neutron pulse.
 
 The client runs until the user terminates it, repeatedly sending data from the same file but with incrementing run numbers. However the `-z` flag can be used to produce only a single run.
 
