@@ -1,4 +1,7 @@
-.idea
 Testing/
 *.pyc
 
+# IDE config
+.idea
+.kdev4
+.vscode

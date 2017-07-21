@@ -401,15 +401,3 @@ bool NexusFileReader::getEventTofs(std::vector<uint32_t> &tofs,
 
   return true;
 }
-
-std::vector<int>
-NexusFileReader::getFramePartsPerFrame(int maxEventsPerMessage) {
-  std::vector<int> framePartsPerFrame;
-  framePartsPerFrame.resize(m_numberOfFrames);
-  for (hsize_t frameNumber = 0; frameNumber < m_numberOfFrames; frameNumber++) {
-    framePartsPerFrame[frameNumber] = static_cast<int>(
-        std::ceil(static_cast<float>(getNumberOfEventsInFrame(frameNumber)) /
-                  static_cast<float>(maxEventsPerMessage)));
-  }
-  return framePartsPerFrame;
-}

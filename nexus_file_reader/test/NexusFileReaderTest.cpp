@@ -120,13 +120,6 @@ TEST(NexusFileReaderTest, get_se_names) {
                                      "TEMP1", "fake_int", "fake_long"));
 }
 
-TEST(NexusFileReaderTest, get_frame_parts_per_frame) {
-  extern std::string testDataPath;
-  auto fileReader = NexusFileReader(testDataPath + "SANS_test_reduced.hdf5");
-  auto framePartsPerFrame = fileReader.getFramePartsPerFrame(200);
-  EXPECT_EQ(4, framePartsPerFrame[0]);
-}
-
 TEST(NexusFileReaderTest, get_1D_dataset_float) {
   extern std::string testDataPath;
   auto fileReader = NexusFileReader(testDataPath + "SANS_test_reduced.hdf5");
