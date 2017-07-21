@@ -18,16 +18,16 @@ public:
                  const std::string &detSpecMapFilename, const bool quietMode);
   std::vector<std::shared_ptr<EventData>>
   createMessageData(hsize_t frameNumber);
-  int64_t createAndSendRunMessage(std::string &rawbuf, int runNumber);
-  int64_t createAndSendDetSpecMessage(std::string &rawbuf);
+  size_t createAndSendRunMessage(std::string &rawbuf, int runNumber);
+  size_t createAndSendDetSpecMessage(std::string &rawbuf);
   std::shared_ptr<RunData> createRunMessageData(int runNumber);
   std::shared_ptr<DetectorSpectrumMapData> createDetSpecMessageData();
   void streamData(int runNumber, bool slow);
 
 private:
-  int64_t createAndSendMessage(std::string &rawbuf, size_t frameNumber);
+  size_t createAndSendMessage(std::string &rawbuf, size_t frameNumber);
   void createAndSendSampleEnvMessages(std::string &sampleEnvBuf, size_t frameNumber);
-  int64_t createAndSendRunStopMessage(std::string &rawbuf);
+  size_t createAndSendRunStopMessage(std::string &rawbuf);
   void reportProgress(const float progress);
 
   std::shared_ptr<EventPublisher> m_publisher;

@@ -135,14 +135,14 @@ void NexusPublisher::streamData(int runNumber, bool slow) {
  * @param frameNumber - the number of the frame for which data will be sent
  * @return - size of the buffer
  */
-int64_t NexusPublisher::createAndSendMessage(std::string &rawbuf,
+size_t NexusPublisher::createAndSendMessage(std::string &rawbuf,
                                              size_t frameNumber) {
   auto messageData = createMessageData(frameNumber);
   std::vector<int> indexes;
   indexes.reserve(messageData.size());
   for (int i = 0; i < messageData.size(); ++i)
     indexes.push_back(i);
-  int64_t dataSize = 0;
+  size_t dataSize = 0;
   for (const auto &index : indexes) {
     auto buffer_uptr =
         messageData[index]->getBufferPointer(rawbuf, m_messageID + index);
@@ -162,7 +162,7 @@ int64_t NexusPublisher::createAndSendMessage(std::string &rawbuf,
  */
 void NexusPublisher::createAndSendSampleEnvMessages(std::string &sampleEnvBuf,
                                                     size_t frameNumber) {
-  for (auto sEEvent : m_sEEventMap[frameNumber]) {
+  for (const auto &sEEvent : m_sEEventMap[frameNumber]) {
     auto buffer_uptr = sEEvent->getBufferPointer(sampleEnvBuf);
     m_publisher->sendSampleEnvMessage(
         reinterpret_cast<char *>(buffer_uptr.get()), sEEvent->getBufferSize());
@@ -176,7 +176,7 @@ void NexusPublisher::createAndSendSampleEnvMessages(std::string &sampleEnvBuf,
  * @param runNumber - integer to identify the run
  * @return - size of the buffer
  */
-int64_t NexusPublisher::createAndSendRunMessage(std::string &rawbuf,
+size_t NexusPublisher::createAndSendRunMessage(std::string &rawbuf,
                                                 int runNumber) {
   auto messageData = createRunMessageData(runNumber);
   auto buffer_uptr = messageData->getRunStartBufferPointer(rawbuf);
@@ -193,7 +193,7 @@ int64_t NexusPublisher::createAndSendRunMessage(std::string &rawbuf,
  * @param rawbuf - a buffer for the message
  * @return - size of the buffer
  */
-int64_t NexusPublisher::createAndSendRunStopMessage(std::string &rawbuf) {
+size_t NexusPublisher::createAndSendRunStopMessage(std::string &rawbuf) {
   auto runData = std::make_shared<RunData>();
   auto now = std::chrono::system_clock::now();
   auto now_c = std::chrono::system_clock::to_time_t(now);
@@ -202,11 +202,10 @@ int64_t NexusPublisher::createAndSendRunStopMessage(std::string &rawbuf) {
   auto buffer_uptr = runData->getRunStopBufferPointer(rawbuf);
   m_publisher->sendRunMessage(reinterpret_cast<char *>(buffer_uptr.get()),
                               runData->getBufferSize());
-  std::cout << std::endl << "Publishing end of run message" << std::endl;
   return rawbuf.size();
 }
 
-int64_t NexusPublisher::createAndSendDetSpecMessage(std::string &rawbuf) {
+size_t NexusPublisher::createAndSendDetSpecMessage(std::string &rawbuf) {
   auto messageData = createDetSpecMessageData();
   auto buffer_uptr = messageData->getBufferPointer(rawbuf);
   m_publisher->sendDetSpecMessage(reinterpret_cast<char *>(buffer_uptr.get()),

@@ -38,7 +38,8 @@ bool RunData::decodeMessage(const uint8_t *buf) {
     setNumberOfPeriods(runStartData->n_periods());
 
     return true;
-  } else if (runData->info_type_type() == InfoTypes_RunStop) {
+  }
+  if (runData->info_type_type() == InfoTypes_RunStop) {
     auto runStopData = static_cast<const RunStop *>(runData->info_type());
     setStopTime(runStopData->stop_time());
 
@@ -94,7 +95,7 @@ std::string RunData::runInfo() {
   ssRunInfo << "Run number: " << m_runNumber << ", "
             << "Instrument name: " << m_instrumentName << ", "
             << "Start time: ";
-  const time_t sTime = static_cast<time_t>(m_startTime);
+  const auto sTime = static_cast<time_t>(m_startTime);
 #if defined(__GNUC__) && __GNUC__ >= 5
   ssRunInfo << std::put_time(std::gmtime(&sTime), "%Y-%m-%dT%H:%M:%S");
 #else
