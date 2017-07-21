@@ -3,11 +3,9 @@
 # ISIS NeXus Streamer for Mantid
 Stream event data from a NeXus file from RAL/ISIS using Apache Kafka for the purpose of development of live data streaming in Mantid.
 
-Run start and stop messages are produced, to make use of these and consume from a specified timestamp Kafka version >0.10.2.0 is required.
-
 A variable number of messages are sent per frame, such that the number of events in a message does not exceed a limit. The limit is 200 by default and can be specified using the optional argument `-m <max_events_per_message>`.
 
-The client runs until the user terminates it, repeatedly sending data from the same file but with incrementing run numbers. Unless the `-z` flag is used to produce only a single run.
+The client runs until the user terminates it, repeatedly sending data from the same file but with incrementing run numbers. However the `-z` flag can be used to produce only a single run.
 
 Usage:
 ```
@@ -21,6 +19,16 @@ main_nexusPublisher -f <filepath>    Full file path of nexus file to stream
 [-u]    Random mode, serve messages within each frame in a random order, for testing purposes
 [-z]    Produce only a single run (otherwise repeats until interrupted)
 ```
+
+## Broker Configuration
+Timestamped "run" start and stop messages are produced. With these Mantid can join the stream at the start of a run and has various options for behaviour at run stop. This makes use of the offset by timestamp lookup feature and thus requires Kafka version >0.10.2.0 on the brokers.
+It is also important to allow larger than the default message size by adding the following to the kafka configuration file (`server.properties`):
+```
+replica.fetch.max.bytes=10000000
+message.max.bytes=10000000
+```
+We use this Ansible playbook to deploy Kafka: https://github.com/ScreamingUdder/ansible-kafka-centos
+
 
 ## Dependencies
 Currently requires having `librdkafka` and the HDF5 C++ library installed. If `tcmalloc` is available then it will be used, but it is not a requirement.
