@@ -16,6 +16,11 @@ main_nexusPublisher -f <filepath>    Full file path of nexus file to stream
 [-z]    Produce only a single run (otherwise repeats until interrupted)
 ```
 
+Usage example:
+```
+main_nexusPublisher -f /path/to/isis_nexus_streamer_for_mantid.git/data/SANS_test_uncompressed.hdf5 -d /path/to/isis_nexus_streamer_for_mantid.git/data/spectrum_gastubes_01.dat -b localhost -i SANS2D -z
+```
+
 ## Broker Configuration
 Timestamped "run" start and stop messages are produced. With these Mantid can join the stream at the start of a run and has various options for behaviour at run stop. This makes use of the offset by timestamp lookup feature and thus requires Kafka version >0.10.2.0 on the brokers.
 It is also important to allow larger than the default message size by adding the following to the kafka configuration file (`server.properties`):
