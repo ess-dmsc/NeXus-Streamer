@@ -45,8 +45,8 @@ RUN apt-get remove --purge -y $BUILD_PACKAGES $AUTO_ADDED_PACKAGES
 # Clean up
 RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# TODO copy NeXus file to container
 ADD docker-start.sh /nexus_publisher
+ADD data/SANS_test.nxs /nexus_publisher
 WORKDIR /nexus_publisher
 
 CMD ["./docker-start.sh"]
