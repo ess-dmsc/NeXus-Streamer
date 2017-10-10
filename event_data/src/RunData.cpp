@@ -1,6 +1,5 @@
 #include "RunData.h"
 
-#include <array>
 #include <ctime>
 #include <iomanip>
 #include <iostream>
@@ -24,7 +23,9 @@ uint64_t RunData::timeStringToUint64(const std::string &inputTime) {
   // gcc < 5 does not have std::get_time implemented
   strptime(inputTime.c_str(), "%Y-%m-%dT%H:%M:%S", &tmb);
 #endif
-  return static_cast<uint64_t>(std::mktime(&tmb));
+  // convert seconds to nanoseconds
+  uint64_t nsSinceEpoch = static_cast<uint64_t>(std::mktime(&tmb)) * 1000000000;
+  return nsSinceEpoch;
 }
 
 bool RunData::decodeMessage(const uint8_t *buf) {
@@ -95,7 +96,8 @@ std::string RunData::runInfo() {
   ssRunInfo << "Run number: " << m_runNumber << ", "
             << "Instrument name: " << m_instrumentName << ", "
             << "Start time: ";
-  const auto sTime = static_cast<time_t>(m_startTime);
+  // convert nanoseconds to seconds
+  const auto sTime = static_cast<time_t>(m_startTime / 1000000000);
 #if defined(__GNUC__) && __GNUC__ >= 5
   ssRunInfo << std::put_time(std::gmtime(&sTime), "%Y-%m-%dT%H:%M:%S");
 #else
