@@ -45,9 +45,9 @@ RUN apt-get remove --purge -y $BUILD_PACKAGES $AUTO_ADDED_PACKAGES
 # Clean up
 RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-ADD docker-start.sh nexus_publisher
-ADD data/SANS_test.nxs nexus_publisher
-ADD data/spectrum_gastubes_01.dat nexus_publisher
+ADD docker-start.sh nexus_publisher/docker-start.sh
+ADD data/SANS_test.nxs nexus_publisher/SANS_test.nxs
+ADD data/spectrum_gastubes_01.dat nexus_publisher/spectrum_gastubes_01.dat
 WORKDIR nexus_publisher
 
 CMD ["./docker-start.sh"]
