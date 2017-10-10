@@ -6,19 +6,19 @@ class RunDataTest : public ::testing::Test {};
 TEST(RunDataTest, set_and_get_start_time) {
   auto rundata = RunData();
   EXPECT_NO_THROW(rundata.setStartTime("2016-08-11T08:50:18"));
-  EXPECT_EQ(1470905418, rundata.getStartTime());
+  EXPECT_EQ(1470905418000000000, rundata.getStartTime());
 
-  EXPECT_NO_THROW(rundata.setStartTime(1470905418));
-  EXPECT_EQ(1470905418, rundata.getStartTime());
+  EXPECT_NO_THROW(rundata.setStartTime(1470905418000000000));
+  EXPECT_EQ(1470905418000000000, rundata.getStartTime());
 }
 
 TEST(RunDataTest, set_and_get_stop_time) {
   auto rundata = RunData();
   EXPECT_NO_THROW(rundata.setStopTime("2016-08-13T13:32:09"));
-  EXPECT_EQ(1471095129, rundata.getStopTime());
+  EXPECT_EQ(1471095129000000000, rundata.getStopTime());
 
-  EXPECT_NO_THROW(rundata.setStopTime(1471095129));
-  EXPECT_EQ(1471095129, rundata.getStopTime());
+  EXPECT_NO_THROW(rundata.setStopTime(1471095129000000000));
+  EXPECT_EQ(1471095129000000000, rundata.getStopTime());
 }
 
 TEST(RunDataTest, set_and_get_run_number) {
@@ -59,7 +59,7 @@ TEST(RunDataTest, encode_and_decode_RunData) {
       reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
   EXPECT_EQ(42, receivedRunData.getRunNumber());
   EXPECT_EQ("SANS2D", receivedRunData.getInstrumentName());
-  EXPECT_EQ(1470905418, receivedRunData.getStartTime());
+  EXPECT_EQ(1470905418000000000, receivedRunData.getStartTime());
   EXPECT_EQ(1, receivedRunData.getNumberOfPeriods());
 }
 
@@ -73,7 +73,7 @@ TEST(RunDataTest, encode_and_decode_RunStop) {
   auto receivedRunData = RunData();
   EXPECT_TRUE(receivedRunData.decodeMessage(
       reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
-  EXPECT_EQ(1470905418, receivedRunData.getStopTime());
+  EXPECT_EQ(1470905418000000000, receivedRunData.getStopTime());
 }
 
 TEST(RunDataTest, check_buffer_includes_file_identifier) {
