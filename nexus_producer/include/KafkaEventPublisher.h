@@ -11,7 +11,7 @@ public:
   KafkaEventPublisher(){};
   KafkaEventPublisher(const std::string &compression)
       : m_compression(compression){};
-  ~KafkaEventPublisher() { RdKafka::wait_destroyed(5000); };
+  ~KafkaEventPublisher();
 
   std::shared_ptr<RdKafka::Topic>
   createTopicHandle(const std::string &topicPrefix,

@@ -2,6 +2,7 @@ version: '2'
 
 services:
   producer:
+    network_mode: host
     build: .
     depends_on:
       - kafka
@@ -10,6 +11,7 @@ services:
     image: wurstmeister/kafka
     depends_on:
       - zookeeper
+    hostname: kafka
     ports:
       - "9092:9092"
     environment:

@@ -34,7 +34,8 @@ RUN apt-get remove --purge -y $BUILD_PACKAGES $AUTO_ADDED_PACKAGES
 # dependencies - libhdf5, build-essential, git
 ENV BUILD_PACKAGES "build-essential git libhdf5-dev cmake"
 RUN apt-get install $BUILD_PACKAGES -y
-RUN git clone https://github.com/ScreamingUdder/isis_nexus_streamer_for_mantid.git
+RUN mkdir isis_nexus_streamer_for_mantid
+ADD . isis_nexus_streamer_for_mantid/
 RUN mkdir nexus_publisher && \
     cd nexus_publisher && \
     cmake ../isis_nexus_streamer_for_mantid && \
