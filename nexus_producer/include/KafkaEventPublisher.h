@@ -24,6 +24,7 @@ public:
   void sendDetSpecMessage(char *buf, size_t messageSize) override;
   void sendSampleEnvMessage(char *buf, size_t messageSize) override;
   int64_t getCurrentOffset() override;
+  void flushSendQueue() override;
 
 private:
   void sendMessage(char *buf, size_t messageSize,

@@ -65,6 +65,16 @@ void KafkaEventPublisher::setUp(const std::string &broker,
 }
 
 /**
+ * Wait for all messages in the current producer queue to be published
+ */
+void KafkaEventPublisher::flushSendQueue() {
+  auto error = m_producer_ptr->flush(2000);
+  if (error != RdKafka::ERR_NO_ERROR) {
+    std::cerr << "Producer queue flush failed." << std::endl;
+  }
+}
+
+/**
  * Create a topic handle
  *
  * @param topic_str : name of the topic

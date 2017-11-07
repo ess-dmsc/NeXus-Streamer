@@ -12,6 +12,7 @@ public:
   virtual void sendRunMessage(char *buf, size_t messageSize) = 0;
   virtual void sendDetSpecMessage(char *buf, size_t messageSize) = 0;
   virtual void sendSampleEnvMessage(char *buf, size_t messageSize) = 0;
+  virtual void flushSendQueue() = 0;
   virtual int64_t getCurrentOffset() = 0;
 };
 
