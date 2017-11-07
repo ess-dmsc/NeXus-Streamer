@@ -1,5 +1,6 @@
 #include "RunData.h"
 
+#include <array>
 #include <ctime>
 #include <iomanip>
 #include <iostream>
