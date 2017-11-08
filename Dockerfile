@@ -1,6 +1,6 @@
 FROM ubuntu:17.04
 
-ARG LIBRDKAFKA_VER="0.11.0"
+ARG LIBRDKAFKA_VER="0.11.1"
 
 RUN apt-get -y update
 
