@@ -14,7 +14,7 @@ typedef std::vector<std::shared_ptr<SampleEnvironmentEvent>> sEEventVector;
 
 class NexusFileReader {
 public:
-  NexusFileReader(const std::string &filename);
+  NexusFileReader(const std::string &filename, uint64_t runStartTime);
 
   hsize_t getFileSize();
   uint64_t getTotalEventCount();
@@ -38,7 +38,7 @@ public:
   uint64_t getFrameStartOffset();
 
 private:
-  int64_t m_runStart;
+  uint64_t m_runStart;
   size_t findFrameNumberOfTime(float time);
   template <typename T>
   T getSingleValueFromDataset(const std::string &dataset, H5::PredType datatype,
@@ -46,7 +46,7 @@ private:
   hsize_t getFrameStart(hsize_t frameNumber);
   H5FilePtr m_file = nullptr;
   size_t m_numberOfFrames;
-  int64_t convertStringToUnixTime(const std::string &timeString);
+  uint64_t convertStringToUnixTime(const std::string &timeString);
   uint64_t m_frameStartOffset;
 };
 

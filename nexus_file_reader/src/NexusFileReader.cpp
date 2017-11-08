@@ -16,13 +16,13 @@ using namespace H5;
  * @param filename - the full path of the NeXus file
  * @return - an object with which to read information from the file
  */
-NexusFileReader::NexusFileReader(const std::string &filename)
-    : m_file(new H5File(filename, H5F_ACC_RDONLY)) {
+NexusFileReader::NexusFileReader(const std::string &filename,
+                                 uint64_t runStartTime)
+    : m_file(new H5File(filename, H5F_ACC_RDONLY)), m_runStart(runStartTime) {
   DataSet dataset = m_file->openDataSet("/raw_data_1/good_frames");
   size_t numOfFrames;
   dataset.read(&numOfFrames, PredType::NATIVE_UINT64);
   m_numberOfFrames = numOfFrames;
-  m_runStart = getRunStartTime();
   m_frameStartOffset = getFrameStartOffset();
 }
 
@@ -188,19 +188,7 @@ NexusFileReader::getNamesInGroup(const std::string &groupName) {
   return names;
 }
 
-/**
- * Get the start time of the run as a Unix timestamp
- *
- * @return - Unix timestamp of start of run
- */
-int64_t NexusFileReader::getRunStartTime() {
-  DataSet dataset = m_file->openDataSet("/raw_data_1/start_time");
-  std::string startTime;
-  dataset.read(startTime, dataset.getDataType(), dataset.getSpace());
-  return convertStringToUnixTime(startTime);
-}
-
-int64_t
+uint64_t
 NexusFileReader::convertStringToUnixTime(const std::string &timeString) {
   std::tm tmb = {};
 #if (defined(__GNUC__) && __GNUC__ >= 5) || defined(_MSC_VER)
@@ -212,7 +200,7 @@ NexusFileReader::convertStringToUnixTime(const std::string &timeString) {
   strptime(timeString.c_str(), "%Y-%m-%dT%H:%M:%S", &tmb);
 #endif
   auto timeUnix = std::mktime(&tmb);
-  return static_cast<int64_t>(timeUnix);
+  return static_cast<uint64_t>(timeUnix);
 }
 
 /**

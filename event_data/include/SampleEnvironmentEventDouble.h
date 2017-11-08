@@ -6,7 +6,7 @@
 class SampleEnvironmentEventDouble : public SampleEnvironmentEvent {
 public:
   SampleEnvironmentEventDouble(const std::string &name, float time,
-                               double value, int64_t runStart)
+                               double value, uint64_t runStart)
       : m_value(value), SampleEnvironmentEvent(runStart, time, name) {}
 
   flatbuffers::Offset<LogData>

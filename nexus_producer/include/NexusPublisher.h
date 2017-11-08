@@ -13,8 +13,7 @@ class NexusPublisher {
 public:
   NexusPublisher(std::shared_ptr<EventPublisher> publisher,
                  const std::string &brokerAddress,
-                 const std::string &instrumentName,
-                 const std::string &filename,
+                 const std::string &instrumentName, const std::string &filename,
                  const std::string &detSpecMapFilename, const bool quietMode);
   std::vector<std::shared_ptr<EventData>>
   createMessageData(hsize_t frameNumber);
@@ -26,7 +25,8 @@ public:
 
 private:
   size_t createAndSendMessage(std::string &rawbuf, size_t frameNumber);
-  void createAndSendSampleEnvMessages(std::string &sampleEnvBuf, size_t frameNumber);
+  void createAndSendSampleEnvMessages(std::string &sampleEnvBuf,
+                                      size_t frameNumber);
   size_t createAndSendRunStopMessage(std::string &rawbuf);
   void reportProgress(const float progress);
 
@@ -36,6 +36,7 @@ private:
   std::string m_detSpecMapFilename;
   std::unordered_map<hsize_t, sEEventVector> m_sEEventMap;
   uint64_t m_messageID = 0;
+  uint64_t m_runStartTime;
 };
 
 #endif // ISIS_NEXUS_STREAMER_NEXUSPUBLISHER_H

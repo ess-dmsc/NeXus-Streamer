@@ -26,10 +26,12 @@ NexusPublisher::NexusPublisher(std::shared_ptr<EventPublisher> publisher,
                                const std::string &filename,
                                const std::string &detSpecMapFilename,
                                const bool quietMode)
-    : m_publisher(publisher),
-      m_fileReader(std::make_shared<NexusFileReader>(filename)),
-      m_quietMode(quietMode),
+    : m_publisher(publisher), m_quietMode(quietMode),
       m_detSpecMapFilename(detSpecMapFilename) {
+  auto now = std::chrono::system_clock::now();
+  auto now_c = std::chrono::system_clock::to_time_t(now);
+  m_runStartTime = static_cast<uint64_t>(now_c) * 1000000000L;
+  m_fileReader = std::make_shared<NexusFileReader>(filename, m_runStartTime);
   publisher->setUp(brokerAddress, instrumentName);
   m_sEEventMap = m_fileReader->getSEEventMap();
 }
@@ -79,7 +81,8 @@ std::shared_ptr<RunData> NexusPublisher::createRunMessageData(int runNumber) {
   runData->setInstrumentName(m_fileReader->getInstrumentName());
   runData->setRunNumber(runNumber);
   auto now = std::chrono::system_clock::now();
-  runData->setStartTimeInSeconds(std::chrono::system_clock::to_time_t(now));
+  auto now_c = std::chrono::system_clock::to_time_t(now);
+  runData->setStartTime(static_cast<uint64_t>(now_c) * 1000000000);
   return runData;
 }
 
@@ -135,7 +138,7 @@ void NexusPublisher::streamData(int runNumber, bool slow) {
  * @return - size of the buffer
  */
 size_t NexusPublisher::createAndSendMessage(std::string &rawbuf,
-                                             size_t frameNumber) {
+                                            size_t frameNumber) {
   auto messageData = createMessageData(frameNumber);
   std::vector<int> indexes;
   indexes.reserve(messageData.size());
@@ -176,7 +179,7 @@ void NexusPublisher::createAndSendSampleEnvMessages(std::string &sampleEnvBuf,
  * @return - size of the buffer
  */
 size_t NexusPublisher::createAndSendRunMessage(std::string &rawbuf,
-                                                int runNumber) {
+                                               int runNumber) {
   auto messageData = createRunMessageData(runNumber);
   auto buffer_uptr = messageData->getRunStartBufferPointer(rawbuf);
   m_publisher->sendRunMessage(reinterpret_cast<char *>(buffer_uptr.get()),

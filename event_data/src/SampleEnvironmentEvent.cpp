@@ -2,8 +2,8 @@
 #include <cmath>
 
 uint64_t SampleEnvironmentEvent::getTimestamp() {
-  double secondsPastUnixEpoch = m_runStartSecondsPastUnixEpoch + m_time;
-  return static_cast<uint64_t>(secondsPastUnixEpoch * 1e9);
+  auto nanosecondsPastRunStart = static_cast<uint64_t>(m_time * 1e9);
+  return nanosecondsPastRunStart + m_runStartNanosecondsPastUnixEpoch;
 }
 
 flatbuffers::unique_ptr_t

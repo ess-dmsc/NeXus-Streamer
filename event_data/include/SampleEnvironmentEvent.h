@@ -11,9 +11,9 @@
 
 class SampleEnvironmentEvent {
 public:
-  SampleEnvironmentEvent(int64_t runStart, float eventTime,
+  SampleEnvironmentEvent(uint64_t runStart, float eventTime,
                          const std::string &name)
-      : m_runStartSecondsPastUnixEpoch(runStart), m_time(eventTime),
+      : m_runStartNanosecondsPastUnixEpoch(runStart), m_time(eventTime),
         m_name(name) {}
   virtual ~SampleEnvironmentEvent() {}
 
@@ -28,7 +28,7 @@ public:
 protected:
   size_t m_bufferSize;
   std::string m_name;
-  int64_t m_runStartSecondsPastUnixEpoch;
+  uint64_t m_runStartNanosecondsPastUnixEpoch;
   float m_time;
 };
 
