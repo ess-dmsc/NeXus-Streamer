@@ -81,8 +81,7 @@ std::shared_ptr<RunData> NexusPublisher::createRunMessageData(int runNumber) {
   runData->setInstrumentName(m_fileReader->getInstrumentName());
   runData->setRunNumber(runNumber);
   auto now = std::chrono::system_clock::now();
-  auto now_c = std::chrono::system_clock::to_time_t(now);
-  runData->setStartTime(static_cast<uint64_t>(now_c) * 1000000000);
+  runData->setStartTimeInSeconds(std::chrono::system_clock::to_time_t(now));
   return runData;
 }
 
@@ -184,7 +183,8 @@ size_t NexusPublisher::createAndSendRunMessage(std::string &rawbuf,
   auto buffer_uptr = messageData->getRunStartBufferPointer(rawbuf);
   m_publisher->sendRunMessage(reinterpret_cast<char *>(buffer_uptr.get()),
                               messageData->getBufferSize());
-  std::cout << std::endl << "Publishing new run:" << std::endl;
+  std::cout << std::endl
+            << "Publishing new run:" << std::endl;
   std::cout << messageData->runInfo() << std::endl;
   return rawbuf.size();
 }
@@ -197,13 +197,16 @@ size_t NexusPublisher::createAndSendRunMessage(std::string &rawbuf,
  */
 size_t NexusPublisher::createAndSendRunStopMessage(std::string &rawbuf) {
   auto runData = std::make_shared<RunData>();
-  // Flush producer queue to ensure the run stop is after all messages are published
+  // Flush producer queue to ensure the run stop is after all messages are
+  // published
   m_publisher->flushSendQueue();
   auto now = std::chrono::system_clock::now();
   auto now_epoch = now.time_since_epoch();
-  auto now_epoch_nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(now_epoch).count();
+  auto now_epoch_nanoseconds =
+      std::chrono::duration_cast<std::chrono::nanoseconds>(now_epoch).count();
   runData->setStopTime(static_cast<uint64_t>(now_epoch_nanoseconds + 1));
-  // + 1 as we want to include any messages which were sent in the current nanosecond
+  // + 1 as we want to include any messages which were sent in the current
+  // nanosecond
   // (in the extremely unlikely event that it is possible to happen)
 
   auto buffer_uptr = runData->getRunStopBufferPointer(rawbuf);
