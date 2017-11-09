@@ -14,6 +14,11 @@ void RunData::setStopTime(const std::string &inputTime) {
   m_stopTime = timeStringToUint64(inputTime);
 }
 
+uint64_t RunData::secondsToNanoseconds(time_t timeInSeconds) {
+  uint64_t timeInNanoseconds = static_cast<uint64_t>(timeInSeconds) * 1000000000L;
+  return timeInNanoseconds;
+}
+
 uint64_t RunData::timeStringToUint64(const std::string &inputTime) {
   std::tm tmb = {};
 #if (defined(__GNUC__) && __GNUC__ >= 5) || defined(_MSC_VER)
@@ -24,8 +29,7 @@ uint64_t RunData::timeStringToUint64(const std::string &inputTime) {
   // gcc < 5 does not have std::get_time implemented
   strptime(inputTime.c_str(), "%Y-%m-%dT%H:%M:%S", &tmb);
 #endif
-  // convert seconds to nanoseconds
-  uint64_t nsSinceEpoch = static_cast<uint64_t>(std::mktime(&tmb)) * 1000000000;
+  auto nsSinceEpoch = secondsToNanoseconds(std::mktime(&tmb));
   return nsSinceEpoch;
 }
 
