@@ -26,10 +26,12 @@ NexusPublisher::NexusPublisher(std::shared_ptr<EventPublisher> publisher,
                                const std::string &filename,
                                const std::string &detSpecMapFilename,
                                const bool quietMode)
-    : m_publisher(publisher),
-      m_fileReader(std::make_shared<NexusFileReader>(filename)),
-      m_quietMode(quietMode),
+    : m_publisher(publisher), m_quietMode(quietMode),
       m_detSpecMapFilename(detSpecMapFilename) {
+  auto now = std::chrono::system_clock::now();
+  auto now_c = std::chrono::system_clock::to_time_t(now);
+  m_runStartTime = static_cast<uint64_t>(now_c) * 1000000000L;
+  m_fileReader = std::make_shared<NexusFileReader>(filename, m_runStartTime);
   publisher->setUp(brokerAddress, instrumentName);
   m_sEEventMap = m_fileReader->getSEEventMap();
 }
@@ -135,7 +137,7 @@ void NexusPublisher::streamData(int runNumber, bool slow) {
  * @return - size of the buffer
  */
 size_t NexusPublisher::createAndSendMessage(std::string &rawbuf,
-                                             size_t frameNumber) {
+                                            size_t frameNumber) {
   auto messageData = createMessageData(frameNumber);
   std::vector<int> indexes;
   indexes.reserve(messageData.size());
@@ -176,12 +178,13 @@ void NexusPublisher::createAndSendSampleEnvMessages(std::string &sampleEnvBuf,
  * @return - size of the buffer
  */
 size_t NexusPublisher::createAndSendRunMessage(std::string &rawbuf,
-                                                int runNumber) {
+                                               int runNumber) {
   auto messageData = createRunMessageData(runNumber);
   auto buffer_uptr = messageData->getRunStartBufferPointer(rawbuf);
   m_publisher->sendRunMessage(reinterpret_cast<char *>(buffer_uptr.get()),
                               messageData->getBufferSize());
-  std::cout << std::endl << "Publishing new run:" << std::endl;
+  std::cout << std::endl
+            << "Publishing new run:" << std::endl;
   std::cout << messageData->runInfo() << std::endl;
   return rawbuf.size();
 }
@@ -194,13 +197,16 @@ size_t NexusPublisher::createAndSendRunMessage(std::string &rawbuf,
  */
 size_t NexusPublisher::createAndSendRunStopMessage(std::string &rawbuf) {
   auto runData = std::make_shared<RunData>();
-  // Flush producer queue to ensure the run stop is after all messages are published
+  // Flush producer queue to ensure the run stop is after all messages are
+  // published
   m_publisher->flushSendQueue();
   auto now = std::chrono::system_clock::now();
   auto now_epoch = now.time_since_epoch();
-  auto now_epoch_nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(now_epoch).count();
+  auto now_epoch_nanoseconds =
+      std::chrono::duration_cast<std::chrono::nanoseconds>(now_epoch).count();
   runData->setStopTime(static_cast<uint64_t>(now_epoch_nanoseconds + 1));
-  // + 1 as we want to include any messages which were sent in the current nanosecond
+  // + 1 as we want to include any messages which were sent in the current
+  // nanosecond
   // (in the extremely unlikely event that it is possible to happen)
 
   auto buffer_uptr = runData->getRunStopBufferPointer(rawbuf);
