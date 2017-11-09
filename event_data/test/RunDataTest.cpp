@@ -8,7 +8,7 @@ TEST(RunDataTest, set_and_get_start_time) {
   EXPECT_NO_THROW(rundata.setStartTime("2016-08-11T08:50:18"));
   EXPECT_EQ(1470905418000000000, rundata.getStartTime());
 
-  EXPECT_NO_THROW(rundata.setStartTime(1470905418000000000));
+  EXPECT_NO_THROW(rundata.setStartTimeInSeconds(1470905418));
   EXPECT_EQ(1470905418000000000, rundata.getStartTime());
 }
 

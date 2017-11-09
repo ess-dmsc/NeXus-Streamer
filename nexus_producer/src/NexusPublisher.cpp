@@ -80,7 +80,7 @@ std::shared_ptr<RunData> NexusPublisher::createRunMessageData(int runNumber) {
   runData->setRunNumber(runNumber);
   auto now = std::chrono::system_clock::now();
   auto now_c = std::chrono::system_clock::to_time_t(now);
-  runData->setStartTime(static_cast<uint64_t>(now_c) * 1000000000);
+  runData->setStartTimeInSeconds(static_cast<uint64_t>(now_c) * 1000000000);
   return runData;
 }
 

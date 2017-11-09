@@ -10,12 +10,17 @@ void RunData::setStartTime(const std::string &inputTime) {
   m_startTime = timeStringToUint64(inputTime);
 }
 
+void RunData::setStartTimeInSeconds(time_t inputTime) {
+  m_startTime = secondsToNanoseconds(inputTime);
+}
+
 void RunData::setStopTime(const std::string &inputTime) {
   m_stopTime = timeStringToUint64(inputTime);
 }
 
 uint64_t RunData::secondsToNanoseconds(time_t timeInSeconds) {
-  uint64_t timeInNanoseconds = static_cast<uint64_t>(timeInSeconds) * 1000000000L;
+  uint64_t timeInNanoseconds =
+      static_cast<uint64_t>(timeInSeconds) * 1000000000L;
   return timeInNanoseconds;
 }
 
@@ -38,7 +43,7 @@ bool RunData::decodeMessage(const uint8_t *buf) {
 
   if (runData->info_type_type() == InfoTypes_RunStart) {
     auto runStartData = static_cast<const RunStart *>(runData->info_type());
-    setStartTime(runStartData->start_time());
+    setStartTimeInNanoseconds(runStartData->start_time());
     setInstrumentName(runStartData->instrument_name()->str());
     setRunNumber(runStartData->run_number());
     setNumberOfPeriods(runStartData->n_periods());
