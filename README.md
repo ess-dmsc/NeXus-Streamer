@@ -31,11 +31,13 @@ message.max.bytes=10000000
 We use this Ansible playbook to deploy Kafka: https://github.com/ScreamingUdder/ansible-kafka-centos
 
 ## Containers
-The docker-compose script can be used to launch a single-broker Kafka cluster and the NeXus streamer. The broker is available on port 9092 of the host machine.
+The docker-compose script can be used to launch a single-broker Kafka cluster and the NeXus streamer.
 Run the following in the root directory of the repository to launch the containers.
+
 ```
 docker-compose up
 ```
+The streamer publishes some test data using the instrument name TEST. The Kafka broker is accessible at `localhost:9092`.
 
 ## Dependencies
 Currently requires having `librdkafka` and the HDF5 C++ library installed. If `tcmalloc` is available then it will be used, but it is not a requirement.

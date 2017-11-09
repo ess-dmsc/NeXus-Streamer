@@ -11,7 +11,7 @@ public:
   KafkaEventPublisher(){};
   KafkaEventPublisher(const std::string &compression)
       : m_compression(compression){};
-  ~KafkaEventPublisher() { RdKafka::wait_destroyed(5000); };
+  ~KafkaEventPublisher();
 
   std::shared_ptr<RdKafka::Topic>
   createTopicHandle(const std::string &topicPrefix,
@@ -24,6 +24,7 @@ public:
   void sendDetSpecMessage(char *buf, size_t messageSize) override;
   void sendSampleEnvMessage(char *buf, size_t messageSize) override;
   int64_t getCurrentOffset() override;
+  void flushSendQueue() override;
 
 private:
   void sendMessage(char *buf, size_t messageSize,

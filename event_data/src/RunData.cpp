@@ -10,8 +10,18 @@ void RunData::setStartTime(const std::string &inputTime) {
   m_startTime = timeStringToUint64(inputTime);
 }
 
+void RunData::setStartTimeInSeconds(time_t inputTime) {
+  m_startTime = secondsToNanoseconds(inputTime);
+}
+
 void RunData::setStopTime(const std::string &inputTime) {
   m_stopTime = timeStringToUint64(inputTime);
+}
+
+uint64_t RunData::secondsToNanoseconds(time_t timeInSeconds) {
+  uint64_t timeInNanoseconds =
+      static_cast<uint64_t>(timeInSeconds) * 1000000000L;
+  return timeInNanoseconds;
 }
 
 uint64_t RunData::timeStringToUint64(const std::string &inputTime) {
@@ -24,7 +34,8 @@ uint64_t RunData::timeStringToUint64(const std::string &inputTime) {
   // gcc < 5 does not have std::get_time implemented
   strptime(inputTime.c_str(), "%Y-%m-%dT%H:%M:%S", &tmb);
 #endif
-  return static_cast<uint64_t>(std::mktime(&tmb));
+  auto nsSinceEpoch = secondsToNanoseconds(std::mktime(&tmb));
+  return nsSinceEpoch;
 }
 
 bool RunData::decodeMessage(const uint8_t *buf) {
@@ -32,7 +43,7 @@ bool RunData::decodeMessage(const uint8_t *buf) {
 
   if (runData->info_type_type() == InfoTypes_RunStart) {
     auto runStartData = static_cast<const RunStart *>(runData->info_type());
-    setStartTime(runStartData->start_time());
+    setStartTimeInNanoseconds(runStartData->start_time());
     setInstrumentName(runStartData->instrument_name()->str());
     setRunNumber(runStartData->run_number());
     setNumberOfPeriods(runStartData->n_periods());
@@ -95,7 +106,8 @@ std::string RunData::runInfo() {
   ssRunInfo << "Run number: " << m_runNumber << ", "
             << "Instrument name: " << m_instrumentName << ", "
             << "Start time: ";
-  const auto sTime = static_cast<time_t>(m_startTime);
+  // convert nanoseconds to seconds
+  const auto sTime = static_cast<time_t>(m_startTime / 1000000000);
 #if defined(__GNUC__) && __GNUC__ >= 5
   ssRunInfo << std::put_time(std::gmtime(&sTime), "%Y-%m-%dT%H:%M:%S");
 #else

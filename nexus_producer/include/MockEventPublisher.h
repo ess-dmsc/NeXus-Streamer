@@ -13,6 +13,7 @@ public:
   MOCK_METHOD2(sendEventMessage, void(char *buf, size_t messageSize));
   MOCK_METHOD2(sendSampleEnvMessage, void(char *buf, size_t messageSize));
   MOCK_METHOD0(getCurrentOffset, int64_t());
+  MOCK_METHOD0(flushSendQueue, void());
 };
 
 #endif // ISIS_NEXUS_STREAMER_MOCKEVENTPUBLISHER_H

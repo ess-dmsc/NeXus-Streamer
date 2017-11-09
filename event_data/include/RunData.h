@@ -18,7 +18,10 @@ public:
   }
   void setStartTime(const std::string &inputTime);
   void setStopTime(const std::string &inputTime);
-  void setStartTime(uint64_t inputTime) { m_startTime = inputTime; }
+  void setStartTimeInSeconds(time_t inputTime);
+  void setStartTimeInNanoseconds(uint64_t inputTime) {
+    m_startTime = inputTime;
+  };
   void setStopTime(uint64_t inputTime) { m_stopTime = inputTime; }
   void setNumberOfPeriods(int32_t numberOfPeriods) {
     m_numberOfPeriods = numberOfPeriods;
@@ -35,6 +38,7 @@ public:
 
 private:
   uint64_t timeStringToUint64(const std::string &inputTime);
+  uint64_t secondsToNanoseconds(time_t timeInSeconds);
 
   uint64_t m_startTime = 0;
   uint64_t m_stopTime = 0;

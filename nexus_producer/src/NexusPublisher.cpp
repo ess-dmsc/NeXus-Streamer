@@ -79,8 +79,7 @@ std::shared_ptr<RunData> NexusPublisher::createRunMessageData(int runNumber) {
   runData->setInstrumentName(m_fileReader->getInstrumentName());
   runData->setRunNumber(runNumber);
   auto now = std::chrono::system_clock::now();
-  auto now_c = std::chrono::system_clock::to_time_t(now);
-  runData->setStartTime(static_cast<uint64_t>(now_c));
+  runData->setStartTimeInSeconds(std::chrono::system_clock::to_time_t(now));
   return runData;
 }
 
@@ -195,9 +194,14 @@ size_t NexusPublisher::createAndSendRunMessage(std::string &rawbuf,
  */
 size_t NexusPublisher::createAndSendRunStopMessage(std::string &rawbuf) {
   auto runData = std::make_shared<RunData>();
+  // Flush producer queue to ensure the run stop is after all messages are published
+  m_publisher->flushSendQueue();
   auto now = std::chrono::system_clock::now();
-  auto now_c = std::chrono::system_clock::to_time_t(now);
-  runData->setStopTime(static_cast<uint64_t>(now_c));
+  auto now_epoch = now.time_since_epoch();
+  auto now_epoch_nanoseconds = std::chrono::duration_cast<std::chrono::nanoseconds>(now_epoch).count();
+  runData->setStopTime(static_cast<uint64_t>(now_epoch_nanoseconds + 1));
+  // + 1 as we want to include any messages which were sent in the current nanosecond
+  // (in the extremely unlikely event that it is possible to happen)
 
   auto buffer_uptr = runData->getRunStopBufferPointer(rawbuf);
   m_publisher->sendRunMessage(reinterpret_cast<char *>(buffer_uptr.get()),
