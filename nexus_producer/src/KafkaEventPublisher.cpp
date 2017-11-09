@@ -3,11 +3,7 @@
 #include "KafkaEventPublisher.h"
 
 KafkaEventPublisher::~KafkaEventPublisher() {
-  auto error = m_producer_ptr->flush(2000);
-  if (error != RdKafka::ERR_NO_ERROR) {
-    std::cerr << "% Producer flush failed: " << RdKafka::err2str(error)
-              << std::endl;
-  }
+  flushSendQueue();
   RdKafka::wait_destroyed(5000);
 }
 
