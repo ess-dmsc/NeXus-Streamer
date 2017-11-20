@@ -17,8 +17,18 @@ then
    exit 1
 fi
 
-${NEXUS_FILE_NAME:=SANS_test.nxs}
-${DETSPECMAP_FILE_NAME:=spectrum_gastubes_01.dat}
+if [ -v NEXUS_FILE_NAME ]; then
+   NEXUS_FILE_NAME="/nexus_publisher/data/$NEXUS_FILE_NAME"
+else
+   ${NEXUS_FILE_NAME:=SANS_test.nxs}
+fi
+
+if [ -v DETSPECMAP_FILE_NAME ]; then
+   DETSPECMAP_FILE_NAME="/nexus_publisher/data/$DETSPECMAP_FILE_NAME"
+else
+   ${DETSPECMAP_FILE_NAME:=spectrum_gastubes_01.dat}
+fi
+
 ${KAFKA_BROKER_NAME:=localhost}
 ${INSTRUMENT_NAME:=TEST}
 

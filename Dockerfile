@@ -17,8 +17,6 @@ RUN cd /tmp && \
 RUN AUTO_ADDED_PACKAGES=`apt-mark showauto`
 RUN apt-get remove --purge -y $BUILD_PACKAGES $AUTO_ADDED_PACKAGES
 
-WORKDIR /build
-
 # Build kafkacat (to be used to check Kafka broker is running before launching clients)
 ENV BUILD_PACKAGES "build-essential git curl zlib1g-dev python"
 RUN apt-get install $BUILD_PACKAGES -y
@@ -45,6 +43,9 @@ RUN apt-get remove --purge -y $BUILD_PACKAGES $AUTO_ADDED_PACKAGES
 
 # Clean up
 RUN rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Add directory to mount external data for docker image
+RUN mkdir nexus_publisher/data
 
 ADD docker-start.sh nexus_publisher/docker-start.sh
 ADD data/SANS_test.nxs nexus_publisher/SANS_test.nxs
