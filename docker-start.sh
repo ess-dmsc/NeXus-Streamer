@@ -17,4 +17,19 @@ then
    exit 1
 fi
 
-nexus_producer/main_nexusPublisher -f SANS_test.nxs -b localhost -i TEST -d spectrum_gastubes_01.dat -z
+if [ -v NEXUS_FILE_NAME ]; then
+   NEXUS_FILE_NAME="/nexus_publisher/data/$NEXUS_FILE_NAME"
+else
+   ${NEXUS_FILE_NAME:=SANS_test.nxs}
+fi
+
+if [ -v DETSPECMAP_FILE_NAME ]; then
+   DETSPECMAP_FILE_NAME="/nexus_publisher/data/$DETSPECMAP_FILE_NAME"
+else
+   ${DETSPECMAP_FILE_NAME:=spectrum_gastubes_01.dat}
+fi
+
+${KAFKA_BROKER_NAME:=localhost}
+${INSTRUMENT_NAME:=TEST}
+
+nexus_producer/main_nexusPublisher -f ${NEXUS_FILE_NAME} -b ${KAFKA_BROKER_NAME} -i ${INSTRUMENT_NAME} -d ${DETSPECMAP_FILE_NAME} -z

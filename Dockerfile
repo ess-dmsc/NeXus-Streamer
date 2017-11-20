@@ -43,6 +43,9 @@ RUN AUTO_ADDED_PACKAGES=`apt-mark showauto`
 RUN apt-get remove --purge -y $BUILD_PACKAGES $AUTO_ADDED_PACKAGES
 RUN rm -rf /tmp/* /var/tmp/*
 
+# Add directory to mount external data for docker image
+RUN mkdir nexus_publisher/data
+
 ADD docker-start.sh nexus_publisher/docker-start.sh
 ADD data/SANS_test.nxs nexus_publisher/SANS_test.nxs
 ADD data/spectrum_gastubes_01.dat nexus_publisher/spectrum_gastubes_01.dat
