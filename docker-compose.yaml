@@ -28,3 +28,12 @@ services:
     restart: unless-stopped
     ports:
       - '2181:2181'
+
+  manager:
+    image: sheepkiller/kafka-manager:alpine
+    depends_on:
+      - producer
+    ports:
+      - "9000:9000"
+    environment:
+      ZK_HOSTS: zookeeper:2181
