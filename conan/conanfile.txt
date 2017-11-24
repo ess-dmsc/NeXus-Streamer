@@ -1,0 +1,11 @@
+[requires]
+hdf5/1.10.1-dm1@ess-dmsc/stable
+librdkafka/0.11.1-dm1@ess-dmsc/stable
+
+[generators]
+cmake
+virtualrunenv
+
+[options]
+hdf5:shared=True
+librdkafka:shared=True
