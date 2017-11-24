@@ -3,7 +3,7 @@ project(isis_nexus_streamer_for_mantid)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pedantic-errors")
 
-if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
+if(EXISTS "${PROJECT_SOURCE_DIR}/conanbuildinfo.cmake")
     include(conanbuildinfo.cmake)
     conan_basic_setup()
 endif()

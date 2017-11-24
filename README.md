@@ -40,12 +40,30 @@ docker-compose up
 The streamer publishes some test data using the instrument name TEST. The Kafka broker is accessible at `localhost:9092`.
 
 ## Dependencies
-Currently requires having `librdkafka` and the HDF5 C++ library installed. If `tcmalloc` is available then it will be used, but it is not a requirement.
+
+Dependencies can be installed using Conan. Conan can be installed using pip.
+The following remote repositories are required to be configured:
+
+- https://api.bintray.com/conan/ess-dmsc/conan
+- https://api.bintray.com/conan/conan-community/conan
+
+You can add them by running
+```
+conan remote add <local-name> <remote-url>
+```
+where `<local-name>` must be substituted by a locally unique name. Configured
+remotes can be listed with `conan remote list`.
 
 `Google Test` and `Google Mock` are used for unit testing but are not required to be installed; CMake will download and build them at configure-time.
 
-Due to large file sizes altering the test data requires `git lfs` to be installed:
-https://git-lfs.github.com/
+## Build
+
+The first line can be omitted if you have `librdkafka v0.11.1` and `libhdf5 v1.10` available on your system.
+```
+conan install <path-to-source>/conan --build -s compiler.libcxx=libstdc++11
+cmake <path-to-source>
+make
+```
 
 ## Unit tests
 The unit test executable `unitTests` needs to be passed the path of the test data directory as an argument.
