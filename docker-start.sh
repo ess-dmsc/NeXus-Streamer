@@ -32,4 +32,12 @@ fi
 : ${KAFKA_BROKER_NAME:=localhost}
 : ${INSTRUMENT_NAME:=TEST}
 
-nexus_producer/main_nexusPublisher -f ${NEXUS_FILE_NAME} -b ${KAFKA_BROKER_NAME} -i ${INSTRUMENT_NAME} -d ${DETSPECMAP_FILE_NAME} -z
+ADDITIONAL_FLAGS=""
+if [ ${SINGLE_RUN:="true"} == "true" ]; then
+    ADDITIONAL_FLAGS="$ADDITIONAL_FLAGS -z"
+fi
+if [ ${SLOW_MODE:="false"} == "true" ]; then
+    ADDITIONAL_FLAGS="$ADDITIONAL_FLAGS -s"
+fi
+
+nexus_producer/main_nexusPublisher -f ${NEXUS_FILE_NAME} -b ${KAFKA_BROKER_NAME} -i ${INSTRUMENT_NAME} -d ${DETSPECMAP_FILE_NAME} ${ADDITIONAL_FLAGS}

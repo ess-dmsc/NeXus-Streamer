@@ -6,6 +6,9 @@ services:
     build: .
     depends_on:
       - kafka
+    environment:
+      SINGLE_RUN: "true"
+      SLOW_MODE: "false"
 
   kafka:
     image: wurstmeister/kafka:0.11.0.1
