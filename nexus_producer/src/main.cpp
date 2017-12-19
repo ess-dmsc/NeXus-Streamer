@@ -6,6 +6,8 @@
 #include <getopt.h>
 #endif
 #include <iostream>
+#include <chrono>
+#include <thread>
 
 #include "KafkaEventPublisher.h"
 #include "NexusPublisher.h"
@@ -91,6 +93,7 @@ int main(int argc, char **argv) {
   } else {
     while (true) {
       streamer.streamData(runNumber, slow);
+      std::this_thread::sleep_for(std::chrono::seconds(2));
       runNumber++;
     }
   }
