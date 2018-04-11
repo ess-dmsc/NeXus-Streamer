@@ -3,15 +3,43 @@ project(isis_nexus_streamer_for_mantid)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pedantic-errors")
 
-if(EXISTS "${PROJECT_SOURCE_DIR}/conanbuildinfo.cmake")
-    include(conanbuildinfo.cmake)
-    conan_basic_setup()
-endif()
+set(CMAKE_MODULE_PATH
+        ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+
+set(CONAN "AUTO" CACHE STRING "conan options AUTO (conan must be in path), MANUAL (expects conanbuildinfo.cmake in build directory) or DISABLE")
+
+function(GET_GTEST)
+    # download and build gtest and gmock
+    if (CMAKE_VERSION VERSION_LESS 3.2)
+        set(UPDATE_DISCONNECTED_IF_AVAILABLE "")
+    else()
+        set(UPDATE_DISCONNECTED_IF_AVAILABLE "UPDATE_DISCONNECTED 1")
+    endif()
+
+    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/DownloadProject.cmake)
+    download_project(PROJ                googletest
+            GIT_REPOSITORY      https://github.com/google/googletest.git
+            GIT_TAG             master
+            ${UPDATE_DISCONNECTED_IF_AVAILABLE})
+
+    # Prevent GoogleTest from overriding our compiler/linker options
+    # when building with Visual Studio
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+    add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
+
+    # When using CMake 2.8.11 or later, header path dependencies
+    # are automatically added to the gtest and gmock targets.
+    # For earlier CMake versions, we have to explicitly add the
+    # required directories to the header search path ourselves.
+    if (CMAKE_VERSION VERSION_LESS 2.8.11)
+        include_directories("${gtest_SOURCE_DIR}/include"
+                "${gmock_SOURCE_DIR}/include")
+    endif()
+endfunction(GET_GTEST)
 
 if(MSVC)
-   # Git LFS does not work properly with <= 1.9
-  #find_package ( Git 1.9.5 REQUIRED )
-  #find_package ( GitLFS REQUIRED)
+   GET_GTEST()
 
   # Use ExternalProject functionality as it already knows how to do clone/update
   include ( ExternalProject )
@@ -81,14 +109,34 @@ if(MSVC)
 
   set(CMAKE_MODULE_PATH
          ${CMAKE_MODULE_PATH} ${THIRD_PARTY_DIR}/cmake)
-endif()
+else()
 
-set(CMAKE_MODULE_PATH
-        ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+    if(${CONAN} MATCHES "AUTO")
+        include(${CMAKE_MODULE_PATH}/conan.cmake)
+        conan_cmake_run(CONANFILE conan/conanfile.txt
+                PROFILE ${CONAN_PROFILE}
+                BASIC_SETUP
+                BUILD_TYPE "None"
+                BUILD outdated)
+    elseif(${CONAN} MATCHES "MANUAL")
+        if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
+            include("${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
+            conan_basic_setup()
+        else()
+            MESSAGE(FATAL_ERROR "CONAN set to MANUAL but no file named conanbuildinfo.cmake found in build directory")
+        endif()
+    elseif(NOT ${CONAN} MATCHES "DISABLE")
+        MESSAGE(FATAL_ERROR "Unrecognised option for CONAN, use AUTO, MANUAL or DISABLE")
+    endif()
+
+    if(${CONAN} MATCHES "DISABLE")
+        GET_GTEST()
+    endif()
+
+endif()
 
 find_package(HDF5 COMPONENTS CXX HL REQUIRED)
 find_package(LibRDKafka)
-find_package(Tcmalloc)
 
 include(CTest)
 enable_testing()
@@ -99,21 +147,6 @@ option(COVERALLS "Generate coveralls data" OFF)
 if (COVERALLS)
     include(Coveralls)
     coveralls_turn_on_coverage()
-endif()
-
-#####################
-## TCMalloc        ##
-#####################
-
-# if tcmalloc is available then link all executables against it
-if (TCMALLOC_FOUND)
-    macro (add_executable _name)
-        # invoke built-in add_executable
-        _add_executable(${ARGV})
-        if (TARGET ${_name})
-            target_link_libraries(${_name} tcmalloc_minimal)
-        endif()
-    endmacro()
 endif()
 
 #####################
@@ -131,37 +164,6 @@ if(DOXYGEN_FOUND)
             )
 endif(DOXYGEN_FOUND)
 
-#####################
-## Get gtest       ##
-#####################
-
-# download and  build gtest and gmock
-if (CMAKE_VERSION VERSION_LESS 3.2)
-    set(UPDATE_DISCONNECTED_IF_AVAILABLE "")
-else()
-    set(UPDATE_DISCONNECTED_IF_AVAILABLE "UPDATE_DISCONNECTED 1")
-endif()
-
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/DownloadProject.cmake)
-download_project(PROJ                googletest
-        GIT_REPOSITORY      https://github.com/google/googletest.git
-        GIT_TAG             master
-        ${UPDATE_DISCONNECTED_IF_AVAILABLE})
-
-# Prevent GoogleTest from overriding our compiler/linker options
-# when building with Visual Studio
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-
-add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
-
-# When using CMake 2.8.11 or later, header path dependencies
-# are automatically added to the gtest and gmock targets.
-# For earlier CMake versions, we have to explicitly add the
-# required directories to the header search path ourselves.
-if (CMAKE_VERSION VERSION_LESS 2.8.11)
-    include_directories("${gtest_SOURCE_DIR}/include"
-            "${gmock_SOURCE_DIR}/include")
-endif()
 
 ####################
 ## Add subdirs    ##
