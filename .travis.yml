@@ -47,12 +47,12 @@ matrix:
         - sudo bash travis.sh
         - mkdir build
         - cd build
-        - cmake -DCMAKE_CXX_COMPILER=$COMPILER -DCMAKE_BUILD_TYPE=Debug -DCOVERALLS=ON .. && make
+        - cmake -DCONAN=DISABLE -DCMAKE_CXX_COMPILER=$COMPILER -DCMAKE_BUILD_TYPE=Debug -DCOVERALLS=ON .. && make
         - make coveralls
 
 script:
   - sudo bash travis.sh
   - mkdir build
   - cd build
-  - cmake -DCMAKE_CXX_COMPILER=$COMPILER -DCMAKE_BUILD_TYPE=Debug -DCOVERALLS=ON .. && make
+  - cmake -DCONAN=DISABLE -DCMAKE_CXX_COMPILER=$COMPILER -DCMAKE_BUILD_TYPE=Debug -DCOVERALLS=ON .. && make
   - ctest -VV
