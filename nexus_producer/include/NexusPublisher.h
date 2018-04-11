@@ -24,6 +24,7 @@ public:
   void streamData(int runNumber, bool slow);
 
 private:
+  int64_t getTimeNowInNanoseconds();
   size_t createAndSendMessage(std::string &rawbuf, size_t frameNumber);
   void createAndSendSampleEnvMessages(std::string &sampleEnvBuf,
                                       size_t frameNumber);

@@ -23,6 +23,7 @@ public:
     m_startTime = inputTime;
   };
   void setStopTime(uint64_t inputTime) { m_stopTime = inputTime; }
+  void setStartTime(uint64_t inputTime) { m_startTime = inputTime; }
   void setNumberOfPeriods(int32_t numberOfPeriods) {
     m_numberOfPeriods = numberOfPeriods;
   }
