@@ -1,7 +1,7 @@
 [![License (2-Clause BSD)](https://img.shields.io/badge/license-BSD%202--Clause-blue.svg)](https://github.com/ess-dmsc/NeXus-Streamer/blob/master/LICENSE)
 
 # NeXus Streamer
-Stream event data from a NeXus file using Apache Kafka for the purpose of development of live data streaming in Mantid. Each message sent over Kafka comprises the event data from a single neutron pulse.
+Stream event data from a NeXus file to an Apache Kafka cluster. Each message sent over Kafka comprises the event data from a single neutron pulse.
 
 The client runs until the user terminates it, repeatedly sending data from the same file but with incrementing run numbers. However the `-z` flag can be used to produce only a single run.
 
