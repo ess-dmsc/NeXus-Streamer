@@ -1,7 +1,7 @@
-[![Build Status](https://travis-ci.org/ScreamingUdder/isis_nexus_streamer_for_mantid.svg?branch=master)](https://travis-ci.org/ScreamingUdder/isis_nexus_streamer_for_mantid) [![Build Status](https://ci.appveyor.com/api/projects/status/1oqx295j13frpj9w?svg=true)](https://ci.appveyor.com/project/matthew-d-jones/isis-nexus-streamer-for-mantid) [![Coverage Status](https://coveralls.io/repos/github/ScreamingUdder/isis_nexus_streamer_for_mantid/badge.svg?branch=master)](https://coveralls.io/github/ScreamingUdder/isis_nexus_streamer_for_mantid?branch=master) [![License (2-Clause BSD)](https://img.shields.io/badge/license-BSD%202--Clause-blue.svg)](https://github.com/ScreamingUdder/isis_nexus_streamer_for_mantid/blob/master/LICENSE)
+[![License (2-Clause BSD)](https://img.shields.io/badge/license-BSD%202--Clause-blue.svg)](https://github.com/ess-dmsc/NeXus-Streamer/blob/master/LICENSE)
 
-# ISIS NeXus Streamer for Mantid
-Stream event data from a NeXus file from RAL/ISIS using Apache Kafka for the purpose of development of live data streaming in Mantid. Each message sent over Kafka comprises the event data from a single neutron pulse.
+# NeXus Streamer
+Stream event data from a NeXus file using Apache Kafka for the purpose of development of live data streaming in Mantid. Each message sent over Kafka comprises the event data from a single neutron pulse.
 
 The client runs until the user terminates it, repeatedly sending data from the same file but with incrementing run numbers. However the `-z` flag can be used to produce only a single run.
 
@@ -18,7 +18,7 @@ main_nexusPublisher -f <filepath>    Full file path of nexus file to stream
 
 Usage example:
 ```
-main_nexusPublisher -f /path/to/isis_nexus_streamer_for_mantid.git/data/SANS_test_uncompressed.hdf5 -d /path/to/isis_nexus_streamer_for_mantid.git/data/spectrum_gastubes_01.dat -b localhost -i SANS2D -z
+main_nexusPublisher -f /path/to/isis_nexus_streamer_for_mantid.git/data/SANS_test_uncompressed.hdf5 -d /path/to/nexus_streamer.git/data/spectrum_gastubes_01.dat -b localhost -i SANS2D -z
 ```
 
 ## Broker Configuration
@@ -28,10 +28,9 @@ It is also important to allow larger than the default message size by adding the
 replica.fetch.max.bytes=10000000
 message.max.bytes=10000000
 ```
-We use this Ansible playbook to deploy Kafka: https://github.com/ScreamingUdder/ansible-kafka-centos
 
 ## Containers
-The docker-compose script can be used to launch a single-broker Kafka cluster and the NeXus streamer.
+The docker-compose script can be used to launch a single-broker Kafka cluster and the NeXus Streamer.
 Run the following in the root directory of the repository to launch the containers.
 
 ```
@@ -41,7 +40,7 @@ The streamer publishes some test data using the instrument name TEST. The Kafka 
 
 ## Dependencies
 
-Dependencies can be installed using Conan. Conan can be installed using pip.
+Dependencies can be installed using Conan. Conan can be installed using pip and CMake handles running Conan.
 The following remote repositories are required to be configured:
 
 - https://api.bintray.com/conan/ess-dmsc/conan
@@ -54,13 +53,10 @@ conan remote add <local-name> <remote-url>
 where `<local-name>` must be substituted by a locally unique name. Configured
 remotes can be listed with `conan remote list`.
 
-`Google Test` and `Google Mock` are used for unit testing but are not required to be installed; CMake will download and build them at configure-time.
-
 ## Build
 
-The first line can be omitted if you have `librdkafka v0.11.1` and `libhdf5 v1.10` available on your system.
+As usual for a CMake project:
 ```
-conan install <path-to-source>/conan --build -s compiler.libcxx=libstdc++11
 cmake <path-to-source>
 make
 ```
@@ -74,4 +70,4 @@ ctest -VV
 from the build directory.
 
 ## Schema
-The schema files are located in https://github.com/ess-dmsc/streaming-data-types
+The message schema files are located in https://github.com/ess-dmsc/streaming-data-types
