@@ -8,10 +8,38 @@ set(CMAKE_MODULE_PATH
 
 set(CONAN "AUTO" CACHE STRING "conan options AUTO (conan must be in path), MANUAL (expects conanbuildinfo.cmake in build directory) or DISABLE")
 
+function(GET_GTEST)
+    # download and build gtest and gmock
+    if (CMAKE_VERSION VERSION_LESS 3.2)
+        set(UPDATE_DISCONNECTED_IF_AVAILABLE "")
+    else()
+        set(UPDATE_DISCONNECTED_IF_AVAILABLE "UPDATE_DISCONNECTED 1")
+    endif()
+
+    include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/DownloadProject.cmake)
+    download_project(PROJ                googletest
+            GIT_REPOSITORY      https://github.com/google/googletest.git
+            GIT_TAG             master
+            ${UPDATE_DISCONNECTED_IF_AVAILABLE})
+
+    # Prevent GoogleTest from overriding our compiler/linker options
+    # when building with Visual Studio
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+    add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
+
+    # When using CMake 2.8.11 or later, header path dependencies
+    # are automatically added to the gtest and gmock targets.
+    # For earlier CMake versions, we have to explicitly add the
+    # required directories to the header search path ourselves.
+    if (CMAKE_VERSION VERSION_LESS 2.8.11)
+        include_directories("${gtest_SOURCE_DIR}/include"
+                "${gmock_SOURCE_DIR}/include")
+    endif()
+endfunction(GET_GTEST)
+
 if(MSVC)
-   # Git LFS does not work properly with <= 1.9
-  #find_package ( Git 1.9.5 REQUIRED )
-  #find_package ( GitLFS REQUIRED)
+   GET_GTEST()
 
   # Use ExternalProject functionality as it already knows how to do clone/update
   include ( ExternalProject )
@@ -102,33 +130,7 @@ else()
     endif()
 
     if(${CONAN} MATCHES "DISABLE")
-        # download and build gtest and gmock
-        if (CMAKE_VERSION VERSION_LESS 3.2)
-            set(UPDATE_DISCONNECTED_IF_AVAILABLE "")
-        else()
-            set(UPDATE_DISCONNECTED_IF_AVAILABLE "UPDATE_DISCONNECTED 1")
-        endif()
-
-        include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/DownloadProject.cmake)
-        download_project(PROJ                googletest
-                GIT_REPOSITORY      https://github.com/google/googletest.git
-                GIT_TAG             master
-                ${UPDATE_DISCONNECTED_IF_AVAILABLE})
-
-        # Prevent GoogleTest from overriding our compiler/linker options
-        # when building with Visual Studio
-        set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-
-        add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
-
-        # When using CMake 2.8.11 or later, header path dependencies
-        # are automatically added to the gtest and gmock targets.
-        # For earlier CMake versions, we have to explicitly add the
-        # required directories to the header search path ourselves.
-        if (CMAKE_VERSION VERSION_LESS 2.8.11)
-            include_directories("${gtest_SOURCE_DIR}/include"
-                    "${gmock_SOURCE_DIR}/include")
-        endif()
+        GET_GTEST()
     endif()
 
 endif()
