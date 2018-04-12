@@ -8,9 +8,9 @@
 #include <vector>
 
 // a typedef for our managed H5File pointer
-typedef std::unique_ptr<H5::H5File> H5FilePtr;
+using H5FilePtr = std::unique_ptr<H5::H5File>;
 
-typedef std::vector<std::shared_ptr<SampleEnvironmentEvent>> sEEventVector;
+using sEEventVector = std::vector<std::shared_ptr<SampleEnvironmentEvent>>;
 
 class NexusFileReader {
 public:

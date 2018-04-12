@@ -196,9 +196,9 @@ file(GLOB TEST_SRC_FILES
         ${PROJECT_SOURCE_DIR}/nexus_file_reader/test/*.cpp
         unitTestRunner.cpp)
 
-add_executable(unitTests ${TEST_SRC_FILES})
+add_executable(UnitTests ${TEST_SRC_FILES})
 
-target_link_libraries(unitTests
+target_link_libraries(UnitTests
         gtest
         gmock
         producerUnitTests
@@ -207,4 +207,4 @@ target_link_libraries(unitTests
 
 # Make the tests available to run through ctest
 # Do "ctest -VV" in the build directory
-add_test(NAME all_tests COMMAND unitTests "${PROJECT_SOURCE_DIR}/data/")
+add_test(NAME all_tests COMMAND UnitTests "${PROJECT_SOURCE_DIR}/data/")
