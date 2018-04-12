@@ -124,7 +124,7 @@ def docker_coverage(image_key) {
         def coverage_script = """
                         cd build
                         . ./activate_run.sh
-                        ./bin/UnitTests ../${project}/data/ --gtest_output=xml:test_results.xml
+                        ./bin/UnitTests ../${project}/data/ --gtest_output=xml:${test_output}
                         make coverage
                         lcov --directory . --capture --output-file coverage.info
                         lcov --remove coverage.info '*_generated.h' '*/.conan/data/*' '*/usr/*' --output-file coverage.info
@@ -216,7 +216,7 @@ def get_macos_pipeline()
 
                     try {
                         sh "make all UnitTests VERBOSE=1"
-                        sh ". ./activate_run.sh && ./bin/UnitTests ../code/data/ --gtest_output=xml:test_results.xml"
+                        sh ". ./activate_run.sh && ./bin/UnitTests ../code/data/ --gtest_output=xml:TestResults.xml"
                     } catch (e) {
                         failure_function(e, 'MacOSX / build+test failed')
                     }
