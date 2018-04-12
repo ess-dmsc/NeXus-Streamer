@@ -1,0 +1,6 @@
+fixes:
+  - "NeXus-Streamer/::"  # Corrects coverage paths to be relative to repo root
+
+comment:
+  layout: "header, diff, tree, changes, sunburst"
+require_changes: false
