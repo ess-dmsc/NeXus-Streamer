@@ -12,6 +12,7 @@ if(CMAKE_COMPILER_IS_GNUCXX AND COV)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_COVERAGE}")
 endif()
 
+SET(CONAN_PROFILE "default" CACHE STRING "Name of conan profile to use, uses default by default")
 set(CONAN "AUTO" CACHE STRING "conan options AUTO (conan must be in path), MANUAL (expects conanbuildinfo.cmake in build directory) or DISABLE")
 
 function(GET_GTEST)
@@ -146,14 +147,6 @@ find_package(LibRDKafka)
 
 include(CTest)
 enable_testing()
-
-# We probably don't want this to run on every build.
-option(COVERALLS "Generate coveralls data" OFF)
-
-if (COVERALLS)
-    include(Coveralls)
-    coveralls_turn_on_coverage()
-endif()
 
 #####################
 ## Doxygen         ##
