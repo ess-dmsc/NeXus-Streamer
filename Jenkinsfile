@@ -124,10 +124,10 @@ def docker_coverage(image_key) {
         def coverage_script = """
                         cd build
                         . ./activate_run.sh
-                        ./bin/UnitTests ../${project}/data/ --gtest_output=xml:${test_output}
+                        ./bin/UnitTests ../${project}/data/
                         make coverage
                         lcov --directory . --capture --output-file coverage.info
-                        lcov --remove coverage.info '*_generated.h' '*/src/date/*' '*/.conan/data/*' '*/usr/*' --output-file coverage.info
+                        lcov --remove coverage.info '*_generated.h' '*/.conan/data/*' '*/usr/*' --output-file coverage.info
                     """
         sh "docker exec ${container_name(image_key)} ${custom_sh} -c \"${coverage_script}\""
         sh "docker cp ${container_name(image_key)}:/home/jenkins/build ./"

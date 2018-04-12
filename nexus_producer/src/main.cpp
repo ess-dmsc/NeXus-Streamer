@@ -5,8 +5,8 @@
 #else
 #include <getopt.h>
 #endif
-#include <iostream>
 #include <chrono>
+#include <iostream>
 #include <thread>
 
 #include "KafkaEventPublisher.h"
@@ -67,7 +67,8 @@ int main(int argc, char **argv) {
   if (filename.empty() || detSpecFilename.empty() || broker.empty()) {
   usage:
     std::cerr
-        << "Usage:\n" << argv[0]
+        << "Usage:\n"
+        << argv[0]
         << " -f <filepath>    Full file path of nexus file to stream\n"
            "-d <det_spec_map_filepath>    Full file path of file defining the "
            "det-spec mapping\n"

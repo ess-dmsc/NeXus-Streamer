@@ -182,8 +182,7 @@ size_t NexusPublisher::createAndSendRunMessage(std::string &rawbuf,
   auto buffer_uptr = messageData->getRunStartBufferPointer(rawbuf);
   m_publisher->sendRunMessage(reinterpret_cast<char *>(buffer_uptr.get()),
                               messageData->getBufferSize());
-  std::cout << std::endl
-            << "Publishing new run:" << std::endl;
+  std::cout << std::endl << "Publishing new run:" << std::endl;
   std::cout << messageData->runInfo() << std::endl;
   return rawbuf.size();
 }
@@ -214,7 +213,7 @@ int64_t NexusPublisher::getTimeNowInNanoseconds() {
   auto now = std::chrono::system_clock::now();
   auto now_epoch = now.time_since_epoch();
   auto now_epoch_nanoseconds =
-    std::chrono::duration_cast<std::chrono::nanoseconds>(now_epoch).count();
+      std::chrono::duration_cast<std::chrono::nanoseconds>(now_epoch).count();
   return now_epoch_nanoseconds;
 }
 
