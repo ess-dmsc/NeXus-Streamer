@@ -124,7 +124,7 @@ def docker_coverage(image_key) {
         def coverage_script = """
                         cd build
                         . ./activate_run.sh
-                        ./bin/UnitTests ../${project}/data/
+                        ./bin/UnitTests ../${project}/data/ --gtest_output=xml:test_results.xml
                         make coverage
                         lcov --directory . --capture --output-file coverage.info
                         lcov --remove coverage.info '*_generated.h' '*/.conan/data/*' '*/usr/*' --output-file coverage.info
