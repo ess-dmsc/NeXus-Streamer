@@ -108,7 +108,7 @@ std::string RunData::runInfo() {
             << "Start time: ";
   // convert nanoseconds to seconds
   const auto sTime = static_cast<time_t>(m_startTime / 1000000000);
-#if defined(__GNUC__) && __GNUC__ >= 5
+#if (defined(__cplusplus) && (__cplusplus >= 201103L))
   ssRunInfo << std::put_time(std::gmtime(&sTime), "%Y-%m-%dT%H:%M:%S");
 #else
   // gcc < 5 does not have std::put_time implemented
