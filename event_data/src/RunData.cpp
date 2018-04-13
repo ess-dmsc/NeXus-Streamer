@@ -26,7 +26,7 @@ uint64_t RunData::secondsToNanoseconds(time_t timeInSeconds) {
 
 uint64_t RunData::timeStringToUint64(const std::string &inputTime) {
   std::tm tmb = {};
-#if (defined(__GNUC__) && __GNUC__ >= 5) || defined(_MSC_VER)
+#if (defined(__cplusplus) && (__cplusplus >= 201103L))
   std::istringstream ss(inputTime);
   ss.imbue(std::locale());
   ss >> std::get_time(&tmb, "%Y-%m-%dT%H:%M:%S");
