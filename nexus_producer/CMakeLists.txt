@@ -1,4 +1,4 @@
-project(isis_nexus_streamer)
+project(nexus-publisher)
 
 set( SRC_FILES  src/NexusPublisher.cpp)
 
@@ -37,13 +37,14 @@ set(core_libraries
 ## Main executable ##
 #####################
 
+set(publisher-target main_nexusPublisher)
 if(MSVC)
-    add_executable(main_nexusPublisher ${PROJECT_SOURCE_DIR}/src/main.cpp ${PROJECT_SOURCE_DIR}/src/wingetopt.c ${PROJECT_SOURCE_DIR}/include/win32/wingetopt.h)
+    add_executable(${publisher-target} ${PROJECT_SOURCE_DIR}/src/main.cpp ${PROJECT_SOURCE_DIR}/src/wingetopt.c ${PROJECT_SOURCE_DIR}/include/win32/wingetopt.h)
 else ()
-    add_executable(main_nexusPublisher ${PROJECT_SOURCE_DIR}/src/main.cpp)
+    add_executable(${publisher-target} ${PROJECT_SOURCE_DIR}/src/main.cpp)
 endif ()
 
-target_link_libraries(main_nexusPublisher
+target_link_libraries(${publisher-target}
         ${core_libraries})
 
 #####################
@@ -61,14 +62,3 @@ endif()
 add_library(producerUnitTests
         ${TEST_FILES})
 target_link_libraries(producerUnitTests ${tests_LINK_LIBRARIES})
-
-#####################
-## Test Coverage   ##
-#####################
-
-# Add all src and inc files to test coverage check
-if (COVERALLS)
-    foreach( loop_var ${SRC_FILES} ${INC_FILES})
-        set_property(GLOBAL APPEND PROPERTY COVERAGE_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/${loop_var}")
-    endforeach(loop_var)
-endif()

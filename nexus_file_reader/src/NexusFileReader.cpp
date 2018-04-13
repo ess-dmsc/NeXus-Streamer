@@ -191,15 +191,17 @@ NexusFileReader::getNamesInGroup(const std::string &groupName) {
 uint64_t
 NexusFileReader::convertStringToUnixTime(const std::string &timeString) {
   std::tm tmb = {};
-#if (defined(__GNUC__) && __GNUC__ >= 5) || defined(_MSC_VER)
+#if (defined(__cplusplus) && (__cplusplus >= 201103L))
   std::istringstream ss(timeString);
-  ss.imbue(std::locale());
   ss >> std::get_time(&tmb, "%Y-%m-%dT%H:%M:%S");
 #else
   // gcc < 5 does not have std::get_time implemented
-  strptime(timeString.c_str(), "%Y-%m-%dT%H:%M:%S", &tmb);
+  strptime(inputTime.c_str(), "%Y-%m-%dT%H:%M:%S", &tmb);
 #endif
-  auto timeUnix = std::mktime(&tmb);
+#if (defined(_MSC_VER))
+#define timegm _mkgmtime
+#endif
+  auto timeUnix = timegm(&tmb);
   return static_cast<uint64_t>(timeUnix);
 }
 

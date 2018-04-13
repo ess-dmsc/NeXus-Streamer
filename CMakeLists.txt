@@ -1,11 +1,19 @@
 cmake_minimum_required(VERSION 2.8)
-project(isis_nexus_streamer_for_mantid)
+project(NeXus-Streamer)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pedantic-errors")
 
 set(CMAKE_MODULE_PATH
         ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
+if(CMAKE_COMPILER_IS_GNUCXX AND COV)
+    include(CodeCoverage)
+    set(path_to_test_data ${CMAKE_SOURCE_DIR}/data/)
+    setup_target_for_coverage(coverage UnitTests coverage "${path_to_test_data}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_COVERAGE}")
+endif()
+
+SET(CONAN_PROFILE "default" CACHE STRING "Name of conan profile to use, uses default by default")
 set(CONAN "AUTO" CACHE STRING "conan options AUTO (conan must be in path), MANUAL (expects conanbuildinfo.cmake in build directory) or DISABLE")
 
 function(GET_GTEST)
@@ -141,14 +149,6 @@ find_package(LibRDKafka)
 include(CTest)
 enable_testing()
 
-# We probably don't want this to run on every build.
-option(COVERALLS "Generate coveralls data" OFF)
-
-if (COVERALLS)
-    include(Coveralls)
-    coveralls_turn_on_coverage()
-endif()
-
 #####################
 ## Doxygen         ##
 #####################
@@ -190,9 +190,9 @@ file(GLOB TEST_SRC_FILES
         ${PROJECT_SOURCE_DIR}/nexus_file_reader/test/*.cpp
         unitTestRunner.cpp)
 
-add_executable(unitTests ${TEST_SRC_FILES})
+add_executable(UnitTests ${TEST_SRC_FILES})
 
-target_link_libraries(unitTests
+target_link_libraries(UnitTests
         gtest
         gmock
         producerUnitTests
@@ -201,24 +201,4 @@ target_link_libraries(unitTests
 
 # Make the tests available to run through ctest
 # Do "ctest -VV" in the build directory
-add_test(NAME all_tests COMMAND unitTests "${PROJECT_SOURCE_DIR}/data/")
-
-#####################
-## Test coverage   ##
-#####################
-
-if (COVERALLS)
-    get_property(ALL_SRCS GLOBAL PROPERTY COVERAGE_SRCS)
-    set(SRCS_FILE "")
-    foreach (SRC ${ALL_SRCS})
-        set(SRCS_FILE "${SRCS_FILE}\n${SRC}")
-    endforeach()
-    #remove initial \n
-    string(SUBSTRING ${SRCS_FILE} 1 -1 SRCS_FILE)
-    set( SRCS_FILENAME "${CMAKE_CURRENT_BINARY_DIR}/sources.txt")
-    file(WRITE ${SRCS_FILENAME} ${SRCS_FILE})
-    coveralls_setup(
-            "${SRCS_FILENAME}"
-            ON
-            "${PROJECT_SOURCE_DIR}/cmake")
-endif ()
+add_test(NAME all_tests COMMAND UnitTests "${PROJECT_SOURCE_DIR}/data/")
