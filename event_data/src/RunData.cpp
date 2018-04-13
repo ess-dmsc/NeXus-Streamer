@@ -28,13 +28,15 @@ uint64_t RunData::timeStringToUint64(const std::string &inputTime) {
   std::tm tmb = {};
 #if (defined(__cplusplus) && (__cplusplus >= 201103L))
   std::istringstream ss(inputTime);
-  ss.imbue(std::locale());
   ss >> std::get_time(&tmb, "%Y-%m-%dT%H:%M:%S");
 #else
   // gcc < 5 does not have std::get_time implemented
   strptime(inputTime.c_str(), "%Y-%m-%dT%H:%M:%S", &tmb);
 #endif
-  auto nsSinceEpoch = secondsToNanoseconds(std::mktime(&tmb));
+#if (defined(_MSC_VER))
+#define timegm _mkgmtime
+#endif
+  auto nsSinceEpoch = secondsToNanoseconds(timegm(&tmb));
   return nsSinceEpoch;
 }
 
