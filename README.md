@@ -1,4 +1,4 @@
-[![License (2-Clause BSD)](https://img.shields.io/badge/license-BSD%202--Clause-blue.svg)](https://github.com/ess-dmsc/NeXus-Streamer/blob/master/LICENSE)
+[![License (2-Clause BSD)](https://img.shields.io/badge/license-BSD%202--Clause-blue.svg)](https://github.com/ess-dmsc/NeXus-Streamer/blob/master/LICENSE) [![codecov](https://codecov.io/gh/ess-dmsc/NeXus-Streamer/branch/master/graph/badge.svg)](https://codecov.io/gh/ess-dmsc/NeXus-Streamer)
 
 # NeXus Streamer
 Stream event data from a NeXus file to an Apache Kafka cluster. Each message sent over Kafka comprises the event data from a single neutron pulse.
