@@ -13,14 +13,14 @@ if(CMAKE_COMPILER_IS_GNUCXX AND COV)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_COVERAGE}")
 endif()
 
-SET(CONAN_PROFILE "default" CACHE STRING "Name of conan profile to use, uses default by default")
+set(CONAN_PROFILE "default" CACHE STRING "Name of conan profile to use, uses default by default")
 set(CONAN "AUTO" CACHE STRING "conan options AUTO (conan must be in path), MANUAL (expects conanbuildinfo.cmake in build directory) or DISABLE")
-
 if(${CONAN} MATCHES "AUTO")
     include(${CMAKE_MODULE_PATH}/conan.cmake)
     conan_cmake_run(CONANFILE conan/conanfile.txt
             PROFILE ${CONAN_PROFILE}
             BASIC_SETUP
+            BUILD_TYPE ${CMAKE_BUILD_TYPE}
             BUILD outdated)
 elseif(${CONAN} MATCHES "MANUAL")
     if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
