@@ -21,7 +21,6 @@ if(${CONAN} MATCHES "AUTO")
     conan_cmake_run(CONANFILE conan/conanfile.txt
             PROFILE ${CONAN_PROFILE}
             BASIC_SETUP
-            BUILD_TYPE "None"
             BUILD outdated)
 elseif(${CONAN} MATCHES "MANUAL")
     if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")

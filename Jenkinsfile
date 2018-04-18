@@ -243,18 +243,10 @@ def get_win10_pipeline() {
 	    mkdir _build
 	    """
 	} // stage
-        stage("win10: Install") {
-          bat """cd _build
-	    conan.exe \
-            install ..\\conan\\conanfile.txt  \
-            --settings build_type=Release \
-            --build=outdated"""
-        }  // stage
-
-	 stage("win10: Build") {
+        stage("win10: Build") {
            bat """cd _build
 	     cmake .. -G \"Visual Studio 15 2017 Win64\" -DCMAKE_BUILD_TYPE=Release
-	     cmake --build .
+	     cmake --build . --config Release
 	     """
         }  // stage
       }  // dir
