@@ -191,13 +191,8 @@ NexusFileReader::getNamesInGroup(const std::string &groupName) {
 uint64_t
 NexusFileReader::convertStringToUnixTime(const std::string &timeString) {
   std::tm tmb = {};
-#if (defined(__cplusplus) && (__cplusplus >= 201103L))
   std::istringstream ss(timeString);
   ss >> std::get_time(&tmb, "%Y-%m-%dT%H:%M:%S");
-#else
-  // gcc < 5 does not have std::get_time implemented
-  strptime(inputTime.c_str(), "%Y-%m-%dT%H:%M:%S", &tmb);
-#endif
 #if (defined(_MSC_VER))
 #define timegm _mkgmtime
 #endif
