@@ -79,9 +79,13 @@ def docker_cmake(image_key) {
         if (image_key == test_and_coverage_os) {
             coverage_on = "-DCOV=1"
         }
+        def cmake_cmd = "cmake"
+        if (image_key == "centos7-gcc6") {
+            cmake_cmd = "cmake3"
+        }
         def configure_script = """
                         cd build
-                        cmake ../${project} ${coverage_on}
+                        ${cmake_cmd} ../${project} ${coverage_on}
                     """
         sh "docker exec ${container_name(image_key)} ${custom_sh} -c \"${configure_script}\""
     } catch (e) {
