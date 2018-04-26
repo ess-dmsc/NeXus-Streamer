@@ -6,8 +6,6 @@
 
 #include "ev42_events_generated.h"
 
-uint64_t getMessageID(const std::string &rawbuf);
-
 class EventData {
 
 public:

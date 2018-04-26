@@ -1,12 +1,6 @@
 #include "EventData.h"
 #include <iostream>
 
-uint64_t getMessageID(const std::string &rawbuf) {
-  auto buf = reinterpret_cast<const uint8_t *>(rawbuf.c_str());
-  auto messageData = GetEventMessage(buf);
-  return messageData->message_id();
-}
-
 bool EventData::decodeMessage(const uint8_t *buf) {
   auto messageData = GetEventMessage(buf);
   if (messageData->facility_specific_data_type() == FacilityData_ISISData) {
