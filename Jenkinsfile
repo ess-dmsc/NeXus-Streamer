@@ -236,24 +236,29 @@ def get_win10_pipeline() {
     node('windows10') {
       // Use custom location to avoid Win32 path length issues
       ws('c:\\jenkins\\') {
-      cleanWs()
-      dir("${project}") {
-        stage("win10: Checkout") {
-          checkout scm
-        }  // stage
+        cleanWs()
+        dir("${project}") {
+          stage("win10: Checkout") {
+            checkout scm
+          }  // stage
 
-	stage("win10: Setup") {
-          bat """if exist _build rd /q /s _build
-	    mkdir _build
-	    """
-	} // stage
-        stage("win10: Build") {
-           bat """cd _build
-	     cmake .. -G \"Visual Studio 15 2017 Win64\" -DCMAKE_BUILD_TYPE=Release
-	     cmake --build . --config Release
-	     """
-        }  // stage
-      }  // dir
+        	stage("win10: Setup") {
+            bat """if exist _build rd /q /s _build
+        	  mkdir _build
+        	  """
+        	} // stage
+          stage("win10: Build") {
+            bat """cd _build
+    	      cmake .. -G \"Visual Studio 15 2017 Win64\" -DCMAKE_BUILD_TYPE=Release
+    	      cmake --build . --config Release
+    	      """
+          } // stage
+          stage("win10: Test") {
+            bat """.\\activate_run.bat
+    	      .\\bin\\UnitTests.exe ..\\data\\
+    	      """
+          } // stage
+        }  // dir
       }
     }  // node
   }  // return
