@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.2)
 project(NeXus-Streamer)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pedantic-errors")
@@ -14,27 +14,12 @@ if(CMAKE_COMPILER_IS_GNUCXX AND COV)
 endif()
 
 set(CONAN_PROFILE "default" CACHE STRING "Name of conan profile to use, uses default by default")
-set(CONAN "AUTO" CACHE STRING "conan options AUTO (conan must be in path), MANUAL (expects conanbuildinfo.cmake in build directory) or DISABLE")
-if(${CONAN} MATCHES "AUTO")
-    include(${CMAKE_MODULE_PATH}/conan.cmake)
-    conan_cmake_run(CONANFILE conan/conanfile.txt
-            PROFILE ${CONAN_PROFILE}
-            BASIC_SETUP
-            BUILD_TYPE "None"
-            BUILD outdated)
-elseif(${CONAN} MATCHES "MANUAL")
-    if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
-        include("${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
-        conan_basic_setup()
-    else()
-        MESSAGE(FATAL_ERROR "CONAN set to MANUAL but no file named conanbuildinfo.cmake found in build directory")
-    endif()
-elseif(NOT ${CONAN} MATCHES "DISABLE")
-    MESSAGE(FATAL_ERROR "Unrecognised option for CONAN, use AUTO, MANUAL or DISABLE")
-endif()
-
-find_package(HDF5 COMPONENTS CXX HL REQUIRED)
-find_package(LibRDKafka)
+include(${CMAKE_MODULE_PATH}/conan.cmake)
+conan_cmake_run(CONANFILE conan/conanfile.txt
+        PROFILE ${CONAN_PROFILE}
+        BASIC_SETUP CMAKE_TARGETS
+        BUILD_TYPE "None"
+        BUILD outdated)
 
 include(CTest)
 enable_testing()
@@ -68,8 +53,8 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/nexus_file_reader")
 ####################
 
 include_directories(
-        ${HDF5_INCLUDE_DIRS}
-        ${LibRDKafka_INCLUDE_DIR}
+        CONAN_PKG::h5cpp
+        CONAN_PKG::librdkafka
         ${PROJECT_SOURCE_DIR}/nexus_producer/include
         ${PROJECT_SOURCE_DIR}/event_data/include
         ${PROJECT_SOURCE_DIR}/nexus_file_reader/include)
@@ -83,8 +68,7 @@ file(GLOB TEST_SRC_FILES
 add_executable(UnitTests ${TEST_SRC_FILES})
 
 target_link_libraries(UnitTests
-        gtest
-        gmock
+        CONAN_PKG::gtest
         producerUnitTests
         eventDataUnitTests
         fileReaderUnitTests)

@@ -12,8 +12,8 @@ set( TEST_FILES test/NexusPublisherTest.cpp)
 #####################
 
 include_directories(
-        ${LibRDKafka_INCLUDE_DIR}
-        ${HDF5_INCLUDE_DIRS}
+        CONAN_PKG::librdkafka
+        CONAN_PKG::hdf5
         ${PROJECT_SOURCE_DIR}/include)
 
 add_library(nexusPublisher_lib ${PROJECT_SOURCE_DIR}/src/NexusPublisher.cpp)
@@ -22,7 +22,7 @@ add_library(eventPublisher_lib
         ${PROJECT_SOURCE_DIR}/src/KafkaEventPublisher.cpp)
 
 target_link_libraries(eventPublisher_lib
-        ${LibRDKafka_LIBRARIES})
+        CONAN_PKG::librdkafka)
 target_link_libraries(nexusPublisher_lib
         nexusFileReader_lib
         eventdata_lib)
@@ -52,8 +52,7 @@ target_link_libraries(${publisher-target}
 #####################
 
 set(tests_LINK_LIBRARIES
-        gtest
-        gmock
+        CONAN_PKG::gtest
         ${core_libraries})
 if(UNIX)
     list(APPEND tests_LINK_LIBRARIES pthread)
