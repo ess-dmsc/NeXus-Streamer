@@ -1,5 +1,5 @@
-#include <chrono>
 #include <CLI/CLI.hpp>
+#include <chrono>
 #include <iostream>
 #include <thread>
 
@@ -8,8 +8,8 @@
 
 int main(int argc, char **argv) {
 
-  CLI::App App{
-          "Stream neutron detection event and sample environment data from a NeXus file into Kafka"};
+  CLI::App App{"Stream neutron detection event and sample environment data "
+               "from a NeXus file into Kafka"};
 
   std::string filename;
   std::string detSpecFilename;
@@ -20,14 +20,23 @@ int main(int argc, char **argv) {
   bool quietMode = false;
   bool singleRun = false;
 
-  App.add_option("--filename", filename, "Full path of the NeXus file")->required();
-  App.add_option("--detspecmap", detSpecFilename, "Full path of the detector-spectrum map")->required();
-  App.add_option("--broker", broker, "Hostname or IP of Kafka broker")->required();
-  App.add_option("--instrument", instrumentName, "Used as prefix for topic names");
-  App.add_option("--compression", compression, "Compression option for Kafka messages");
-  App.add_flag("--slow", slow, "Publish data at approx realistic rate (10 pulses per second)");
+  App.add_option("--filename", filename, "Full path of the NeXus file")
+      ->required();
+  App.add_option("--detspecmap", detSpecFilename,
+                 "Full path of the detector-spectrum map")
+      ->required();
+  App.add_option("--broker", broker, "Hostname or IP of Kafka broker")
+      ->required();
+  App.add_option("--instrument", instrumentName,
+                 "Used as prefix for topic names");
+  App.add_option("--compression", compression,
+                 "Compression option for Kafka messages");
+  App.add_flag("--slow", slow,
+               "Publish data at approx realistic rate (10 pulses per second)");
   App.add_flag("--quiet", quietMode, "Less chatty on stdout");
-  App.add_flag("--singlerun", singleRun, "Publish only a single run (otherwise repeats until interrupted)");
+  App.add_flag(
+      "--singlerun", singleRun,
+      "Publish only a single run (otherwise repeats until interrupted)");
 
   CLI11_PARSE(App, argc, argv);
 
