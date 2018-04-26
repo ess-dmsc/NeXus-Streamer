@@ -40,8 +40,7 @@ add_library(eventdata_lib ${SRC_FILES})
 #####################
 
 set(eventData_tests_LINK_LIBRARIES
-        gtest
-        gmock
+        CONAN_PKG::gtest
         eventdata_lib)
 if(UNIX)
     list(APPEND tests_LINK_LIBRARIES pthread)
@@ -50,14 +49,3 @@ endif()
 add_library(eventDataUnitTests
         ${TEST_FILES})
 target_link_libraries(eventDataUnitTests ${eventData_tests_LINK_LIBRARIES})
-
-#####################
-## Test Coverage   ##
-#####################
-
-# Add all src and inc files to test coverage check
-if (COVERALLS)
-    foreach( loop_var ${SRC_FILES} ${INC_FILES})
-        set_property(GLOBAL APPEND PROPERTY COVERAGE_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/${loop_var}")
-    endforeach(loop_var)
-endif()

@@ -26,13 +26,8 @@ uint64_t RunData::secondsToNanoseconds(time_t timeInSeconds) {
 
 uint64_t RunData::timeStringToUint64(const std::string &inputTime) {
   std::tm tmb = {};
-#if (defined(__cplusplus) && (__cplusplus >= 201103L))
   std::istringstream ss(inputTime);
   ss >> std::get_time(&tmb, "%Y-%m-%dT%H:%M:%S");
-#else
-  // gcc < 5 does not have std::get_time implemented
-  strptime(inputTime.c_str(), "%Y-%m-%dT%H:%M:%S", &tmb);
-#endif
 #if (defined(_MSC_VER))
 #define timegm _mkgmtime
 #endif
@@ -110,14 +105,6 @@ std::string RunData::runInfo() {
             << "Start time: ";
   // convert nanoseconds to seconds
   const auto sTime = static_cast<time_t>(m_startTime / 1000000000);
-#if (defined(__cplusplus) && (__cplusplus >= 201103L))
   ssRunInfo << std::put_time(std::gmtime(&sTime), "%Y-%m-%dT%H:%M:%S");
-#else
-  // gcc < 5 does not have std::put_time implemented
-  auto tmb = std::gmtime(&sTime);
-  std::array<char, 20> buffer;
-  strftime(buffer.data(), 20, "%Y-%m-%dT%H:%M:%S", tmb);
-  ssRunInfo << buffer.data();
-#endif
   return ssRunInfo.str();
 }

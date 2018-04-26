@@ -14,23 +14,21 @@ set( TEST_FILES
 #####################
 
 include_directories(
-        ${HDF5_INCLUDE_DIRS}
+        CONAN_PKG::hdf5
         ${PROJECT_SOURCE_DIR}/include)
 
 add_library(nexusFileReader_lib ${PROJECT_SOURCE_DIR}/src/NexusFileReader.cpp)
 
 target_link_libraries(nexusFileReader_lib
         eventdata_lib
-        ${HDF5_LIBRARIES}
-        ${HDF5_CXX_LIBRARIES})
+        CONAN_PKG::hdf5)
 
 #####################
 ## Unit Tests      ##
 #####################
 
 set(tests_LINK_LIBRARIES
-        gtest
-        gmock
+        CONAN_PKG::gtest
         nexusFileReader_lib)
 if(UNIX)
     list(APPEND tests_LINK_LIBRARIES pthread)
@@ -39,14 +37,3 @@ endif()
 add_library(fileReaderUnitTests
         ${TEST_FILES})
 target_link_libraries(fileReaderUnitTests ${tests_LINK_LIBRARIES})
-
-#####################
-## Test Coverage   ##
-#####################
-
-# Add all src and inc files to test coverage check
-if (COVERALLS)
-    foreach( loop_var ${SRC_FILES} ${INC_FILES})
-        set_property(GLOBAL APPEND PROPERTY COVERAGE_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/${loop_var}")
-    endforeach(loop_var)
-endif()
