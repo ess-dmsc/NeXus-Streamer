@@ -102,7 +102,7 @@ NexusFileReader::get1DDataset(DataType dataType,
   auto dataspace = dataset.getSpace();
 
   // resize vector to the correct size to put the new data in
-  values.resize(dataspace.getSelectNpoints());
+  values.resize(static_cast<size_t>(dataspace.getSelectNpoints()));
 
   dataset.read(values.data(), dataType, dataspace);
   return values;
