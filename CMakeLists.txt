@@ -21,6 +21,9 @@ conan_cmake_run(CONANFILE conan/conanfile.txt
         BUILD_TYPE "None"
         BUILD outdated)
 
+# This preprocessor definition is required for using HDF5 with MSVC
+add_definitions(-DH5_BUILT_AS_DYNAMIC_LIB)
+
 include(CTest)
 enable_testing()
 
