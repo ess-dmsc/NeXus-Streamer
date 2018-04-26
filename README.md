@@ -7,18 +7,23 @@ The client runs until the user terminates it, repeatedly sending data from the s
 
 Usage:
 ```
-main_nexusPublisher -f <filepath>    Full file path of nexus file to stream
--d <det_spec_map_filepath>    Full file path of file defining the det-spec mapping
--b <host>    Broker IP address or hostname
-[-i <instrument_name>]    Used as prefix for topic names
-[-s]    Slow mode, publishes data at approx realistic rate of 10 frames per second
-[-q]    Quiet mode, makes publisher less chatty on stdout
-[-z]    Produce only a single run (otherwise repeats until interrupted)
+main_nexusPublisher <OPTIONS>
+
+Options:
+  -h,--help                   Print this help message and exit
+  --filename TEXT             Full path of the NeXus file
+  --detspecmap TEXT           Full path of the detector-spectrum map
+  --broker TEXT               Hostname or IP of Kafka broker
+  --instrument TEXT           Used as prefix for topic names
+  --compression TEXT          Compression option for Kafka messages
+  --slow                      Publish data at approx realistic rate (10 pulses per second)
+  --quiet                     Less chatty on stdout
+  --singlerun                 Publish only a single run (otherwise repeats until interrupted)
 ```
 
 Usage example:
 ```
-main_nexusPublisher -f /path/to/isis_nexus_streamer_for_mantid.git/data/SANS_test_uncompressed.hdf5 -d /path/to/nexus_streamer.git/data/spectrum_gastubes_01.dat -b localhost -i SANS2D -z
+main_nexusPublisher --filename /path/to/NeXus-Streamer.git/data/SANS_test_uncompressed.hdf5 --detspecmap /path/to/NeXus-Streamer.git/data/spectrum_gastubes_01.dat --broker localhost --instrument SANS2D --singlerun
 ```
 
 ## Broker Configuration
@@ -45,6 +50,7 @@ The following remote repositories are required to be configured:
 
 - https://api.bintray.com/conan/ess-dmsc/conan
 - https://api.bintray.com/conan/conan-community/conan
+- https://api.bintray.com/conan/bincrafters/public-conan
 
 You can add them by running
 ```

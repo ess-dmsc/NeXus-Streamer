@@ -14,6 +14,7 @@ set( TEST_FILES test/NexusPublisherTest.cpp)
 include_directories(
         CONAN_PKG::librdkafka
         CONAN_PKG::hdf5
+        CONAN_PKG::cli11
         ${PROJECT_SOURCE_DIR}/include)
 
 add_library(nexusPublisher_lib ${PROJECT_SOURCE_DIR}/src/NexusPublisher.cpp)
@@ -38,13 +39,10 @@ set(core_libraries
 #####################
 
 set(publisher-target main_nexusPublisher)
-if(MSVC)
-    add_executable(${publisher-target} ${PROJECT_SOURCE_DIR}/src/main.cpp ${PROJECT_SOURCE_DIR}/src/wingetopt.c ${PROJECT_SOURCE_DIR}/include/win32/wingetopt.h)
-else ()
-    add_executable(${publisher-target} ${PROJECT_SOURCE_DIR}/src/main.cpp)
-endif ()
+add_executable(${publisher-target} ${PROJECT_SOURCE_DIR}/src/main.cpp)
 
 target_link_libraries(${publisher-target}
+        CONAN_PKG::cli11
         ${core_libraries})
 
 #####################

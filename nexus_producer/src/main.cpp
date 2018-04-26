@@ -1,10 +1,4 @@
-#ifdef _MSC_VER
-#include "win32/wingetopt.h"
-#elif _AIX
-#include <unistd.h>
-#else
-#include <getopt.h>
-#endif
+#include <CLI/CLI.hpp>
 #include <chrono>
 #include <iostream>
 #include <thread>
@@ -14,7 +8,9 @@
 
 int main(int argc, char **argv) {
 
-  int opt;
+  CLI::App App{"Stream neutron detection event and sample environment data "
+               "from a NeXus file into Kafka"};
+
   std::string filename;
   std::string detSpecFilename;
   std::string broker;
@@ -24,64 +20,25 @@ int main(int argc, char **argv) {
   bool quietMode = false;
   bool singleRun = false;
 
-  while ((opt = getopt(argc, argv, "f:d:b:i:c:sqz")) != -1) {
-    switch (opt) {
+  App.add_option("--filename", filename, "Full path of the NeXus file")
+      ->required();
+  App.add_option("--detspecmap", detSpecFilename,
+                 "Full path of the detector-spectrum map")
+      ->required();
+  App.add_option("--broker", broker, "Hostname or IP of Kafka broker")
+      ->required();
+  App.add_option("--instrument", instrumentName,
+                 "Used as prefix for topic names");
+  App.add_option("--compression", compression,
+                 "Compression option for Kafka messages");
+  App.add_flag("--slow", slow,
+               "Publish data at approx realistic rate (10 pulses per second)");
+  App.add_flag("--quiet", quietMode, "Less chatty on stdout");
+  App.add_flag(
+      "--singlerun", singleRun,
+      "Publish only a single run (otherwise repeats until interrupted)");
 
-    case 'f':
-      filename = optarg;
-      break;
-
-    case 'd':
-      detSpecFilename = optarg;
-      break;
-
-    case 'b':
-      broker = optarg;
-      break;
-
-    case 'i':
-      instrumentName = optarg;
-      break;
-
-    case 'c':
-      compression = optarg;
-      break;
-
-    case 's':
-      slow = true;
-      break;
-
-    case 'q':
-      quietMode = true;
-      break;
-
-    case 'z':
-      singleRun = true;
-      break;
-
-    default:
-      goto usage;
-    }
-  }
-
-  if (filename.empty() || detSpecFilename.empty() || broker.empty()) {
-  usage:
-    std::cerr
-        << "Usage:\n"
-        << argv[0]
-        << " -f <filepath>    Full file path of nexus file to stream\n"
-           "-d <det_spec_map_filepath>    Full file path of file defining the "
-           "det-spec mapping\n"
-           "-b <host>    Broker IP address or hostname\n"
-           "[-i <instrument_name>]    Used as prefix for topic names\n"
-           "[-s]    Slow mode, publishes data at approx realistic rate of 10 "
-           "frames per second\n"
-           "[-q]    Quiet mode, makes publisher less chatty on stdout\n"
-           "[-z]    Produce only a single run (otherwise repeats until "
-           "interrupted)"
-           "\n";
-    exit(1);
-  }
+  CLI11_PARSE(App, argc, argv);
 
   auto publisher = std::make_shared<KafkaEventPublisher>(compression);
   int runNumber = 1;
