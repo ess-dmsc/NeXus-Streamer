@@ -10,8 +10,7 @@
 
 class SampleEnvironmentEvent {
 public:
-  SampleEnvironmentEvent(uint64_t runStart, float eventTime,
-                         std::string name)
+  SampleEnvironmentEvent(uint64_t runStart, float eventTime, std::string name)
       : m_runStartNanosecondsPastUnixEpoch(runStart), m_time(eventTime),
         m_name(std::move(name)) {}
   virtual ~SampleEnvironmentEvent() = default;
