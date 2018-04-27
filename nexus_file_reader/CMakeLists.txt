@@ -17,7 +17,7 @@ include_directories(
         CONAN_PKG::hdf5
         ${PROJECT_SOURCE_DIR}/include)
 
-add_library(nexusFileReader_lib ${PROJECT_SOURCE_DIR}/src/NexusFileReader.cpp)
+add_library(nexusFileReader_lib ${SRC_FILES} ${INC_FILES})
 
 target_link_libraries(nexusFileReader_lib
         eventdata_lib

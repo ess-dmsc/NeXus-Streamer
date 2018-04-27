@@ -1,5 +1,4 @@
-#ifndef ISIS_NEXUS_STREAMER_MOCKEVENTPUBLISHER_H
-#define ISIS_NEXUS_STREAMER_MOCKEVENTPUBLISHER_H
+#pragma once
 
 #include "EventPublisher.h"
 #include <gmock/gmock.h>
@@ -15,5 +14,3 @@ public:
   MOCK_METHOD0(getCurrentOffset, int64_t());
   MOCK_METHOD0(flushSendQueue, void());
 };
-
-#endif // ISIS_NEXUS_STREAMER_MOCKEVENTPUBLISHER_H

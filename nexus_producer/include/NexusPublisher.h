@@ -1,5 +1,4 @@
-#ifndef ISIS_NEXUS_STREAMER_NEXUSPUBLISHER_H
-#define ISIS_NEXUS_STREAMER_NEXUSPUBLISHER_H
+#pragma once
 
 #include <memory>
 
@@ -14,7 +13,7 @@ public:
   NexusPublisher(std::shared_ptr<EventPublisher> publisher,
                  const std::string &brokerAddress,
                  const std::string &instrumentName, const std::string &filename,
-                 const std::string &detSpecMapFilename, const bool quietMode);
+                 const std::string &detSpecMapFilename, bool quietMode);
   std::vector<std::shared_ptr<EventData>>
   createMessageData(hsize_t frameNumber);
   size_t createAndSendRunMessage(std::string &rawbuf, int runNumber);
@@ -29,7 +28,7 @@ private:
   void createAndSendSampleEnvMessages(std::string &sampleEnvBuf,
                                       size_t frameNumber);
   size_t createAndSendRunStopMessage(std::string &rawbuf);
-  void reportProgress(const float progress);
+  void reportProgress(float progress);
 
   std::shared_ptr<EventPublisher> m_publisher;
   std::shared_ptr<NexusFileReader> m_fileReader;
@@ -39,5 +38,3 @@ private:
   uint64_t m_messageID = 0;
   uint64_t m_runStartTime;
 };
-
-#endif // ISIS_NEXUS_STREAMER_NEXUSPUBLISHER_H

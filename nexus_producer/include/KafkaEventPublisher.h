@@ -1,5 +1,4 @@
-#ifndef ISIS_NEXUS_STREAMER_KAFKAEVENTPUBLISHER_H
-#define ISIS_NEXUS_STREAMER_KAFKAEVENTPUBLISHER_H
+#pragma once
 
 #include <librdkafka/rdkafkacpp.h>
 #include <memory>
@@ -8,10 +7,10 @@
 
 class KafkaEventPublisher : public EventPublisher {
 public:
-  KafkaEventPublisher(){};
-  KafkaEventPublisher(const std::string &compression)
-      : m_compression(compression){};
-  ~KafkaEventPublisher();
+  KafkaEventPublisher() = default;
+  explicit KafkaEventPublisher(std::string compression)
+      : m_compression(std::move(compression)){};
+  ~KafkaEventPublisher() override;
 
   std::shared_ptr<RdKafka::Topic>
   createTopicHandle(const std::string &topicPrefix,
@@ -40,5 +39,3 @@ private:
   // Use default partition assignment for messages
   int m_partitionNumber = RdKafka::Topic::PARTITION_UA;
 };
-
-#endif // ISIS_NEXUS_STREAMER_KAFKAEVENTPUBLISHER_H

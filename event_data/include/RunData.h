@@ -1,5 +1,4 @@
-#ifndef ISIS_NEXUS_STREAMER_FOR_MANTID_RUNDATA_H
-#define ISIS_NEXUS_STREAMER_FOR_MANTID_RUNDATA_H
+#pragma once
 
 #include "ba57_run_info_generated.h"
 
@@ -7,8 +6,6 @@ class RunData {
 
 public:
   bool decodeMessage(const uint8_t *buf);
-  flatbuffers::unique_ptr_t getEventBufferPointer(std::string &buffer,
-                                                  uint64_t messageID);
   flatbuffers::unique_ptr_t getRunStartBufferPointer(std::string &buffer);
   flatbuffers::unique_ptr_t getRunStopBufferPointer(std::string &buffer);
 
@@ -48,5 +45,3 @@ private:
   size_t m_bufferSize = 0;
   int32_t m_numberOfPeriods = 0;
 };
-
-#endif // ISIS_NEXUS_STREAMER_FOR_MANTID_RUNDATA_H

@@ -1,5 +1,4 @@
-#ifndef ISIS_NEXUS_STREAMER_FOR_MANTID_SAMPLEENVIRONMENTEVENT_H
-#define ISIS_NEXUS_STREAMER_FOR_MANTID_SAMPLEENVIRONMENTEVENT_H
+#pragma once
 
 #include "f142_logdata_generated.h"
 #include <type_traits>
@@ -12,10 +11,10 @@
 class SampleEnvironmentEvent {
 public:
   SampleEnvironmentEvent(uint64_t runStart, float eventTime,
-                         const std::string &name)
+                         std::string name)
       : m_runStartNanosecondsPastUnixEpoch(runStart), m_time(eventTime),
-        m_name(name) {}
-  virtual ~SampleEnvironmentEvent() {}
+        m_name(std::move(name)) {}
+  virtual ~SampleEnvironmentEvent() = default;
 
   virtual flatbuffers::Offset<LogData>
   getSEEvent(flatbuffers::FlatBufferBuilder &builder) = 0;
@@ -31,5 +30,3 @@ protected:
   uint64_t m_runStartNanosecondsPastUnixEpoch;
   float m_time;
 };
-
-#endif // ISIS_NEXUS_STREAMER_FOR_MANTID_SAMPLEENVIRONMENTEVENT_H

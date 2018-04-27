@@ -1,11 +1,10 @@
-#ifndef ISIS_NEXUS_STREAMER_EVENTPUBLISHER_H
-#define ISIS_NEXUS_STREAMER_EVENTPUBLISHER_H
+#pragma once
 
 #include <string>
 
 class EventPublisher {
 public:
-  virtual ~EventPublisher() {}
+  virtual ~EventPublisher() = default;
   virtual void setUp(const std::string &broker,
                      const std::string &instrumentName) = 0;
   virtual void sendEventMessage(char *buf, size_t messageSize) = 0;
@@ -15,5 +14,3 @@ public:
   virtual void flushSendQueue() = 0;
   virtual int64_t getCurrentOffset() = 0;
 };
-
-#endif // ISIS_NEXUS_STREAMER_EVENTPUBLISHER_H

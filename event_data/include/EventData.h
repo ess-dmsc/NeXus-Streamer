@@ -1,5 +1,4 @@
-#ifndef ISIS_NEXUS_STREAMER_EVENTDATA_H
-#define ISIS_NEXUS_STREAMER_EVENTDATA_H
+#pragma once
 
 #include <cstdint>
 #include <vector>
@@ -10,14 +9,14 @@ class EventData {
 
 public:
   // Construct a new empty EventData object
-  EventData() {}
+  EventData() = default;
 
   // Decode message into existing EventData instance
   bool decodeMessage(const uint8_t *buf);
 
   // Setters
-  void setDetId(std::vector<uint32_t> detIds) { m_detId = detIds; }
-  void setTof(std::vector<uint32_t> tofs) { m_tof = tofs; }
+  void setDetId(std::vector<uint32_t> detIds) { m_detId = std::move(detIds); }
+  void setTof(std::vector<uint32_t> tofs) { m_tof = std::move(tofs); }
   void setTotalCounts(uint64_t totalCounts) { m_totalCounts = totalCounts; }
   void setProtonCharge(float protonCharge) { m_protonCharge = protonCharge; }
   void setPeriod(uint32_t period) { m_period = period; }
@@ -26,7 +25,7 @@ public:
   // Getters
   std::vector<uint32_t> getDetId() { return m_detId; }
   std::vector<uint32_t> getTof() { return m_tof; }
-  uint32_t getNumberOfEvents() { return m_tof.size(); }
+  uint32_t getNumberOfEvents() { return static_cast<uint32_t>(m_tof.size()); }
   uint64_t getTotalCounts() { return m_totalCounts; }
   float getProtonCharge() { return m_protonCharge; }
   uint32_t getPeriod() { return m_period; }
@@ -48,5 +47,3 @@ private:
   float m_protonCharge = 0;
   uint32_t m_period = 0;
 };
-
-#endif // ISIS_NEXUS_STREAMER_EVENTDATA_H

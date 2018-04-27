@@ -33,7 +33,7 @@ set( TEST_FILES
 include_directories(
         ${PROJECT_SOURCE_DIR}/include)
 
-add_library(eventdata_lib ${SRC_FILES})
+add_library(eventdata_lib ${SRC_FILES} ${INC_FILES})
 
 #####################
 ## Unit Tests      ##

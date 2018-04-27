@@ -17,10 +17,10 @@ include_directories(
         CONAN_PKG::cli11
         ${PROJECT_SOURCE_DIR}/include)
 
-add_library(nexusPublisher_lib ${PROJECT_SOURCE_DIR}/src/NexusPublisher.cpp)
+add_library(nexusPublisher_lib ${SRC_FILES} ${INC_FILES})
 
 add_library(eventPublisher_lib
-        ${PROJECT_SOURCE_DIR}/src/KafkaEventPublisher.cpp)
+        src/KafkaEventPublisher.cpp include/KafkaEventPublisher.h)
 
 target_link_libraries(eventPublisher_lib
         CONAN_PKG::librdkafka)
@@ -57,5 +57,5 @@ if(UNIX)
 endif()
 
 add_library(producerUnitTests
-        ${TEST_FILES})
+        ${TEST_FILES} include/MockEventPublisher.h)
 target_link_libraries(producerUnitTests ${tests_LINK_LIBRARIES})

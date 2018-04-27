@@ -1,12 +1,11 @@
-#ifndef ISIS_NEXUS_STREAMER_FOR_MANTID_DETECTORSPECTRUMMAPDATA_H
-#define ISIS_NEXUS_STREAMER_FOR_MANTID_DETECTORSPECTRUMMAPDATA_H
+#pragma once
 
 #include "df12_det_spec_map_generated.h"
 
 class DetectorSpectrumMapData {
 public:
-  DetectorSpectrumMapData() {}
-  DetectorSpectrumMapData(const std::string &filename);
+  DetectorSpectrumMapData() = default;
+  explicit DetectorSpectrumMapData(const std::string &filename);
 
   flatbuffers::unique_ptr_t getBufferPointer(std::string &buffer);
   void decodeMessage(const uint8_t *buf);
@@ -27,5 +26,3 @@ private:
   std::vector<int32_t> m_detectors;
   std::vector<int32_t> m_spectra;
 };
-
-#endif // ISIS_NEXUS_STREAMER_FOR_MANTID_DETECTORSPECTRUMMAPDATA_H
