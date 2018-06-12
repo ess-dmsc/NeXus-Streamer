@@ -88,4 +88,4 @@ Use pprof to display the information. For example, to display as an SVG map in t
 ```
 google-pprof -web <path/to/binary> /tmp/prof.out
 ```
-Note, this works only on Linux with google perftools installed (tcmalloc and pprof).
+Note, this requires google perftools installed (tcmalloc and pprof). `gperftools` can be installed with Homebrew on OS X, or system repositories for most Linux distros.
