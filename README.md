@@ -77,3 +77,15 @@ from the build directory.
 
 ## Schema
 The message schema files are located in https://github.com/ess-dmsc/streaming-data-types
+
+## Profiling
+CPU profiling can be performed by running the executable with `CPUPROFILE` environment variable set and specifying cmake parameter `PROFILE=true`.
+For example:
+```
+CPUPROFILE=/tmp/prof.out <path/to/binary> [binary args]
+```  
+Use pprof to display the information. For example, to display as an SVG map in the browser:
+```
+google-pprof -web <path/to/binary> /tmp/prof.out
+```
+Note, this works only on Linux with google perftools installed (tcmalloc and pprof).
