@@ -25,13 +25,19 @@ NexusPublisher::NexusPublisher(std::shared_ptr<EventPublisher> publisher,
                                const std::string &instrumentName,
                                const std::string &filename,
                                const std::string &detSpecMapFilename,
-                               const bool quietMode)
+                               const bool quietMode,
+                               const int32_t fakeEventsPerPulse)
     : m_publisher(publisher), m_quietMode(quietMode),
       m_detSpecMapFilename(detSpecMapFilename) {
   auto now = std::chrono::system_clock::now();
   auto now_c = std::chrono::system_clock::to_time_t(now);
   m_runStartTime = static_cast<uint64_t>(now_c) * 1000000000L;
-  m_fileReader = std::make_shared<NexusFileReader>(filename, m_runStartTime);
+
+  auto detSpecMap = DetectorSpectrumMapData(m_detSpecMapFilename);
+  auto detectorNumbers = detSpecMap.getDetectors();
+
+  m_fileReader = std::make_shared<NexusFileReader>(filename, m_runStartTime,
+                                                   fakeEventsPerPulse, detectorNumbers);
   publisher->setUp(brokerAddress, instrumentName);
   m_sEEventMap = m_fileReader->getSEEventMap();
 }

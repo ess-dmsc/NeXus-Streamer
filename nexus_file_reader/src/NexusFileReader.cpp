@@ -17,8 +17,13 @@ using namespace H5;
  * @return - an object with which to read information from the file
  */
 NexusFileReader::NexusFileReader(const std::string &filename,
-                                 uint64_t runStartTime)
-    : m_file(new H5File(filename, H5F_ACC_RDONLY)), m_runStart(runStartTime) {
+                                 uint64_t runStartTime,
+                                 const int32_t fakeEventsPerPulse,
+                                 std::vector<int32_t> detectorNumbers)
+    : m_file(new H5File(filename, H5F_ACC_RDONLY)), m_runStart(runStartTime),
+      m_fakeEventsPerPulse(fakeEventsPerPulse),
+      m_timeOfFlightDist(10000, 100000), m_detectorNumbers(detectorNumbers),
+      m_detectorIDDist(0, static_cast<uint32_t>(detectorNumbers.size() - 1)) {
   DataSet dataset = m_file->openDataSet("/raw_data_1/good_frames");
   size_t numOfFrames;
   dataset.read(&numOfFrames, PredType::NATIVE_UINT64);
@@ -135,6 +140,10 @@ hsize_t NexusFileReader::getFileSize() { return m_file->getFileSize(); }
  * @return - total number of events
  */
 uint64_t NexusFileReader::getTotalEventCount() {
+  if (m_fakeEventsPerPulse > 0) {
+    return getNumberOfFrames() * m_fakeEventsPerPulse;
+  }
+
   DataSet dataset =
       m_file->openDataSet("/raw_data_1/detector_1_events/total_counts");
   uint64_t totalCount;
@@ -299,6 +308,9 @@ hsize_t NexusFileReader::getFrameStart(hsize_t frameNumber) {
  * @return - the number of events in the specified frame
  */
 hsize_t NexusFileReader::getNumberOfEventsInFrame(hsize_t frameNumber) {
+  if (m_fakeEventsPerPulse > 0) {
+    return static_cast<hsize_t>(m_fakeEventsPerPulse);
+  }
   // if this is the last frame then we cannot get number of events by looking at
   // event index of next frame
   // instead use the total_counts field
@@ -320,6 +332,16 @@ bool NexusFileReader::getEventDetIds(std::vector<uint32_t> &detIds,
                                      hsize_t frameNumber) {
   if (frameNumber >= m_numberOfFrames)
     return false;
+
+  if (m_fakeEventsPerPulse > 0) {
+    detIds.reserve(static_cast<size_t>(m_fakeEventsPerPulse));
+    for (size_t i = 0; i < m_fakeEventsPerPulse; i++) {
+      detIds.push_back(static_cast<uint32_t>(
+          m_detectorNumbers[m_detectorIDDist(RandomEngine)]));
+    }
+    return true;
+  }
+
   auto dataset = m_file->openDataSet("/raw_data_1/detector_1_events/event_id");
 
   auto numberOfEventsInFrame = getNumberOfEventsInFrame(frameNumber);
@@ -356,6 +378,15 @@ bool NexusFileReader::getEventTofs(std::vector<uint32_t> &tofs,
                                    hsize_t frameNumber) {
   if (frameNumber >= m_numberOfFrames)
     return false;
+
+  if (m_fakeEventsPerPulse > 0) {
+    tofs.reserve(static_cast<size_t>(m_fakeEventsPerPulse));
+    for (size_t i = 0; i < m_fakeEventsPerPulse; i++) {
+      tofs.push_back(static_cast<uint32_t>(m_timeOfFlightDist(RandomEngine)));
+    }
+    return true;
+  }
+
   auto dataset =
       m_file->openDataSet("/raw_data_1/detector_1_events/event_time_offset");
 

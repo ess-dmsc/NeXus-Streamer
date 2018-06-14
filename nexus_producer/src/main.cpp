@@ -19,6 +19,7 @@ int main(int argc, char **argv) {
   bool slow = false;
   bool quietMode = false;
   bool singleRun = false;
+  int32_t fakeEventsPerPulse = 0;
 
   App.add_option("--filename", filename, "Full path of the NeXus file")
       ->required();
@@ -31,8 +32,12 @@ int main(int argc, char **argv) {
                  "Used as prefix for topic names");
   App.add_option("--compression", compression,
                  "Compression option for Kafka messages");
-  App.add_flag("--slow", slow,
-               "Publish data at approx realistic rate (10 pulses per second)");
+  App.add_option("--fakeeventsperpulse", fakeEventsPerPulse,
+                 "Generates this number of fake events per pulse instead of "
+                 "publishing real data from file");
+      App.add_flag(
+          "--slow", slow,
+          "Publish data at approx realistic rate (10 pulses per second)");
   App.add_flag("--quiet", quietMode, "Less chatty on stdout");
   App.add_flag(
       "--singlerun", singleRun,
@@ -43,7 +48,7 @@ int main(int argc, char **argv) {
   auto publisher = std::make_shared<KafkaEventPublisher>(compression);
   int runNumber = 1;
   NexusPublisher streamer(publisher, broker, instrumentName, filename,
-                          detSpecFilename, quietMode);
+                          detSpecFilename, quietMode, fakeEventsPerPulse);
 
   // Publish the same data repeatedly, with incrementing run numbers
   if (singleRun) {
