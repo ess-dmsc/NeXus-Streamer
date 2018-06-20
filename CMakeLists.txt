@@ -24,20 +24,43 @@ conan_cmake_run(CONANFILE conan/conanfile.txt
 include(CTest)
 enable_testing()
 
+find_package(Gperftools)
+
 #####################
 ## Doxygen         ##
 #####################
 
 # add a target to generate API documentation with Doxygen
 find_package(Doxygen)
-if(DOXYGEN_FOUND)
+if(DOXYGEN_FOUND AND BUILD_DOCS)
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
     add_custom_target(doc
             ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
             COMMENT "Generating API documentation with Doxygen" VERBATIM
             )
-endif(DOXYGEN_FOUND)
+endif()
+
+#####################
+## TCMalloc        ##
+#####################
+# if tcmalloc is available then link all executables against it
+if (GPERFTOOLS_TCMALLOC AND NOT BUILD_DOCS)
+    MESSAGE("Linking all executables with tcmalloc")
+    macro (add_executable _name)
+        # invoke built-in add_executable
+        _add_executable(${ARGV})
+        if (PROFILE)
+            if (TARGET ${_name})
+                target_link_libraries(${_name} ${GPERFTOOLS_TCMALLOC_AND_PROFILER})
+            endif()
+         else ()
+            if (TARGET ${_name})
+                target_link_libraries(${_name} ${GPERFTOOLS_TCMALLOC})
+            endif()
+        endif()
+    endmacro()
+endif()
 
 
 ####################
