@@ -60,69 +60,65 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
   auto sampleEnvGroup = m_entryGroup.get_group("selog");
   for (auto const &sampleEnvChild : sampleEnvGroup.nodes) {
     hdf5::node::Group logGroup;
-    if (sampleEnvChild.type() == hdf5::node::Type::GROUP)
+    if (sampleEnvChild.type() == hdf5::node::Type::GROUP) {
       logGroup = static_cast<hdf5::node::Group>(sampleEnvChild);
-    else
+      if (!logGroup.exists("value_log/time") ||
+          !logGroup.exists("value_log/value"))
+        continue;
+    } else {
       continue;
+    }
     std::vector<float> times;
     std::vector<float> floatValues;
     std::vector<int32_t> intValues;
     std::vector<int64_t> longValues;
-    std::vector<std::string> stringValues;
 
-    if (logGroup.)
-  }
+    const auto floatType = hdf5::datatype::create<float>();
+    const auto int32Type = hdf5::datatype::create<int32_t>();
+    const auto int64Type = hdf5::datatype::create<int64_t>();
 
-  auto groupNames = getNamesInGroup("/raw_data_1/selog");
-  for (auto const &name : groupNames) {
-    if ((name != "SECI_OUT_OF_RANGE_BLOCK") && (name != "gas_control")) {
-      std::vector<float> floatValues;
-      std::vector<int32_t> intValues;
-      std::vector<int64_t> longValues;
-      std::string valueDatasetName =
-          "/raw_data_1/selog/" + name + "/value_log/value";
-      auto times =
-          get1DDataset<float>(PredType::NATIVE_FLOAT,
-                              "/raw_data_1/selog/" + name + "/value_log/time");
-      auto valueType = getDatasetType(valueDatasetName);
-      if (valueType == PredType::NATIVE_FLOAT) {
-        floatValues = get1DDataset<float>(valueType, valueDatasetName);
-      } else if (valueType == PredType::NATIVE_INT32) {
-        intValues = get1DDataset<int32_t>(valueType, valueDatasetName);
-      } else if (valueType == PredType::NATIVE_INT64) {
-        longValues = get1DDataset<int64_t>(valueType, valueDatasetName);
-      } else {
-        std::cout << "Unsupported datatype in dataset " << name << std::endl;
-        continue;
-      }
+    auto timeDataset = logGroup.get_dataset("value_log/time");
+    timeDataset.read<std::vector<float>>(times);
 
-      for (size_t i = 0; i < times.size(); i++) {
-        // Ignore entries for events which do not occur during the run
-        if (times[i] > 0) {
-          // The number of the frame the event happened in
-          auto frameNumber = findFrameNumberOfTime(times[i]);
-          if (frameNumber > m_numberOfFrames) {
-            continue;
-          }
-          if (sEEventMap.count(frameNumber) == 0)
-            sEEventMap[frameNumber] = sEEventVector();
-          if (valueType == PredType::NATIVE_FLOAT)
-            sEEventMap[frameNumber].push_back(
-                std::make_shared<SampleEnvironmentEventDouble>(
-                    name, times[i], floatValues[i], m_runStart));
-          else if (valueType == PredType::NATIVE_INT32)
-            sEEventMap[frameNumber].push_back(
-                std::make_shared<SampleEnvironmentEventInt>(
-                    name, times[i], intValues[i], m_runStart));
-          else if (valueType == PredType::NATIVE_INT64)
-            sEEventMap[frameNumber].push_back(
-                std::make_shared<SampleEnvironmentEventLong>(
-                    name, times[i], longValues[i], m_runStart));
+    auto valueDataset = logGroup.get_dataset("value_log/value");
+    auto valueType = valueDataset.datatype();
+    if (valueType == floatType)
+      valueDataset.read<std::vector<float>>(floatValues);
+    else if (valueType == int32Type)
+      valueDataset.read<std::vector<int32_t>>(intValues);
+    else if (valueType == int64Type)
+      valueDataset.read<std::vector<int64_t>>(longValues);
+    else {
+      std::cout << "Unsupported datatype found in a log dataset\n";
+      continue;
+    }
+
+    for (size_t i = 0; i < times.size(); i++) {
+      // Ignore entries for events which do not occur during the run
+      if (times[i] > 0) {
+        // The number of the frame the event happened in
+        auto frameNumber = findFrameNumberOfTime(times[i]);
+        if (frameNumber > m_numberOfFrames) {
+          continue;
         }
+        if (sEEventMap.count(frameNumber) == 0)
+          sEEventMap[frameNumber] = sEEventVector();
+
+        if (valueType == floatType)
+          sEEventMap[frameNumber].push_back(
+              std::make_shared<SampleEnvironmentEventDouble>(
+                  name, times[i], floatValues[i], m_runStart));
+        else if (valueType == int32Type)
+          sEEventMap[frameNumber].push_back(
+              std::make_shared<SampleEnvironmentEventInt>(
+                  name, times[i], intValues[i], m_runStart));
+        else if (valueType == int64Type)
+          sEEventMap[frameNumber].push_back(
+              std::make_shared<SampleEnvironmentEventLong>(
+                  name, times[i], longValues[i], m_runStart));
       }
     }
   }
-
   return sEEventMap;
 }
 
