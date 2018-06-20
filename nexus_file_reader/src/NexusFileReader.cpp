@@ -2,13 +2,12 @@
 #include "../../event_data/include/SampleEnvironmentEventDouble.h"
 #include "../../event_data/include/SampleEnvironmentEventInt.h"
 #include "../../event_data/include/SampleEnvironmentEventLong.h"
+#include <H5Fpublic.h>
 #include <cmath>
 #include <ctime>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
-
-using namespace H5;
 
 /**
  * Create a object to read the specified file
@@ -18,12 +17,36 @@ using namespace H5;
  */
 NexusFileReader::NexusFileReader(const std::string &filename,
                                  uint64_t runStartTime)
-    : m_file(new H5File(filename, H5F_ACC_RDONLY)), m_runStart(runStartTime) {
-  DataSet dataset = m_file->openDataSet("/raw_data_1/good_frames");
-  size_t numOfFrames;
-  dataset.read(&numOfFrames, PredType::NATIVE_UINT64);
-  m_numberOfFrames = numOfFrames;
+    : m_runStart(runStartTime) {
+
+  m_file = hdf5::file::open(filename);
+  auto rootGroup = m_file.root();
+  if (!getEntryGroup(rootGroup, m_entryGroup)) {
+    throw std::runtime_error(
+        "Failed to find an NXentry group in the NeXus file root");
+  }
+
+  if (!m_entryGroup.has_dataset("good_frames")) {
+    throw std::runtime_error(
+        "Required dataset \"good_frames\" missing from the NXentry group");
+  }
+  auto dataset = m_entryGroup.get_dataset("good_frames");
+  dataset.read<uint64_t>(m_numberOfFrames);
   m_frameStartOffset = getFrameStartOffset();
+}
+
+bool NexusFileReader::getEntryGroup(const hdf5::node::Group &rootGroup,
+                                    hdf5::node::Group &entryGroupOutput) {
+  for (auto &rootChild : rootGroup.nodes) {
+    if (rootChild.attributes.exists("NX_class")) {
+      std::string nxClassType;
+      rootChild.attributes["NX_class"].read<std::string>(nxClassType);
+      if (nxClassType == "NXentry")
+        entryGroupOutput = rootChild;
+      return true;
+    }
+    return false;
+  }
 }
 
 size_t NexusFileReader::findFrameNumberOfTime(float time) {
@@ -33,6 +56,22 @@ size_t NexusFileReader::findFrameNumberOfTime(float time) {
 
 std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
   std::unordered_map<hsize_t, sEEventVector> sEEventMap;
+
+  auto sampleEnvGroup = m_entryGroup.get_group("selog");
+  for (auto const &sampleEnvChild : sampleEnvGroup.nodes) {
+    hdf5::node::Group logGroup;
+    if (sampleEnvChild.type() == hdf5::node::Type::GROUP)
+      logGroup = static_cast<hdf5::node::Group>(sampleEnvChild);
+    else
+      continue;
+    std::vector<float> times;
+    std::vector<float> floatValues;
+    std::vector<int32_t> intValues;
+    std::vector<int64_t> longValues;
+    std::vector<std::string> stringValues;
+
+    if (logGroup.)
+  }
 
   auto groupNames = getNamesInGroup("/raw_data_1/selog");
   for (auto const &name : groupNames) {
@@ -172,22 +211,6 @@ int32_t NexusFileReader::getNumberOfPeriods() {
   return static_cast<int32_t>(periodNumbers.size());
 }
 
-/**
- * Get the names of objects in a specified group
- *
- * @param name of the group
- * @return names of objects in the specified group
- */
-std::vector<std::string>
-NexusFileReader::getNamesInGroup(const std::string &groupName) {
-  Group group = m_file->openGroup(groupName);
-  std::vector<std::string> names;
-  for (hsize_t i = 0; i < group.getNumObjs(); i++) {
-    names.push_back(group.getObjnameByIdx(i));
-  }
-  return names;
-}
-
 uint64_t
 NexusFileReader::convertStringToUnixTime(const std::string &timeString) {
   std::tm tmb = {};
@@ -243,12 +266,11 @@ uint64_t NexusFileReader::getFrameTime(hsize_t frameNumber) {
 }
 
 uint64_t NexusFileReader::getFrameStartOffset() {
-  std::string datasetName = "/raw_data_1/detector_1_events/event_time_zero";
-  auto dataset = m_file->openDataSet(datasetName);
-  auto offsetAttr = dataset.openAttribute("offset");
+  auto dataset = m_entryGroup.get_dataset("detector_1_events/event_time_zero");
+  auto offsetAttr = dataset.attributes["offset"];
 
   std::string value;
-  offsetAttr.read(offsetAttr.getDataType(), value);
+  offsetAttr.read<std::string>(value);
 
   // * 1e9 for seconds since epoch to nanoseconds since epoch
   return static_cast<uint64_t>(convertStringToUnixTime(value) * 1e9);

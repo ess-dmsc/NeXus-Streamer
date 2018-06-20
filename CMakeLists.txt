@@ -25,6 +25,7 @@ include(CTest)
 enable_testing()
 
 find_package(Gperftools)
+find_package(h5cpp REQUIRED)
 
 #####################
 ## Doxygen         ##
@@ -78,6 +79,7 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/nexus_file_reader")
 include_directories(
         CONAN_PKG::h5cpp
         CONAN_PKG::librdkafka
+        CONAN_PKG::h5cpp
         ${PROJECT_SOURCE_DIR}/nexus_producer/include
         ${PROJECT_SOURCE_DIR}/event_data/include
         ${PROJECT_SOURCE_DIR}/nexus_file_reader/include)
