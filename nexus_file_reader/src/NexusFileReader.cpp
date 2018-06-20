@@ -2,7 +2,6 @@
 #include "../../event_data/include/SampleEnvironmentEventDouble.h"
 #include "../../event_data/include/SampleEnvironmentEventInt.h"
 #include "../../event_data/include/SampleEnvironmentEventLong.h"
-#include <H5Fpublic.h>
 #include <cmath>
 #include <ctime>
 #include <iomanip>
@@ -80,6 +79,8 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
     auto timeDataset = logGroup.get_dataset("value_log/time");
     timeDataset.read<std::vector<float>>(times);
 
+    std::string name = logGroup.link().target().object_path().name();
+
     auto valueDataset = logGroup.get_dataset("value_log/value");
     auto valueType = valueDataset.datatype();
     if (valueType == floatType)
@@ -89,7 +90,7 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
     else if (valueType == int64Type)
       valueDataset.read<std::vector<int64_t>>(longValues);
     else {
-      std::cout << "Unsupported datatype found in a log dataset\n";
+      std::cout << "Unsupported datatype found in log dataset " << name << "\n";
       continue;
     }
 
@@ -103,7 +104,6 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
         }
         if (sEEventMap.count(frameNumber) == 0)
           sEEventMap[frameNumber] = sEEventVector();
-
         if (valueType == floatType)
           sEEventMap[frameNumber].push_back(
               std::make_shared<SampleEnvironmentEventDouble>(
@@ -122,47 +122,12 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
   return sEEventMap;
 }
 
-DataType NexusFileReader::getDatasetType(const std::string &datasetName) {
-  auto dataset = m_file->openDataSet(datasetName);
-  return dataset.getDataType();
-}
-
-template <typename valueType>
-std::vector<valueType>
-NexusFileReader::get1DDataset(DataType dataType,
-                              const std::string &datasetName) {
-  auto dataset = m_file->openDataSet(datasetName);
-  std::vector<valueType> values;
-
-  auto dataspace = dataset.getSpace();
-
-  // resize vector to the correct size to put the new data in
-  values.resize(static_cast<size_t>(dataspace.getSelectNpoints()));
-
-  dataset.read(values.data(), dataType, dataspace);
-  return values;
-}
-
-std::vector<std::string>
-NexusFileReader::get1DStringDataset(const std::string &datasetName) {
-  std::string value;
-  auto dataset = m_file->openDataSet(datasetName);
-  auto dataspace = dataset.getSpace();
-
-  dataset.read(value, dataset.getDataType(), dataspace);
-
-  std::vector<std::string> values;
-  values.push_back(value);
-
-  return values;
-}
-
 /**
  * Get the size of the NeXus file in bytes
  *
  * @return - the size of the file in bytes
  */
-hsize_t NexusFileReader::getFileSize() { return m_file->getFileSize(); }
+hsize_t NexusFileReader::getFileSize() { return m_file.size(); }
 
 /**
  * Get the total number of events in the file
@@ -170,42 +135,15 @@ hsize_t NexusFileReader::getFileSize() { return m_file->getFileSize(); }
  * @return - total number of events
  */
 uint64_t NexusFileReader::getTotalEventCount() {
-  DataSet dataset =
-      m_file->openDataSet("/raw_data_1/detector_1_events/total_counts");
+  auto dataset = m_entryGroup.get_dataset("detector_1_events/total_counts");
   uint64_t totalCount;
-  dataset.read(&totalCount, PredType::NATIVE_UINT64);
-
+  dataset.read<uint64_t>(totalCount);
   return totalCount;
 }
 
-/**
- * Get the DAE period number
- *
- * @return - the DAE period number
- */
-uint32_t NexusFileReader::getPeriodNumber() {
-  DataSet dataset = m_file->openDataSet("/raw_data_1/periods/number");
-  int32_t periodNumber;
-  dataset.read(&periodNumber, PredType::NATIVE_INT32);
-  // -1 as period number starts at 1 in NeXus files but 0 everywhere else
-  periodNumber -= 1;
-  if (periodNumber < 0)
-    throw std::runtime_error(
-        "Period number in NeXus file is expected to be > 0");
+uint32_t NexusFileReader::getPeriodNumber() { return 0; }
 
-  return static_cast<uint32_t>(periodNumber);
-}
-
-/**
- * Get the number of DAE periods
- *
- * @return - the number of periods
- */
-int32_t NexusFileReader::getNumberOfPeriods() {
-  auto periodNumbers = get1DDataset<int32_t>(PredType::NATIVE_INT32,
-                                             "/raw_data_1/periods/number");
-  return static_cast<int32_t>(periodNumbers.size());
-}
+int32_t NexusFileReader::getNumberOfPeriods() { return 1; }
 
 uint64_t
 NexusFileReader::convertStringToUnixTime(const std::string &timeString) {
@@ -225,9 +163,9 @@ NexusFileReader::convertStringToUnixTime(const std::string &timeString) {
  * @return - instrument name
  */
 std::string NexusFileReader::getInstrumentName() {
-  DataSet dataset = m_file->openDataSet("/raw_data_1/name");
+  auto dataset = m_entryGroup.get_dataset("name");
   std::string instrumentName;
-  dataset.read(instrumentName, dataset.getDataType(), dataset.getSpace());
+  dataset.read<std::string>(instrumentName);
   return instrumentName;
 }
 
@@ -237,10 +175,10 @@ std::string NexusFileReader::getInstrumentName() {
  * @return - the proton charge
  */
 float NexusFileReader::getProtonCharge(hsize_t frameNumber) {
-  std::string datasetName = "/raw_data_1/framelog/proton_charge/value";
+  std::string datasetName = "framelog/proton_charge/value";
 
-  auto protonCharge = getSingleValueFromDataset<float>(
-      datasetName, PredType::NATIVE_FLOAT, frameNumber);
+  auto protonCharge =
+      getSingleValueFromDataset<float>(datasetName, frameNumber);
 
   return protonCharge;
 }
@@ -252,10 +190,9 @@ float NexusFileReader::getProtonCharge(hsize_t frameNumber) {
  * @return - absolute time of frame start in nanoseconds since 1 Jan 1970
  */
 uint64_t NexusFileReader::getFrameTime(hsize_t frameNumber) {
-  std::string datasetName = "/raw_data_1/detector_1_events/event_time_zero";
+  std::string datasetName = "detector_1_events/event_time_zero";
 
-  auto frameTime = getSingleValueFromDataset<double>(
-      datasetName, PredType::NATIVE_DOUBLE, frameNumber);
+  auto frameTime = getSingleValueFromDataset<double>(datasetName, frameNumber);
   auto frameTimeFromOffsetNanoseconds =
       static_cast<uint64_t>(floor((frameTime * 1e9) + 0.5));
   return m_frameStartOffset + frameTimeFromOffsetNanoseconds;
@@ -274,16 +211,15 @@ uint64_t NexusFileReader::getFrameStartOffset() {
 
 template <typename T>
 T NexusFileReader::getSingleValueFromDataset(const std::string &datasetName,
-                                             H5::PredType datatype,
                                              hsize_t offset) {
-  auto dataset = m_file->openDataSet(datasetName);
+  auto dataset = m_entryGroup.get_dataset(datasetName);
   T value;
 
   hsize_t count = 1;
   hsize_t stride = 1;
   hsize_t block = 1;
 
-  auto dataspace = dataset.getSpace();
+  auto dataspace = dataset.dataspace();
   dataspace.selectHyperslab(H5S_SELECT_SET, &count, &offset, &stride, &block);
 
   hsize_t dimsm = 1;
@@ -301,10 +237,10 @@ T NexusFileReader::getSingleValueFromDataset(const std::string &datasetName,
  * @return - event index corresponding to the start of the specified frame
  */
 hsize_t NexusFileReader::getFrameStart(hsize_t frameNumber) {
-  std::string datasetName = "/raw_data_1/detector_1_events/event_index";
+  std::string datasetName = "detector_1_events/event_index";
 
-  auto frameStart = getSingleValueFromDataset<hsize_t>(
-      datasetName, PredType::NATIVE_UINT64, frameNumber);
+  auto frameStart =
+      getSingleValueFromDataset<hsize_t>(datasetName, frameNumber);
 
   return frameStart;
 }
