@@ -36,7 +36,7 @@ NexusFileReader::NexusFileReader(const std::string &filename,
 
 bool NexusFileReader::getEntryGroup(const hdf5::node::Group &rootGroup,
                                     hdf5::node::Group &entryGroupOutput) {
-  for (auto &rootChild : rootGroup.nodes) {
+  for (const auto &rootChild : rootGroup.nodes) {
     if (rootChild.attributes.exists("NX_class")) {
       std::string nxClassType;
       rootChild.attributes["NX_class"].read<std::string>(nxClassType);
@@ -217,7 +217,7 @@ T NexusFileReader::getSingleValueFromDataset(const std::string &datasetName,
 
   m_slab.offset({offset});
 
-  dataset.read<T>(&value, m_slab);
+  dataset.read<T>(value, m_slab);
 
   return value;
 }
