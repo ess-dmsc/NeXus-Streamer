@@ -215,17 +215,9 @@ T NexusFileReader::getSingleValueFromDataset(const std::string &datasetName,
   auto dataset = m_entryGroup.get_dataset(datasetName);
   T value;
 
-  hsize_t count = 1;
-  hsize_t stride = 1;
-  hsize_t block = 1;
+  m_slab.offset({offset});
 
-  auto dataspace = dataset.dataspace();
-  dataspace.selectHyperslab(H5S_SELECT_SET, &count, &offset, &stride, &block);
-
-  hsize_t dimsm = 1;
-  DataSpace memspace(1, &dimsm);
-
-  dataset.read(&value, datatype, memspace, dataspace);
+  dataset.read<T>(&value, m_slab);
 
   return value;
 }
@@ -280,16 +272,10 @@ bool NexusFileReader::getEventDetIds(std::vector<uint32_t> &detIds,
 
   hsize_t count = numberOfEventsInFrame;
   hsize_t offset = getFrameStart(frameNumber);
-  hsize_t stride = 1;
-  hsize_t block = 1;
 
-  auto dataspace = dataset.dataspace();
-  dataspace.selectHyperslab(H5S_SELECT_SET, &count, &offset, &stride, &block);
+  auto slab = hdf5::dataspace::Hyperslab({count}, {offset}, {1}, {1});
 
-  hsize_t dimsm = numberOfEventsInFrame;
-  DataSpace memspace(1, &dimsm);
-
-  dataset.read<std::vector<uint32_t>>(detIds, memspace, dataspace);
+  dataset.read<std::vector<uint32_t>>(detIds, slab);
 
   return true;
 }
@@ -307,26 +293,19 @@ bool NexusFileReader::getEventTofs(std::vector<uint32_t> &tofs,
                                    hsize_t frameNumber) {
   if (frameNumber >= m_numberOfFrames)
     return false;
-  auto dataset = m_entryGroup.get_dataset("detector_1_events/event_time_offset");
+  auto dataset =
+      m_entryGroup.get_dataset("detector_1_events/event_time_offset");
 
   auto numberOfEventsInFrame = getNumberOfEventsInFrame(frameNumber);
 
   hsize_t count = numberOfEventsInFrame;
   hsize_t offset = getFrameStart(frameNumber);
-  hsize_t stride = 1;
-  hsize_t block = 1;
 
+  auto slab = hdf5::dataspace::Hyperslab({count}, {offset}, {1}, {1});
   std::vector<float> tof_floats;
-
-  auto dataspace = dataset.dataspace();
-  dataspace.selectHyperslab(H5S_SELECT_SET, &count, &offset, &stride, &block);
-
   tofs.resize(numberOfEventsInFrame);
 
-  hsize_t dimsm = numberOfEventsInFrame;
-  DataSpace memspace(1, &dimsm);
-
-  dataset.read<std::vector<float>>(tof_floats, memspace, dataspace);
+  dataset.read<std::vector<float>>(tof_floats, slab);
   // transform float in microseconds to uint32 in nanoseconds
   std::transform(tof_floats.begin(), tof_floats.end(), tofs.begin(),
                  [](float tof) {
