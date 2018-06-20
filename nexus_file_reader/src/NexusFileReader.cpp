@@ -274,7 +274,7 @@ bool NexusFileReader::getEventDetIds(std::vector<uint32_t> &detIds,
                                      hsize_t frameNumber) {
   if (frameNumber >= m_numberOfFrames)
     return false;
-  auto dataset = m_file->openDataSet("/raw_data_1/detector_1_events/event_id");
+  auto dataset = m_entryGroup.get_dataset("detector_1_events/event_id");
 
   auto numberOfEventsInFrame = getNumberOfEventsInFrame(frameNumber);
 
@@ -283,16 +283,13 @@ bool NexusFileReader::getEventDetIds(std::vector<uint32_t> &detIds,
   hsize_t stride = 1;
   hsize_t block = 1;
 
-  auto dataspace = dataset.getSpace();
+  auto dataspace = dataset.dataspace();
   dataspace.selectHyperslab(H5S_SELECT_SET, &count, &offset, &stride, &block);
-
-  // resize detIds to the correct size to put the new data in
-  detIds.resize(numberOfEventsInFrame);
 
   hsize_t dimsm = numberOfEventsInFrame;
   DataSpace memspace(1, &dimsm);
 
-  dataset.read(detIds.data(), PredType::NATIVE_UINT32, memspace, dataspace);
+  dataset.read<std::vector<uint32_t>>(detIds, memspace, dataspace);
 
   return true;
 }
@@ -310,8 +307,7 @@ bool NexusFileReader::getEventTofs(std::vector<uint32_t> &tofs,
                                    hsize_t frameNumber) {
   if (frameNumber >= m_numberOfFrames)
     return false;
-  auto dataset =
-      m_file->openDataSet("/raw_data_1/detector_1_events/event_time_offset");
+  auto dataset = m_entryGroup.get_dataset("detector_1_events/event_time_offset");
 
   auto numberOfEventsInFrame = getNumberOfEventsInFrame(frameNumber);
 
@@ -322,16 +318,15 @@ bool NexusFileReader::getEventTofs(std::vector<uint32_t> &tofs,
 
   std::vector<float> tof_floats;
 
-  auto dataspace = dataset.getSpace();
+  auto dataspace = dataset.dataspace();
   dataspace.selectHyperslab(H5S_SELECT_SET, &count, &offset, &stride, &block);
 
   tofs.resize(numberOfEventsInFrame);
-  tof_floats.resize(numberOfEventsInFrame);
 
   hsize_t dimsm = numberOfEventsInFrame;
   DataSpace memspace(1, &dimsm);
 
-  dataset.read(tof_floats.data(), PredType::NATIVE_FLOAT, memspace, dataspace);
+  dataset.read<std::vector<float>>(tof_floats, memspace, dataspace);
   // transform float in microseconds to uint32 in nanoseconds
   std::transform(tof_floats.begin(), tof_floats.end(), tofs.begin(),
                  [](float tof) {
