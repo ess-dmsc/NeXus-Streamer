@@ -7,18 +7,13 @@ class NexusFileReaderTest : public ::testing::Test {};
 extern std::string testDataPath;
 
 TEST(NexusFileReaderTest, nexus_file_open_not_exist) {
-  //EXPECT_THROW(NexusFileReader(testDataPath + "not_exist_file.nxs", 0),
-  //             H5::FileIException);
+  EXPECT_THROW(NexusFileReader(testDataPath + "not_exist_file.nxs", 0),
+               std::exception);
 }
 
 TEST(NexusFileReaderTest, nexus_file_open_exists) {
   std::cout << testDataPath + "SANS_test.nxs" << std::endl;
-  NexusFileReader(testDataPath + "SANS_test.nxs", 0);
   EXPECT_NO_THROW(NexusFileReader(testDataPath + "SANS_test.nxs", 0));
-}
-
-TEST(NexusFileReaderTest, nexus_uncompressed_file_open_exists) {
-  EXPECT_NO_THROW(NexusFileReader(testDataPath + "SANS_test_reduced.hdf5", 0));
 }
 
 TEST(NexusFileReaderTest, nexus_read_file_size) {
@@ -93,16 +88,16 @@ TEST(NexusFileReaderTest, get_instrument_name) {
 }
 
 TEST(NexusFileReaderTest, get_sEEvent_map) {
-  auto fileReader = NexusFileReader(testDataPath + "SANS_test_reduced.hdf5", 0);
+  auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs", 0);
   auto eventMap = fileReader.getSEEventMap();
   auto eventVector = eventMap[10];
-  EXPECT_EQ(4, eventVector.size());
-  EXPECT_EQ("Guide_Pressure", eventVector[0]->getName());
-  EXPECT_EQ("TEMP1", eventVector[3]->getName());
+  EXPECT_EQ(57, eventVector.size());
+  EXPECT_EQ("Det_Temp_FLB", eventVector[0]->getName());
+  EXPECT_EQ("Det_Temp_FRT", eventVector[3]->getName());
   EXPECT_EQ(1000000000, eventVector[3]->getTimestamp());
 }
 
 TEST(NexusFileReaderTest, get_number_of_periods) {
-  auto fileReader = NexusFileReader(testDataPath + "SANS_test_reduced.hdf5", 0);
+  auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs", 0);
   EXPECT_EQ(1, fileReader.getNumberOfPeriods());
 }

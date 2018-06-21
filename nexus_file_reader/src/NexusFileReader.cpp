@@ -61,10 +61,13 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
   auto sampleEnvGroup = m_entryGroup.get_group("selog");
   for (auto const &sampleEnvChild : sampleEnvGroup.nodes) {
     hdf5::node::Group logGroup;
+    hdf5::node::Group valueLog;
     if (sampleEnvChild.type() == hdf5::node::Type::GROUP) {
       logGroup = static_cast<hdf5::node::Group>(sampleEnvChild);
-      if (!logGroup.exists("value_log/time") ||
-          !logGroup.exists("value_log/value"))
+      if (!logGroup.exists("value_log"))
+        continue;
+      valueLog = logGroup.get_group("value_log");
+      if (!valueLog.exists("time") || !valueLog.exists("value"))
         continue;
     } else {
       continue;
@@ -78,20 +81,25 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
     const auto int32Type = hdf5::datatype::create<int32_t>();
     const auto int64Type = hdf5::datatype::create<int64_t>();
 
-    auto timeDataset = logGroup.get_dataset("value_log/time");
+    auto timeDataset = valueLog.get_dataset("time");
+    times.resize(static_cast<size_t>(timeDataset.dataspace().size()));
     timeDataset.read(times);
 
     std::string name = logGroup.link().target().object_path().name();
 
-    auto valueDataset = logGroup.get_dataset("value_log/value");
+    auto valueDataset = valueLog.get_dataset("value");
     auto valueType = valueDataset.datatype();
-    if (valueType == floatType)
+    auto dataSize = static_cast<size_t>(valueDataset.dataspace().size());
+    if (valueType == floatType) {
+      floatValues.resize(dataSize);
       valueDataset.read(floatValues);
-    else if (valueType == int32Type)
+    } else if (valueType == int32Type) {
+      intValues.resize(dataSize);
       valueDataset.read(intValues);
-    else if (valueType == int64Type)
+    } else if (valueType == int64Type) {
+      longValues.resize(dataSize);
       valueDataset.read(longValues);
-    else {
+    } else {
       std::cout << "Unsupported datatype found in log dataset " << name << "\n";
       continue;
     }
