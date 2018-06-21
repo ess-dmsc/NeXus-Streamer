@@ -7,12 +7,13 @@ class NexusFileReaderTest : public ::testing::Test {};
 extern std::string testDataPath;
 
 TEST(NexusFileReaderTest, nexus_file_open_not_exist) {
-  H5::Exception::dontPrint();
-  EXPECT_THROW(NexusFileReader(testDataPath + "not_exist_file.nxs", 0),
-               H5::FileIException);
+  //EXPECT_THROW(NexusFileReader(testDataPath + "not_exist_file.nxs", 0),
+  //             H5::FileIException);
 }
 
 TEST(NexusFileReaderTest, nexus_file_open_exists) {
+  std::cout << testDataPath + "SANS_test.nxs" << std::endl;
+  NexusFileReader(testDataPath + "SANS_test.nxs", 0);
   EXPECT_NO_THROW(NexusFileReader(testDataPath + "SANS_test.nxs", 0));
 }
 
@@ -89,30 +90,6 @@ TEST(NexusFileReaderTest, get_frame_time) {
 TEST(NexusFileReaderTest, get_instrument_name) {
   auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs", 0);
   EXPECT_EQ("SANS2D", fileReader.getInstrumentName());
-}
-
-TEST(NexusFileReaderTest, get_se_names) {
-  auto fileReader = NexusFileReader(testDataPath + "SANS_test_reduced.hdf5", 0);
-  auto seNamesFromFile = fileReader.getNamesInGroup("/raw_data_1/selog");
-  EXPECT_THAT(seNamesFromFile,
-              ::testing::ElementsAre("Guide_Pressure", "Rear_Det_X",
-                                     "SECI_OUT_OF_RANGE_BLOCK", "Sample",
-                                     "TEMP1", "fake_int", "fake_long"));
-}
-
-TEST(NexusFileReaderTest, get_1D_dataset_float) {
-  auto fileReader = NexusFileReader(testDataPath + "SANS_test_reduced.hdf5", 0);
-  auto valueVector = fileReader.get1DDataset<float>(
-      H5::PredType::NATIVE_FLOAT,
-      "/raw_data_1/selog/Guide_Pressure/value_log/value");
-  EXPECT_FLOAT_EQ(0.18, valueVector[4]);
-}
-
-TEST(NexusFileReaderTest, get_1D_dataset_string) {
-  auto fileReader = NexusFileReader(testDataPath + "SANS_test_reduced.hdf5", 0);
-  auto eventVector = fileReader.get1DStringDataset(
-      "/raw_data_1/selog/SECI_OUT_OF_RANGE_BLOCK/value_log/value");
-  EXPECT_EQ("Fast_Shutter", eventVector[0].substr(0, 12));
 }
 
 TEST(NexusFileReaderTest, get_sEEvent_map) {

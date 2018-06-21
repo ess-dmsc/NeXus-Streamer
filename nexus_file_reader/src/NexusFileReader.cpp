@@ -30,7 +30,7 @@ NexusFileReader::NexusFileReader(const std::string &filename,
         "Required dataset \"good_frames\" missing from the NXentry group");
   }
   auto dataset = m_entryGroup.get_dataset("good_frames");
-  dataset.read<uint64_t>(m_numberOfFrames);
+  dataset.read(m_numberOfFrames);
   m_frameStartOffset = getFrameStartOffset();
 }
 
@@ -38,8 +38,10 @@ bool NexusFileReader::getEntryGroup(const hdf5::node::Group &rootGroup,
                                     hdf5::node::Group &entryGroupOutput) {
   for (const auto &rootChild : rootGroup.nodes) {
     if (rootChild.attributes.exists("NX_class")) {
+      auto attr = rootChild.attributes["NX_class"];
       std::string nxClassType;
-      rootChild.attributes["NX_class"].read<std::string>(nxClassType);
+      attr.read(nxClassType, attr.datatype());
+
       if (nxClassType == "NXentry")
         entryGroupOutput = rootChild;
       return true;
@@ -77,18 +79,18 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
     const auto int64Type = hdf5::datatype::create<int64_t>();
 
     auto timeDataset = logGroup.get_dataset("value_log/time");
-    timeDataset.read<std::vector<float>>(times);
+    timeDataset.read(times);
 
     std::string name = logGroup.link().target().object_path().name();
 
     auto valueDataset = logGroup.get_dataset("value_log/value");
     auto valueType = valueDataset.datatype();
     if (valueType == floatType)
-      valueDataset.read<std::vector<float>>(floatValues);
+      valueDataset.read(floatValues);
     else if (valueType == int32Type)
-      valueDataset.read<std::vector<int32_t>>(intValues);
+      valueDataset.read(intValues);
     else if (valueType == int64Type)
-      valueDataset.read<std::vector<int64_t>>(longValues);
+      valueDataset.read(longValues);
     else {
       std::cout << "Unsupported datatype found in log dataset " << name << "\n";
       continue;
@@ -137,7 +139,7 @@ hsize_t NexusFileReader::getFileSize() { return m_file.size(); }
 uint64_t NexusFileReader::getTotalEventCount() {
   auto dataset = m_entryGroup.get_dataset("detector_1_events/total_counts");
   uint64_t totalCount;
-  dataset.read<uint64_t>(totalCount);
+  dataset.read(totalCount);
   return totalCount;
 }
 
@@ -165,7 +167,7 @@ NexusFileReader::convertStringToUnixTime(const std::string &timeString) {
 std::string NexusFileReader::getInstrumentName() {
   auto dataset = m_entryGroup.get_dataset("name");
   std::string instrumentName;
-  dataset.read<std::string>(instrumentName);
+  dataset.read(instrumentName);
   return instrumentName;
 }
 
@@ -203,7 +205,7 @@ uint64_t NexusFileReader::getFrameStartOffset() {
   auto offsetAttr = dataset.attributes["offset"];
 
   std::string value;
-  offsetAttr.read<std::string>(value);
+  offsetAttr.read(value, offsetAttr.datatype());
 
   // * 1e9 for seconds since epoch to nanoseconds since epoch
   return static_cast<uint64_t>(convertStringToUnixTime(value) * 1e9);
@@ -217,7 +219,7 @@ T NexusFileReader::getSingleValueFromDataset(const std::string &datasetName,
 
   m_slab.offset({offset});
 
-  dataset.read<T>(value, m_slab);
+  dataset.read(value, m_slab);
 
   return value;
 }
@@ -272,10 +274,11 @@ bool NexusFileReader::getEventDetIds(std::vector<uint32_t> &detIds,
 
   hsize_t count = numberOfEventsInFrame;
   hsize_t offset = getFrameStart(frameNumber);
+  detIds.resize(count);
 
-  auto slab = hdf5::dataspace::Hyperslab({count}, {offset}, {1}, {1});
+  auto slab = hdf5::dataspace::Hyperslab({offset}, {count}, {1});
 
-  dataset.read<std::vector<uint32_t>>(detIds, slab);
+  dataset.read(detIds, slab);
 
   return true;
 }
@@ -301,11 +304,11 @@ bool NexusFileReader::getEventTofs(std::vector<uint32_t> &tofs,
   hsize_t count = numberOfEventsInFrame;
   hsize_t offset = getFrameStart(frameNumber);
 
-  auto slab = hdf5::dataspace::Hyperslab({count}, {offset}, {1}, {1});
+  auto slab = hdf5::dataspace::Hyperslab({offset}, {count}, {1});
   std::vector<float> tof_floats;
   tofs.resize(numberOfEventsInFrame);
 
-  dataset.read<std::vector<float>>(tof_floats, slab);
+  dataset.read(tof_floats, slab);
   // transform float in microseconds to uint32 in nanoseconds
   std::transform(tof_floats.begin(), tof_floats.end(), tofs.begin(),
                  [](float tof) {

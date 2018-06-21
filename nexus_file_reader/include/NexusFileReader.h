@@ -39,5 +39,5 @@ private:
 
   hdf5::file::File m_file;
   hdf5::node::Group m_entryGroup;
-  hdf5::dataspace::Hyperslab m_slab{{1}, {0}, {1}, {1}};
+  hdf5::dataspace::Hyperslab m_slab{{0}, {1}};
 };
