@@ -167,7 +167,7 @@ NexusFileReader::convertStringToUnixTime(const std::string &timeString) {
 std::string NexusFileReader::getInstrumentName() {
   auto dataset = m_entryGroup.get_dataset("name");
   std::string instrumentName;
-  dataset.read(instrumentName);
+  dataset.read(instrumentName, dataset.datatype(), dataset.dataspace());
   return instrumentName;
 }
 
@@ -305,7 +305,7 @@ bool NexusFileReader::getEventTofs(std::vector<uint32_t> &tofs,
   hsize_t offset = getFrameStart(frameNumber);
 
   auto slab = hdf5::dataspace::Hyperslab({offset}, {count}, {1});
-  std::vector<float> tof_floats;
+  std::vector<float> tof_floats(count);
   tofs.resize(numberOfEventsInFrame);
 
   dataset.read(tof_floats, slab);
