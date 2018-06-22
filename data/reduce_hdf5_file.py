@@ -85,3 +85,6 @@ with h5py.File(compressed_file, 'r') as f_read:
     with h5py.File(uncompressed_file, 'r+') as f_write:
         f_write['/raw_data_1/good_frames'] = max_frame
         f_write['/raw_data_1/detector_1_events/total_counts'] = max_event
+        f_write['/raw_data_1'].attrs['NX_class'] = "NXentry"
+        f_write['/raw_data_1/detector_1_events'].attrs['NX_class'] = "NXevent_data"
+        f_write['/raw_data_1/detector_1_events/event_time_zero'].attrs['offset'] = "2016-04-12T02:58:52"

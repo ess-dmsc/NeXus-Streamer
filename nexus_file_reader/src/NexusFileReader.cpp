@@ -25,6 +25,11 @@ NexusFileReader::NexusFileReader(const std::string &filename,
         "Failed to find an NXentry group in the NeXus file root");
   }
 
+  if (!m_entryGroup.has_group("detector_1_events")) {
+    throw std::runtime_error(
+      "Required dataset \"detector_1_events\" missing from the NXentry group");
+  }
+
   if (!m_entryGroup.has_dataset("good_frames")) {
     throw std::runtime_error(
         "Required dataset \"good_frames\" missing from the NXentry group");
@@ -41,10 +46,11 @@ bool NexusFileReader::getEntryGroup(const hdf5::node::Group &rootGroup,
       auto attr = rootChild.attributes["NX_class"];
       std::string nxClassType;
       attr.read(nxClassType, attr.datatype());
-
-      if (nxClassType == "NXentry")
+      std::cout << nxClassType << std::endl;
+      if (nxClassType == "NXentry") {
         entryGroupOutput = rootChild;
-      return true;
+        return true;
+      }
     }
     return false;
   }
