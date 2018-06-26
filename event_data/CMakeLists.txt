@@ -49,3 +49,10 @@ endif()
 add_library(eventDataUnitTests
         ${TEST_FILES})
 target_link_libraries(eventDataUnitTests ${eventData_tests_LINK_LIBRARIES})
+
+######################
+## Benchmark        ##
+######################
+
+add_executable(benchmark_serialisation test/BenchmarkSerialisation.cpp)
+target_link_libraries(benchmark_serialisation CONAN_PKG::google-benchmark eventdata_lib)
