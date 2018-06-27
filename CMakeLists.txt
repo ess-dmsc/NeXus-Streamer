@@ -82,11 +82,12 @@ include_directories(
         ${PROJECT_SOURCE_DIR}/event_data/include
         ${PROJECT_SOURCE_DIR}/nexus_file_reader/include)
 
-file(GLOB TEST_SRC_FILES
+file(GLOB TEST_SRC_FILES_GLOB
         ${PROJECT_SOURCE_DIR}/nexus_producer/test/*.cpp
-        ${PROJECT_SOURCE_DIR}/event_data/test/*.cpp
         ${PROJECT_SOURCE_DIR}/nexus_file_reader/test/*.cpp
         unitTestRunner.cpp)
+
+set(TEST_SRC_FILES ${TEST_SRC_FILES_GLOB} ${EVENT_TEST_FILES})
 
 add_executable(UnitTests ${TEST_SRC_FILES})
 

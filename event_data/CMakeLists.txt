@@ -20,7 +20,7 @@ set( INC_FILES
         include/SampleEnvironmentEventDouble.h
         )
 
-set( TEST_FILES
+set( EVENT_TEST_FILES
         test/EventDataTest.cpp
         test/RunDataTest.cpp
         test/DetectorSpectrumMapDataTest.cpp
@@ -47,7 +47,7 @@ if(UNIX)
 endif()
 
 add_library(eventDataUnitTests
-        ${TEST_FILES})
+        ${EVENT_TEST_FILES})
 target_link_libraries(eventDataUnitTests ${eventData_tests_LINK_LIBRARIES})
 
 ######################
