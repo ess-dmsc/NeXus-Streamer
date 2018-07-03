@@ -31,6 +31,15 @@ TEST(NexusFileReaderTest, nexus_read_number_events) {
   EXPECT_EQ(14258850, fileReader.getTotalEventCount());
 }
 
+TEST(NexusFileReaderTest, nexus_fake_number_of_events) {
+  const int32_t numberOfFakeEventsPerPulse = 10;
+  const int32_t numberOfFrames = 18131;
+  auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs", 0,
+                                    numberOfFakeEventsPerPulse, {0});
+  EXPECT_EQ(numberOfFakeEventsPerPulse * numberOfFrames,
+            fileReader.getTotalEventCount());
+}
+
 TEST(NexusFileReaderTest, nexus_read_number_frames) {
   auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs", 0, 0, {0});
   EXPECT_EQ(18131, fileReader.getNumberOfFrames());
@@ -50,6 +59,26 @@ TEST(NexusFileReaderTest, get_event_tofs) {
   EXPECT_TRUE(fileReader.getEventTofs(eventTofs, 0));
   EXPECT_EQ(11660506, eventTofs[0]);
   EXPECT_EQ(46247304, eventTofs[150]);
+}
+
+TEST(NexusFileReaderTest,
+     test_getting_fake_event_tofs_matches_specified_number_of_fake_events) {
+  const int32_t numberOfFakeEventsPerPulse = 10;
+  auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs", 0,
+                                    numberOfFakeEventsPerPulse, {0});
+  std::vector<uint32_t> eventTofs;
+  EXPECT_TRUE(fileReader.getEventTofs(eventTofs, 0));
+  EXPECT_EQ(numberOfFakeEventsPerPulse, eventTofs.size());
+}
+
+TEST(NexusFileReaderTest,
+     test_getting_fake_detids_matches_specified_number_of_fake_events) {
+  const int32_t numberOfFakeEventsPerPulse = 10;
+  auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs", 0,
+                                    numberOfFakeEventsPerPulse, {0});
+  std::vector<uint32_t> detIDs;
+  EXPECT_TRUE(fileReader.getEventDetIds(detIDs, 0));
+  EXPECT_EQ(numberOfFakeEventsPerPulse, detIDs.size());
 }
 
 TEST(NexusFileReaderTest, get_detIds_too_high_frame_number) {
