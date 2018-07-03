@@ -3,6 +3,7 @@
 #include "../../event_data/include/SampleEnvironmentEvent.h"
 #include <H5Cpp.h>
 #include <memory>
+#include <random>
 #include <unordered_map>
 #include <vector>
 
