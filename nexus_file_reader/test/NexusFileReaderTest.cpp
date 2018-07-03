@@ -110,6 +110,15 @@ TEST(NexusFileReaderTest, get_number_of_events_in_frame) {
   EXPECT_EQ(781, fileReader.getNumberOfEventsInFrame(7));
 }
 
+TEST(NexusFileReaderTest,
+     test_number_of_events_in_frame_matches_numer_of_fake_events_specified) {
+  const int32_t numberOfFakeEventsPerPulse = 10;
+  auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs", 0,
+                                    numberOfFakeEventsPerPulse, {0});
+  EXPECT_EQ(numberOfFakeEventsPerPulse, fileReader.getNumberOfEventsInFrame(0));
+  EXPECT_EQ(numberOfFakeEventsPerPulse, fileReader.getNumberOfEventsInFrame(7));
+}
+
 TEST(NexusFileReaderTest, get_frame_time) {
   auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs", 0, 0, {0});
   EXPECT_EQ(1460429934940000057, fileReader.getFrameTime(0));
