@@ -11,14 +11,15 @@ main_nexusPublisher <OPTIONS>
 
 Options:
   -h,--help                   Print this help message and exit
-  --filename TEXT             Full path of the NeXus file
-  --detspecmap TEXT           Full path of the detector-spectrum map
-  --broker TEXT               Hostname or IP of Kafka broker
-  --instrument TEXT           Used as prefix for topic names
-  --compression TEXT          Compression option for Kafka messages
-  --slow                      Publish data at approx realistic rate (10 pulses per second)
-  --quiet                     Less chatty on stdout
-  --singlerun                 Publish only a single run (otherwise repeats until interrupted)
+  -f,--filename TEXT          Full path of the NeXus file
+  -d,--detspecmap TEXT        Full path of the detector-spectrum map
+  -b,--broker TEXT            Hostname or IP of Kafka broker
+  -i,--instrument TEXT        Used as prefix for topic names
+  -c,--compression TEXT       Compression option for Kafka messages
+  -e,--fakeeventsperpulse INT Generates this number of fake events per pulse instead of publishing real data from file
+  -s,--slow                   Publish data at approx realistic rate (10 pulses per second)
+  -q,--quiet                  Less chatty on stdout
+  -z,--singlerun              Publish only a single run (otherwise repeats until interrupted)
 ```
 
 Usage example:

@@ -21,25 +21,25 @@ int main(int argc, char **argv) {
   bool singleRun = false;
   int32_t fakeEventsPerPulse = 0;
 
-  App.add_option("--filename", filename, "Full path of the NeXus file")
+  App.add_option("-f,--filename", filename, "Full path of the NeXus file")
       ->required();
-  App.add_option("--detspecmap", detSpecFilename,
+  App.add_option("-d,--detspecmap", detSpecFilename,
                  "Full path of the detector-spectrum map")
       ->required();
-  App.add_option("--broker", broker, "Hostname or IP of Kafka broker")
+  App.add_option("-b,--broker", broker, "Hostname or IP of Kafka broker")
       ->required();
-  App.add_option("--instrument", instrumentName,
+  App.add_option("-i,--instrument", instrumentName,
                  "Used as prefix for topic names");
-  App.add_option("--compression", compression,
+  App.add_option("-c,--compression", compression,
                  "Compression option for Kafka messages");
-  App.add_option("--fakeeventsperpulse", fakeEventsPerPulse,
+  App.add_option("-e,--fakeeventsperpulse", fakeEventsPerPulse,
                  "Generates this number of fake events per pulse instead of "
                  "publishing real data from file");
-  App.add_flag("--slow", slow,
+  App.add_flag("-s,--slow", slow,
                "Publish data at approx realistic rate (10 pulses per second)");
-  App.add_flag("--quiet", quietMode, "Less chatty on stdout");
+  App.add_flag("-q,--quiet", quietMode, "Less chatty on stdout");
   App.add_flag(
-      "--singlerun", singleRun,
+      "-z,--singlerun", singleRun,
       "Publish only a single run (otherwise repeats until interrupted)");
 
   CLI11_PARSE(App, argc, argv);

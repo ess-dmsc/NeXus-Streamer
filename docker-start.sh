@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Wait for Kafka to be ready before starting the publisher
 kafkacat -b kafka -L
@@ -18,13 +18,13 @@ then
 fi
 
 if [ -v NEXUS_FILE_NAME ]; then
-   NEXUS_FILE_NAME="/nexus_publisher/data/$NEXUS_FILE_NAME"
+   NEXUS_FILE_NAME="/nexus_streamer/data/$NEXUS_FILE_NAME"
 else
    : ${NEXUS_FILE_NAME:=SANS_test.nxs}
 fi
 
 if [ -v DETSPECMAP_FILE_NAME ]; then
-   DETSPECMAP_FILE_NAME="/nexus_publisher/data/$DETSPECMAP_FILE_NAME"
+   DETSPECMAP_FILE_NAME="/nexus_streamer/data/$DETSPECMAP_FILE_NAME"
 else
    : ${DETSPECMAP_FILE_NAME:=spectrum_gastubes_01.dat}
 fi
@@ -40,4 +40,4 @@ if [ ${SLOW_MODE:="false"} == "true" ]; then
     ADDITIONAL_FLAGS="$ADDITIONAL_FLAGS -s"
 fi
 
-nexus_producer/main_nexusPublisher -f ${NEXUS_FILE_NAME} -b ${KAFKA_BROKER_NAME} -i ${INSTRUMENT_NAME} -d ${DETSPECMAP_FILE_NAME} ${ADDITIONAL_FLAGS}
+nexus_streamer/main_nexusPublisher -f ${NEXUS_FILE_NAME} -b ${KAFKA_BROKER_NAME} -i ${INSTRUMENT_NAME} -d ${DETSPECMAP_FILE_NAME} ${ADDITIONAL_FLAGS}
