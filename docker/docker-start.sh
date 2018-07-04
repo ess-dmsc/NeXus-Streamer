@@ -18,4 +18,4 @@ then
    exit 1
 fi
 
-/nexus_streamer/bin/main_nexusPublisher -c ${CONFIG_FILE}
+/nexus_streamer/bin/nexus-streamer -c ${CONFIG_FILE}

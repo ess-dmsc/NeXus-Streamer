@@ -3,11 +3,11 @@
 # NeXus Streamer
 Stream event data from a NeXus file to an Apache Kafka cluster. Each message sent over Kafka comprises the event data from a single neutron pulse. Using the `--slow` flag results in sending 10 messages per second, approximately a realistic rate. Sample environment data are also sent during streaming, resulting in a stream of real data which looks as if it were coming from a live instrument.
 
-The client runs until the user terminates it, repeatedly sending data from the same file but with incrementing run numbers. However the `--singlerun` flag can be used to produce only a single run.
+The client runs until the user terminates it, repeatedly sending data from the same file but with incrementing run numbers. However the `--single_run` flag can be used to produce only a single run.
 
 Usage:
 ```
-main_nexusPublisher <OPTIONS>
+nexus-streamer <OPTIONS>
 
 Options:
   -h,--help                   Print this help message and exit
@@ -26,7 +26,7 @@ Options:
 
 Usage example:
 ```
-main_nexusPublisher --filename /path/to/NeXus-Streamer.git/data/SANS_test_uncompressed.hdf5 --detspecmap /path/to/NeXus-Streamer.git/data/spectrum_gastubes_01.dat --broker localhost --instrument SANS2D --singlerun
+nexus-streamer --filename /path/to/NeXus-Streamer.git/data/SANS_test_uncompressed.hdf5 --detspecmap /path/to/NeXus-Streamer.git/data/spectrum_gastubes_01.dat --broker localhost --instrument SANS2D --singlerun
 ```
 
 ## Broker Configuration
