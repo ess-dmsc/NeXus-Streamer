@@ -13,7 +13,8 @@ public:
   NexusPublisher(std::shared_ptr<EventPublisher> publisher,
                  const std::string &brokerAddress,
                  const std::string &instrumentName, const std::string &filename,
-                 const std::string &detSpecMapFilename, bool quietMode);
+                 const std::string &detSpecMapFilename, bool quietMode,
+                 int32_t fakeEventsPerPulse = 0);
   std::vector<std::shared_ptr<EventData>>
   createMessageData(hsize_t frameNumber);
   size_t createAndSendRunMessage(std::string &rawbuf, int runNumber);

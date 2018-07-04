@@ -3,6 +3,7 @@
 #include "../../event_data/include/SampleEnvironmentEvent.h"
 #include <H5Cpp.h>
 #include <memory>
+#include <random>
 #include <unordered_map>
 #include <vector>
 
@@ -13,7 +14,9 @@ using sEEventVector = std::vector<std::shared_ptr<SampleEnvironmentEvent>>;
 
 class NexusFileReader {
 public:
-  NexusFileReader(const std::string &filename, uint64_t runStartTime);
+  NexusFileReader(const std::string &filename, uint64_t runStartTime,
+                  int32_t fakeEventsPerPulse,
+                  std::vector<int32_t> detectorNumbers);
 
   hsize_t getFileSize();
   uint64_t getTotalEventCount();
@@ -46,4 +49,12 @@ private:
   size_t m_numberOfFrames;
   uint64_t convertStringToUnixTime(const std::string &timeString);
   uint64_t m_frameStartOffset;
+  const int32_t m_fakeEventsPerPulse;
+
+  /// Tools for generating events
+  std::uniform_int_distribution<uint32_t> m_timeOfFlightDist;
+  std::uniform_int_distribution<uint32_t> m_detectorIDDist;
+  std::default_random_engine RandomEngine;
+
+  std::vector<int32_t> m_detectorNumbers;
 };
