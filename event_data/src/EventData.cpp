@@ -33,7 +33,7 @@ flatbuffers::unique_ptr_t EventData::getBufferPointer(std::string &buffer,
   std::uint8_t *tempTofBuffer;
   std::uint8_t *tempDetIdBuffer;
   auto eventMessage = CreateEventMessage(
-      builder, builder.CreateString("isis_nexus_streamer_for_mantid"),
+      builder, builder.CreateString("NeXus-Streamer"),
       messageID, m_frameTime,
       builder.CreateUninitializedVector(m_tof.size(), sizeof(uint32_t),
                                         &tempTofBuffer),
