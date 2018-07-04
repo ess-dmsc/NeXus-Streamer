@@ -21,13 +21,10 @@ int main(int argc, char **argv) {
   bool singleRun = false;
   int32_t fakeEventsPerPulse = 0;
 
-  App.add_option("-f,--filename", filename, "Full path of the NeXus file")
-      ->required();
+  App.add_option("-f,--filename", filename, "Full path of the NeXus file");
   App.add_option("-d,--det_spec_map", detSpecFilename,
-                 "Full path of the detector-spectrum map")
-      ->required();
-  App.add_option("-b,--broker", broker, "Hostname or IP of Kafka broker")
-      ->required();
+                 "Full path of the detector-spectrum map");
+  App.add_option("-b,--broker", broker, "Hostname or IP of Kafka broker");
   App.add_option("-i,--instrument", instrumentName,
                  "Used as prefix for topic names");
   App.add_option("-m,--compression", compression,
