@@ -23,24 +23,26 @@ int main(int argc, char **argv) {
 
   App.add_option("-f,--filename", filename, "Full path of the NeXus file")
       ->required();
-  App.add_option("-d,--detspecmap", detSpecFilename,
+  App.add_option("-d,--det_spec_map", detSpecFilename,
                  "Full path of the detector-spectrum map")
       ->required();
   App.add_option("-b,--broker", broker, "Hostname or IP of Kafka broker")
       ->required();
   App.add_option("-i,--instrument", instrumentName,
                  "Used as prefix for topic names");
-  App.add_option("-c,--compression", compression,
+  App.add_option("-m,--compression", compression,
                  "Compression option for Kafka messages");
-  App.add_option("-e,--fakeeventsperpulse", fakeEventsPerPulse,
+  App.add_option("-e,--fake_events_per_pulse", fakeEventsPerPulse,
                  "Generates this number of fake events per pulse instead of "
                  "publishing real data from file");
   App.add_flag("-s,--slow", slow,
                "Publish data at approx realistic rate (10 pulses per second)");
   App.add_flag("-q,--quiet", quietMode, "Less chatty on stdout");
   App.add_flag(
-      "-z,--singlerun", singleRun,
+      "-z,--single_run", singleRun,
       "Publish only a single run (otherwise repeats until interrupted)");
+  App.set_config("-c,--config_file", "", "Read configuration from an ini file",
+                 false);
 
   CLI11_PARSE(App, argc, argv);
 
