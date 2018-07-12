@@ -20,6 +20,7 @@ int main(int argc, char **argv) {
   bool quietMode = false;
   bool singleRun = false;
   int32_t fakeEventsPerPulse = 0;
+  int runNumber = 1;
 
   App.add_option("-f,--filename", filename, "Full path of the NeXus file");
   App.add_option("-d,--det_spec_map", detSpecFilename,
@@ -32,6 +33,7 @@ int main(int argc, char **argv) {
   App.add_option("-e,--fake_events_per_pulse", fakeEventsPerPulse,
                  "Generates this number of fake events per pulse instead of "
                  "publishing real data from file");
+  App.add_option("-r,--run_number", runNumber, "Start at this run number", true);
   App.add_flag("-s,--slow", slow,
                "Publish data at approx realistic rate (10 pulses per second)");
   App.add_flag("-q,--quiet", quietMode, "Less chatty on stdout");
@@ -44,7 +46,6 @@ int main(int argc, char **argv) {
   CLI11_PARSE(App, argc, argv);
 
   auto publisher = std::make_shared<KafkaEventPublisher>(compression);
-  int runNumber = 1;
   NexusPublisher streamer(publisher, broker, instrumentName, filename,
                           detSpecFilename, quietMode, fakeEventsPerPulse);
 
