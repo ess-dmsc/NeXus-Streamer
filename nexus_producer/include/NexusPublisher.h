@@ -16,16 +16,16 @@ public:
                  const std::string &detSpecMapFilename, bool quietMode,
                  int32_t fakeEventsPerPulse = 0);
   std::vector<std::shared_ptr<EventData>>
-  createMessageData(hsize_t frameNumber);
-  size_t createAndSendRunMessage(std::string &rawbuf, int runNumber);
+  createMessageData(hsize_t frameNumber, uint32_t periodNumber);
+  size_t createAndSendRunMessage(std::string &rawbuf, int runNumber, uint32_t numberOfPeriods);
   size_t createAndSendDetSpecMessage(std::string &rawbuf);
-  std::shared_ptr<RunData> createRunMessageData(int runNumber);
+  std::shared_ptr<RunData> createRunMessageData(int runNumber, uint32_t numberOfPeriods);
   std::shared_ptr<DetectorSpectrumMapData> createDetSpecMessageData();
-  void streamData(int runNumber, bool slow);
+  void streamData(int runNumber, bool slow, uint32_t numberOfPeriods);
 
 private:
   int64_t getTimeNowInNanoseconds();
-  size_t createAndSendMessage(std::string &rawbuf, size_t frameNumber);
+  size_t createAndSendMessage(std::string &rawbuf, size_t frameNumber, uint32_t periodNumber);
   void createAndSendSampleEnvMessages(std::string &sampleEnvBuf,
                                       size_t frameNumber);
   size_t createAndSendRunStopMessage(std::string &rawbuf);

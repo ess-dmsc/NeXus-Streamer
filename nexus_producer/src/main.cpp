@@ -21,6 +21,7 @@ int main(int argc, char **argv) {
   bool singleRun = false;
   int32_t fakeEventsPerPulse = 0;
   int runNumber = 1;
+  uint32_t numberOfPeriods = 1;
 
   App.add_option("-f,--filename", filename, "Full path of the NeXus file");
   App.add_option("-d,--det_spec_map", detSpecFilename,
@@ -33,7 +34,11 @@ int main(int argc, char **argv) {
   App.add_option("-e,--fake_events_per_pulse", fakeEventsPerPulse,
                  "Generates this number of fake events per pulse instead of "
                  "publishing real data from file");
-  App.add_option("-r,--run_number", runNumber, "Start at this run number", true);
+  App.add_option("-r,--run_number", runNumber, "Start at this run number",
+                 true);
+  App.add_option(
+      "-p,--number_of_periods", numberOfPeriods,
+      "Number of periods, event messages will cycle through period numbers");
   App.add_flag("-s,--slow", slow,
                "Publish data at approx realistic rate (10 pulses per second)");
   App.add_flag("-q,--quiet", quietMode, "Less chatty on stdout");
@@ -51,10 +56,10 @@ int main(int argc, char **argv) {
 
   // Publish the same data repeatedly, with incrementing run numbers
   if (singleRun) {
-    streamer.streamData(runNumber, slow);
+    streamer.streamData(runNumber, slow, numberOfPeriods);
   } else {
     while (true) {
-      streamer.streamData(runNumber, slow);
+      streamer.streamData(runNumber, slow, numberOfPeriods);
       std::this_thread::sleep_for(std::chrono::seconds(2));
       runNumber++;
     }

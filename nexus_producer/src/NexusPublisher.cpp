@@ -50,7 +50,7 @@ NexusPublisher::NexusPublisher(std::shared_ptr<EventPublisher> publisher,
  * @return - an object containing the data from the specified frame
  */
 std::vector<std::shared_ptr<EventData>>
-NexusPublisher::createMessageData(hsize_t frameNumber) {
+NexusPublisher::createMessageData(hsize_t frameNumber, uint32_t periodNumber) {
   std::vector<std::shared_ptr<EventData>> eventDataVector;
 
   std::vector<uint32_t> detIds;
@@ -59,7 +59,7 @@ NexusPublisher::createMessageData(hsize_t frameNumber) {
   m_fileReader->getEventTofs(tofs, frameNumber);
 
   auto protonCharge = m_fileReader->getProtonCharge(frameNumber);
-  auto period = m_fileReader->getPeriodNumber();
+  auto period = periodNumber;
   auto frameTime = m_fileReader->getFrameTime(frameNumber);
 
   auto eventData = std::make_shared<EventData>();
@@ -81,9 +81,9 @@ NexusPublisher::createMessageData(hsize_t frameNumber) {
  * @param runNumber - number identifying the current run
  * @return runData
  */
-std::shared_ptr<RunData> NexusPublisher::createRunMessageData(int runNumber) {
+std::shared_ptr<RunData> NexusPublisher::createRunMessageData(int runNumber, uint32_t numberOfPeriods) {
   auto runData = std::make_shared<RunData>();
-  runData->setNumberOfPeriods(m_fileReader->getNumberOfPeriods());
+  runData->setNumberOfPeriods(numberOfPeriods);
   runData->setInstrumentName(m_fileReader->getInstrumentName());
   runData->setRunNumber(runNumber);
   runData->setStartTime(static_cast<uint64_t>(getTimeNowInNanoseconds()));
@@ -105,18 +105,22 @@ NexusPublisher::createDetSpecMessageData() {
 /**
  * Start streaming all the data from the file
  */
-void NexusPublisher::streamData(int runNumber, bool slow) {
+void NexusPublisher::streamData(int runNumber, bool slow,
+                                uint32_t numberOfPeriods = 1) {
   std::string rawbuf;
   std::string sampleEnvBuf;
   // frame numbers run from 0 to numberOfFrames-1
   int64_t totalBytesSent = 0;
   const auto numberOfFrames = m_fileReader->getNumberOfFrames();
 
-  totalBytesSent += createAndSendRunMessage(rawbuf, runNumber);
+  totalBytesSent += createAndSendRunMessage(rawbuf, runNumber, numberOfPeriods);
   totalBytesSent += createAndSendDetSpecMessage(rawbuf);
 
+  uint32_t periodNumber = 0;
+
   for (size_t frameNumber = 0; frameNumber < numberOfFrames; frameNumber++) {
-    totalBytesSent += createAndSendMessage(rawbuf, frameNumber);
+    totalBytesSent += createAndSendMessage(rawbuf, frameNumber, periodNumber);
+    periodNumber = ((periodNumber + 1) % numberOfPeriods);
     createAndSendSampleEnvMessages(sampleEnvBuf, frameNumber);
     reportProgress(static_cast<float>(frameNumber) /
                    static_cast<float>(numberOfFrames));
@@ -142,8 +146,8 @@ void NexusPublisher::streamData(int runNumber, bool slow) {
  * @return - size of the buffer
  */
 size_t NexusPublisher::createAndSendMessage(std::string &rawbuf,
-                                            size_t frameNumber) {
-  auto messageData = createMessageData(frameNumber);
+                                            size_t frameNumber, uint32_t periodNumber) {
+  auto messageData = createMessageData(frameNumber, periodNumber);
   std::vector<int> indexes;
   indexes.reserve(messageData.size());
   for (int i = 0; i < messageData.size(); ++i)
@@ -183,8 +187,9 @@ void NexusPublisher::createAndSendSampleEnvMessages(std::string &sampleEnvBuf,
  * @return - size of the buffer
  */
 size_t NexusPublisher::createAndSendRunMessage(std::string &rawbuf,
-                                               int runNumber) {
-  auto messageData = createRunMessageData(runNumber);
+                                               int runNumber,
+                                               uint32_t numberOfPeriods = 1) {
+  auto messageData = createRunMessageData(runNumber, numberOfPeriods);
   auto buffer_uptr = messageData->getRunStartBufferPointer(rawbuf);
   m_publisher->sendRunMessage(reinterpret_cast<char *>(buffer_uptr.get()),
                               messageData->getBufferSize());
