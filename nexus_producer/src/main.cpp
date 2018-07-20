@@ -22,6 +22,7 @@ int main(int argc, char **argv) {
   int32_t fakeEventsPerPulse = 0;
   int runNumber = 1;
   uint32_t numberOfPeriods = 1;
+  uint32_t truncateToPulses = 0;
 
   App.add_option("-f,--filename", filename, "Full path of the NeXus file");
   App.add_option("-d,--det_spec_map", detSpecFilename,
@@ -39,6 +40,8 @@ int main(int argc, char **argv) {
   App.add_option(
       "-p,--number_of_periods", numberOfPeriods,
       "Number of periods, event messages will cycle through period numbers");
+  App.add_option("-t,--truncate_to_pulses", truncateToPulses,
+                 "Stop the run after this many pulses");
   App.add_flag("-s,--slow", slow,
                "Publish data at approx realistic rate (10 pulses per second)");
   App.add_flag("-q,--quiet", quietMode, "Less chatty on stdout");
@@ -56,10 +59,10 @@ int main(int argc, char **argv) {
 
   // Publish the same data repeatedly, with incrementing run numbers
   if (singleRun) {
-    streamer.streamData(runNumber, slow, numberOfPeriods);
+    streamer.streamData(runNumber, slow, truncateToPulses, numberOfPeriods);
   } else {
     while (true) {
-      streamer.streamData(runNumber, slow, numberOfPeriods);
+      streamer.streamData(runNumber, slow, truncateToPulses, numberOfPeriods);
       std::this_thread::sleep_for(std::chrono::seconds(2));
       runNumber++;
     }

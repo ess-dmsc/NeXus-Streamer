@@ -81,7 +81,8 @@ NexusPublisher::createMessageData(hsize_t frameNumber, uint32_t periodNumber) {
  * @param runNumber - number identifying the current run
  * @return runData
  */
-std::shared_ptr<RunData> NexusPublisher::createRunMessageData(int runNumber, uint32_t numberOfPeriods) {
+std::shared_ptr<RunData>
+NexusPublisher::createRunMessageData(int runNumber, uint32_t numberOfPeriods) {
   auto runData = std::make_shared<RunData>();
   runData->setNumberOfPeriods(numberOfPeriods);
   runData->setInstrumentName(m_fileReader->getInstrumentName());
@@ -106,12 +107,17 @@ NexusPublisher::createDetSpecMessageData() {
  * Start streaming all the data from the file
  */
 void NexusPublisher::streamData(int runNumber, bool slow,
+                                const uint32_t truncateToFrames,
                                 uint32_t numberOfPeriods = 1) {
   std::string rawbuf;
   std::string sampleEnvBuf;
   // frame numbers run from 0 to numberOfFrames-1
   int64_t totalBytesSent = 0;
-  const auto numberOfFrames = m_fileReader->getNumberOfFrames();
+  auto numberOfFrames = m_fileReader->getNumberOfFrames();
+
+  if (truncateToFrames > 0 && truncateToFrames < numberOfFrames) {
+    numberOfFrames = truncateToFrames;
+  }
 
   totalBytesSent += createAndSendRunMessage(rawbuf, runNumber, numberOfPeriods);
   totalBytesSent += createAndSendDetSpecMessage(rawbuf);
@@ -134,7 +140,7 @@ void NexusPublisher::streamData(int runNumber, bool slow,
   totalBytesSent += createAndSendRunStopMessage(rawbuf);
   reportProgress(1.0);
   std::cout << std::endl
-            << "Frames sent: " << m_fileReader->getNumberOfFrames() << std::endl
+            << "Frames sent: " << numberOfFrames << std::endl
             << "Bytes sent: " << totalBytesSent << std::endl;
 }
 
@@ -146,7 +152,8 @@ void NexusPublisher::streamData(int runNumber, bool slow,
  * @return - size of the buffer
  */
 size_t NexusPublisher::createAndSendMessage(std::string &rawbuf,
-                                            size_t frameNumber, uint32_t periodNumber) {
+                                            size_t frameNumber,
+                                            uint32_t periodNumber) {
   auto messageData = createMessageData(frameNumber, periodNumber);
   std::vector<int> indexes;
   indexes.reserve(messageData.size());
