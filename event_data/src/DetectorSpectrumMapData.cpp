@@ -11,6 +11,9 @@ bool file_exists(const std::string &name) {
 }
 
 DetectorSpectrumMapData::DetectorSpectrumMapData(const std::string &filename) {
+  if (filename.empty()) {
+    throw std::runtime_error("A detector-spectrum map file must be specified.");
+  }
   if (!file_exists(filename))
     throw std::runtime_error(
         filename +
