@@ -121,8 +121,8 @@ TEST(NexusFileReaderTest,
 
 TEST(NexusFileReaderTest, get_frame_time) {
   auto fileReader = NexusFileReader(testDataPath + "SANS_test.nxs", 0, 0, {0});
-  EXPECT_EQ(1460429934940000057, fileReader.getFrameTime(0));
-  EXPECT_EQ(1460429935638999939, fileReader.getFrameTime(7));
+  EXPECT_EQ(2940000057, fileReader.getFrameTime(0));
+  EXPECT_EQ(3638999939, fileReader.getFrameTime(7));
 }
 
 TEST(NexusFileReaderTest, get_instrument_name) {

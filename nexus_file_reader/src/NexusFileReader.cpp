@@ -28,7 +28,10 @@ NexusFileReader::NexusFileReader(const std::string &filename,
   size_t numOfFrames;
   dataset.read(&numOfFrames, PredType::NATIVE_UINT64);
   m_numberOfFrames = numOfFrames;
-  m_frameStartOffset = getFrameStartOffset();
+  // Use pulse times relative to start time rather than using the `offset`
+  // attribute from the NeXus file, this makes the timestamps look as if this
+  // data is coming from a live instrument
+  m_frameStartOffset = m_runStart;
 }
 
 size_t NexusFileReader::findFrameNumberOfTime(float time) {
@@ -197,18 +200,6 @@ NexusFileReader::getNamesInGroup(const std::string &groupName) {
   return names;
 }
 
-uint64_t
-NexusFileReader::convertStringToUnixTime(const std::string &timeString) {
-  std::tm tmb = {};
-  std::istringstream ss(timeString);
-  ss >> std::get_time(&tmb, "%Y-%m-%dT%H:%M:%S");
-#if (defined(_MSC_VER))
-#define timegm _mkgmtime
-#endif
-  auto timeUnix = timegm(&tmb);
-  return static_cast<uint64_t>(timeUnix);
-}
-
 /**
  * Get instrument name
  *
@@ -249,18 +240,6 @@ uint64_t NexusFileReader::getFrameTime(hsize_t frameNumber) {
   auto frameTimeFromOffsetNanoseconds =
       static_cast<uint64_t>(floor((frameTime * 1e9) + 0.5));
   return m_frameStartOffset + frameTimeFromOffsetNanoseconds;
-}
-
-uint64_t NexusFileReader::getFrameStartOffset() {
-  std::string datasetName = "/raw_data_1/detector_1_events/event_time_zero";
-  auto dataset = m_file->openDataSet(datasetName);
-  auto offsetAttr = dataset.openAttribute("offset");
-
-  std::string value;
-  offsetAttr.read(offsetAttr.getDataType(), value);
-
-  // * 1e9 for seconds since epoch to nanoseconds since epoch
-  return static_cast<uint64_t>(convertStringToUnixTime(value) * 1e9);
 }
 
 template <typename T>

@@ -36,7 +36,6 @@ public:
                                       const std::string &datasetName);
   std::vector<std::string> get1DStringDataset(const std::string &datasetName);
   int32_t getNumberOfPeriods();
-  uint64_t getFrameStartOffset();
 
 private:
   uint64_t m_runStart;
@@ -47,7 +46,6 @@ private:
   hsize_t getFrameStart(hsize_t frameNumber);
   H5FilePtr m_file = nullptr;
   size_t m_numberOfFrames;
-  uint64_t convertStringToUnixTime(const std::string &timeString);
   uint64_t m_frameStartOffset;
   const int32_t m_fakeEventsPerPulse;
 
