@@ -29,11 +29,11 @@ void addNXeventDataToFile(hdf5::file::File &file) {
   auto eventGroup = entryGroup.create_group("detector_1_events");
 }
 
-void addGoodFramesToFile(hdf5::file::File &file) {
-  hdf5::node::Group entryGroup = file.root()["entry"];
-  auto framesDataset = entryGroup.create_dataset(
-      "good_frames", hdf5::datatype::create<int32_t>(),
-      hdf5::dataspace::Scalar());
-  framesDataset.write(10);
+void addEventTimeZeroToFile(hdf5::file::File &file) {
+  hdf5::node::Group eventGroup = file.root()["entry/detector_1_events"];
+  auto dataset = eventGroup.create_dataset("event_time_zero",
+                                           hdf5::datatype::create<int32_t>(),
+                                           hdf5::dataspace::Scalar());
+  dataset.write(10);
 }
 }

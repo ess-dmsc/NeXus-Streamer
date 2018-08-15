@@ -35,12 +35,14 @@ NexusFileReader::NexusFileReader(hdf5::file::File file, uint64_t runStartTime,
                              "from the NXentry group");
   }
 
-  if (!m_entryGroup.has_dataset("good_frames")) {
-    throw std::runtime_error(
-        "Required dataset \"good_frames\" missing from the NXentry group");
+  if (!m_entryGroup.get_group("detector_1_events")
+           .has_dataset("event_time_zero")) {
+    throw std::runtime_error("Required dataset \"event_time_zero\" missing "
+                             "from the NXevent_data group");
   }
-  auto dataset = m_entryGroup.get_dataset("good_frames");
-  dataset.read(m_numberOfFrames);
+  auto dataset = m_entryGroup.get_group("detector_1_events")
+                     .get_dataset("event_time_zero");
+  m_numberOfFrames = static_cast<size_t>(dataset.dataspace().size());
   // Use pulse times relative to start time rather than using the `offset`
   // attribute from the NeXus file, this makes the timestamps look as if this
   // data is coming from a live instrument

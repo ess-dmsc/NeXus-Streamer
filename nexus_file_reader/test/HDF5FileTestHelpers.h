@@ -14,5 +14,5 @@ void addNXentryToFile(hdf5::file::File &file);
 void addNXeventDataToFile(hdf5::file::File &file);
 
 /// Adds good_frames dataset to file
-void addGoodFramesToFile(hdf5::file::File &file);
+void addEventTimeZeroToFile(hdf5::file::File &file);
 }
