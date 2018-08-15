@@ -2,6 +2,8 @@
 
 #include "../../event_data/include/SampleEnvironmentEvent.h"
 #include <h5cpp/hdf5.hpp>
+#include <memory>
+#include <random>
 #include <unordered_map>
 #include <vector>
 
@@ -9,7 +11,9 @@ using sEEventVector = std::vector<std::shared_ptr<SampleEnvironmentEvent>>;
 
 class NexusFileReader {
 public:
-  NexusFileReader(const std::string &filename, uint64_t runStartTime);
+  NexusFileReader(const std::string &filename, uint64_t runStartTime,
+                  int32_t fakeEventsPerPulse,
+                  const std::vector<int32_t> &detectorNumbers);
 
   hsize_t getFileSize();
   uint64_t getTotalEventCount();
@@ -23,7 +27,6 @@ public:
   std::string getInstrumentName();
   std::unordered_map<hsize_t, sEEventVector> getSEEventMap();
   int32_t getNumberOfPeriods();
-  uint64_t getFrameStartOffset();
   bool getEntryGroup(const hdf5::node::Group &rootGroup,
                      hdf5::node::Group &entryGroupOutput);
 
@@ -34,10 +37,18 @@ private:
   T getSingleValueFromDataset(const std::string &dataset, hsize_t offset);
   hsize_t getFrameStart(hsize_t frameNumber);
   size_t m_numberOfFrames;
-  uint64_t convertStringToUnixTime(const std::string &timeString);
   uint64_t m_frameStartOffset;
 
   hdf5::file::File m_file;
   hdf5::node::Group m_entryGroup;
   hdf5::dataspace::Hyperslab m_slab{{0}, {1}};
+
+  const int32_t m_fakeEventsPerPulse;
+
+  /// Tools for generating events
+  std::uniform_int_distribution<uint32_t> m_timeOfFlightDist;
+  std::uniform_int_distribution<uint32_t> m_detectorIDDist;
+  std::default_random_engine RandomEngine;
+
+  std::vector<int32_t> m_detectorNumbers;
 };

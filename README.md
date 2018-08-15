@@ -3,27 +3,30 @@
 # NeXus Streamer
 Stream event data from a NeXus file to an Apache Kafka cluster. Each message sent over Kafka comprises the event data from a single neutron pulse. Using the `--slow` flag results in sending 10 messages per second, approximately a realistic rate. Sample environment data are also sent during streaming, resulting in a stream of real data which looks as if it were coming from a live instrument.
 
-The client runs until the user terminates it, repeatedly sending data from the same file but with incrementing run numbers. However the `--singlerun` flag can be used to produce only a single run.
+The client runs until the user terminates it, repeatedly sending data from the same file but with incrementing run numbers. However the `--single_run` flag can be used to produce only a single run.
 
 Usage:
 ```
-main_nexusPublisher <OPTIONS>
+nexus-streamer <OPTIONS>
 
 Options:
   -h,--help                   Print this help message and exit
-  --filename TEXT             Full path of the NeXus file
-  --detspecmap TEXT           Full path of the detector-spectrum map
-  --broker TEXT               Hostname or IP of Kafka broker
-  --instrument TEXT           Used as prefix for topic names
-  --compression TEXT          Compression option for Kafka messages
-  --slow                      Publish data at approx realistic rate (10 pulses per second)
-  --quiet                     Less chatty on stdout
-  --singlerun                 Publish only a single run (otherwise repeats until interrupted)
+  -f,--filename TEXT          Full path of the NeXus file
+  -d,--det_spec_map TEXT      Full path of the detector-spectrum map
+  -b,--broker TEXT            Hostname or IP of Kafka broker
+  -i,--instrument TEXT        Used as prefix for topic names
+  -m,--compression TEXT       Compression option for Kafka messages
+  -e,--fake_events_per_pulse INT
+                              Generates this number of fake events per pulse instead of publishing real data from file
+  -s,--slow                   Publish data at approx realistic rate (10 pulses per second)
+  -q,--quiet                  Less chatty on stdout
+  -z,--single_run             Publish only a single run (otherwise repeats until interrupted)
+  -c,--config_file TEXT       Read configuration from an ini file
 ```
 
 Usage example:
 ```
-main_nexusPublisher --filename /path/to/NeXus-Streamer.git/data/SANS_test_uncompressed.hdf5 --detspecmap /path/to/NeXus-Streamer.git/data/spectrum_gastubes_01.dat --broker localhost --instrument SANS2D --singlerun
+nexus-streamer --filename /path/to/NeXus-Streamer.git/data/SANS_test_uncompressed.hdf5 --det_spec_map /path/to/NeXus-Streamer.git/data/spectrum_gastubes_01.dat --broker localhost --instrument SANS2D --single_run
 ```
 
 ## Broker Configuration

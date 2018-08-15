@@ -38,7 +38,7 @@ set(core_libraries
 ## Main executable ##
 #####################
 
-set(publisher-target main_nexusPublisher)
+set(publisher-target nexus-streamer)
 add_executable(${publisher-target} ${PROJECT_SOURCE_DIR}/src/main.cpp)
 
 target_link_libraries(${publisher-target}

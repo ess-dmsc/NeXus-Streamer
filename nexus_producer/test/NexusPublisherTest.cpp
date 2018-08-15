@@ -44,7 +44,6 @@ TEST_F(NexusPublisherTest, test_create_message_data) {
   EXPECT_EQ(770, receivedEventData.getNumberOfEvents());
   EXPECT_FLOAT_EQ(0.001105368, receivedEventData.getProtonCharge());
   EXPECT_EQ(0, receivedEventData.getPeriod());
-  EXPECT_EQ(1460429935039999962, receivedEventData.getFrameTime());
 }
 
 TEST_F(NexusPublisherTest, test_stream_data) {

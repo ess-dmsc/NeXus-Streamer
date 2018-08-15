@@ -30,11 +30,18 @@ flatbuffers::unique_ptr_t EventData::getBufferPointer(std::string &buffer,
   auto isisDataMessage =
       CreateISISData(builder, m_period, RunState_RUNNING, m_protonCharge);
 
+  std::uint8_t *tempTofBuffer;
+  std::uint8_t *tempDetIdBuffer;
   auto eventMessage = CreateEventMessage(
-      builder, builder.CreateString("isis_nexus_streamer_for_mantid"),
-      messageID, m_frameTime, builder.CreateVector(m_tof),
-      builder.CreateVector(m_detId), FacilityData_ISISData,
-      isisDataMessage.Union());
+      builder, builder.CreateString("NeXus-Streamer"), messageID, m_frameTime,
+      builder.CreateUninitializedVector(m_tof.size(), sizeof(uint32_t),
+                                        &tempTofBuffer),
+      builder.CreateUninitializedVector(m_detId.size(), sizeof(uint32_t),
+                                        &tempDetIdBuffer),
+      FacilityData_ISISData, isisDataMessage.Union());
+  std::memcpy(tempTofBuffer, m_tof.data(), m_tof.size() * sizeof(uint32_t));
+  std::memcpy(tempDetIdBuffer, m_detId.data(),
+              m_detId.size() * sizeof(uint32_t));
 
   FinishEventMessageBuffer(builder, eventMessage);
 
