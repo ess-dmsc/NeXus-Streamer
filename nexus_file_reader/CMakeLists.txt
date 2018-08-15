@@ -7,7 +7,9 @@ set( INC_FILES
         include/NexusFileReader.h)
 
 set( TEST_FILES
-        test/NexusFileReaderTest.cpp)
+        test/NexusFileReaderTest.cpp
+        test/HDF5FileTestHelpers.cpp
+        test/HDF5FileTestHelpers.h)
 
 #####################
 ## Libraries       ##

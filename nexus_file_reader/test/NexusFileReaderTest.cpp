@@ -1,19 +1,35 @@
 #include <gmock/gmock.h>
 
 #include "../include/NexusFileReader.h"
+#include "HDF5FileTestHelpers.h"
 
 class NexusFileReaderTest : public ::testing::Test {};
 
 extern std::string testDataPath;
 
-TEST(NexusFileReaderTest, nexus_file_open_not_exist) {
+using HDF5FileTestHelpers::createInMemoryTestFile;
+
+TEST(NexusFileReaderTest, error_thrown_for_non_existent_file) {
   EXPECT_THROW(
       NexusFileReader(hdf5::file::open(testDataPath + "not_exist_file.nxs"), 0,
                       0, {0}),
       std::runtime_error);
 }
 
-TEST(NexusFileReaderTest, nexus_file_open_exists) {
+TEST(NexusFileReaderTest, error_thrown_for_file_with_no_NXentry_group) {
+  EXPECT_THROW(NexusFileReader(createInMemoryTestFile("fileWithNoNXentry.nxs"),
+                               0, 0, {0}),
+               std::runtime_error);
+}
+
+TEST(NexusFileReaderTest,
+     error_thrown_for_file_with_NXentry_but_no_event_data_group) {
+  auto file = createInMemoryTestFile("fileWithNoNXentry.nxs");
+
+  EXPECT_THROW(NexusFileReader(file, 0, 0, {0}), std::runtime_error);
+}
+
+TEST(NexusFileReaderTest, no_error_thrown_when_file_exists) {
   EXPECT_NO_THROW(NexusFileReader(
       hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0}));
 }
