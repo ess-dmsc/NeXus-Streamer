@@ -50,6 +50,18 @@ TEST(NexusFileReaderTest,
   EXPECT_NO_THROW(NexusFileReader(file, 0, 0, {0}));
 }
 
+TEST(NexusFileReaderTest,
+     expect_empty_map_if_no_selog_group_present) {
+  auto file = createInMemoryTestFile("fileWithRequisiteGroups.nxs");
+  HDF5FileTestHelpers::addNXentryToFile(file);
+  HDF5FileTestHelpers::addNXeventDataToFile(file);
+  HDF5FileTestHelpers::addEventTimeZeroToFile(file);
+
+  auto fileReader = NexusFileReader(file, 0, 0, {0});
+  auto sEMap = fileReader.getSEEventMap();
+  EXPECT_EQ(sEMap.size(), 0);
+}
+
 TEST(NexusFileReaderTest, nexus_uncompressed_file_open_exists) {
   EXPECT_NO_THROW(NexusFileReader(
       hdf5::file::open(testDataPath + "SANS_test_reduced.hdf5"), 0, 0, {0}));

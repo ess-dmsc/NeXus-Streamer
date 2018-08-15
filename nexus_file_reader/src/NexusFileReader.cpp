@@ -73,6 +73,12 @@ size_t NexusFileReader::findFrameNumberOfTime(float time) {
 std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
   std::unordered_map<hsize_t, sEEventVector> sEEventMap;
 
+  if (!m_entryGroup.has_group("selog")) {
+    std::cout << "Warning: no selog group found, not publishing sample "
+                 "environment log data\n";
+    return sEEventMap;
+  }
+
   auto sampleEnvGroup = m_entryGroup.get_group("selog");
   for (auto const &sampleEnvChild : sampleEnvGroup.nodes) {
     hdf5::node::Group logGroup;
