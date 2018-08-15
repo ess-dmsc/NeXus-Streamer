@@ -164,10 +164,9 @@ uint64_t NexusFileReader::getTotalEventCount() {
     return getNumberOfFrames() * m_fakeEventsPerPulse;
   }
 
-  auto dataset = m_entryGroup.get_dataset("detector_1_events/total_counts");
-  uint64_t totalCount;
-  dataset.read(totalCount);
-  return totalCount;
+  auto dataset =
+      m_entryGroup.get_dataset("detector_1_events/event_time_offset");
+  return static_cast<uint64_t>(dataset.dataspace().size());
 }
 
 uint32_t NexusFileReader::getPeriodNumber() { return 0; }
@@ -256,7 +255,6 @@ hsize_t NexusFileReader::getNumberOfEventsInFrame(hsize_t frameNumber) {
   }
   // if this is the last frame then we cannot get number of events by looking at
   // event index of next frame
-  // instead use the total_counts field
   if (frameNumber == (m_numberOfFrames - 1)) {
     return getTotalEventCount() - getFrameStart(frameNumber);
   }
