@@ -24,14 +24,30 @@ TEST(NexusFileReaderTest, error_thrown_for_file_with_no_NXentry_group) {
 
 TEST(NexusFileReaderTest,
      error_thrown_for_file_with_NXentry_but_no_event_data_group) {
-  auto file = createInMemoryTestFile("fileWithNoNXentry.nxs");
+  auto file = createInMemoryTestFile("fileWithNoEventData.nxs");
+  HDF5FileTestHelpers::addNXentryToFile(file);
 
   EXPECT_THROW(NexusFileReader(file, 0, 0, {0}), std::runtime_error);
 }
 
-TEST(NexusFileReaderTest, no_error_thrown_when_file_exists) {
-  EXPECT_NO_THROW(NexusFileReader(
-      hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0}));
+TEST(
+    NexusFileReaderTest,
+    error_thrown_for_file_with_NXentry_and_event_data_group_but_no_num_of_frames) {
+  auto file = createInMemoryTestFile("fileWithNoGoodFrames.nxs");
+  HDF5FileTestHelpers::addNXentryToFile(file);
+  HDF5FileTestHelpers::addNXeventDataToFile(file);
+
+  EXPECT_THROW(NexusFileReader(file, 0, 0, {0}), std::runtime_error);
+}
+
+TEST(NexusFileReaderTest,
+     no_error_thrown_when_file_exists_with_requisite_groups) {
+  auto file = createInMemoryTestFile("fileWithRequisiteGroups.nxs");
+  HDF5FileTestHelpers::addNXentryToFile(file);
+  HDF5FileTestHelpers::addNXeventDataToFile(file);
+  HDF5FileTestHelpers::addGoodFramesToFile(file);
+
+  EXPECT_NO_THROW(NexusFileReader(file, 0, 0, {0}));
 }
 
 TEST(NexusFileReaderTest, nexus_uncompressed_file_open_exists) {
