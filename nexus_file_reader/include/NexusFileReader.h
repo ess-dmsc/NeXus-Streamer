@@ -11,7 +11,7 @@ using sEEventVector = std::vector<std::shared_ptr<SampleEnvironmentEvent>>;
 
 class NexusFileReader {
 public:
-  NexusFileReader(const std::string &filename, uint64_t runStartTime,
+  NexusFileReader(hdf5::file::File file, uint64_t runStartTime,
                   int32_t fakeEventsPerPulse,
                   const std::vector<int32_t> &detectorNumbers);
 

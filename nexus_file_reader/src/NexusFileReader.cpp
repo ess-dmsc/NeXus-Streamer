@@ -14,14 +14,16 @@
  * @param filename - the full path of the NeXus file
  * @return - an object with which to read information from the file
  */
-NexusFileReader::NexusFileReader(const std::string &filename,
-                                 uint64_t runStartTime,
+NexusFileReader::NexusFileReader(hdf5::file::File file, uint64_t runStartTime,
                                  const int32_t fakeEventsPerPulse,
                                  const std::vector<int32_t> &detectorNumbers)
-    : m_runStart(runStartTime), m_fakeEventsPerPulse(fakeEventsPerPulse),
+    : m_file(std::move(file)), m_runStart(runStartTime),
+      m_fakeEventsPerPulse(fakeEventsPerPulse),
       m_timeOfFlightDist(10000, 100000), m_detectorNumbers(detectorNumbers),
       m_detectorIDDist(0, static_cast<uint32_t>(detectorNumbers.size() - 1)) {
-  m_file = hdf5::file::open(filename);
+  if (!m_file.is_valid()) {
+    throw std::runtime_error("Failed to open specified NeXus file");
+  }
   auto rootGroup = m_file.root();
   if (!getEntryGroup(rootGroup, m_entryGroup)) {
     throw std::runtime_error(

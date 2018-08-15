@@ -37,7 +37,8 @@ NexusPublisher::NexusPublisher(std::shared_ptr<EventPublisher> publisher,
   auto detectorNumbers = detSpecMap.getDetectors();
 
   m_fileReader = std::make_shared<NexusFileReader>(
-      filename, m_runStartTime, fakeEventsPerPulse, detectorNumbers);
+      hdf5::file::open(filename), m_runStartTime, fakeEventsPerPulse,
+      detectorNumbers);
   publisher->setUp(brokerAddress, instrumentName);
   m_sEEventMap = m_fileReader->getSEEventMap();
 }
