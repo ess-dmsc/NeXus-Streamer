@@ -5,11 +5,11 @@ archive_os = "centos7-gcc6"
 
 images = [
         'centos7-gcc6': [
-                'name': 'essdmscdm/centos7-gcc6-build-node:3.1.0',
+                'name': 'essdmscdm/centos7-gcc6-build-node:2.1.0',
                 'sh'  : '/usr/bin/scl enable rh-python35 devtoolset-6 -- /bin/bash -e'
         ],
         'fedora25'    : [
-                'name': 'essdmscdm/debian9-build-node:2.1.0',
+                'name': 'essdmscdm/fedora25-build-node:1.0.0',
                 'sh'  : 'bash -e'
         ],
         'ubuntu1804'  : [
