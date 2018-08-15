@@ -52,7 +52,6 @@ bool NexusFileReader::getEntryGroup(const hdf5::node::Group &rootGroup,
       auto attr = rootChild.attributes["NX_class"];
       std::string nxClassType;
       attr.read(nxClassType, attr.datatype());
-      std::cout << nxClassType << std::endl;
       if (nxClassType == "NXentry") {
         entryGroupOutput = rootChild;
         return true;
