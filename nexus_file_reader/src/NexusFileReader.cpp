@@ -8,30 +8,59 @@
 #include <iostream>
 #include <sstream>
 
-using namespace H5;
-
 /**
  * Create a object to read the specified file
  *
  * @param filename - the full path of the NeXus file
  * @return - an object with which to read information from the file
  */
-NexusFileReader::NexusFileReader(const std::string &filename,
-                                 uint64_t runStartTime,
+NexusFileReader::NexusFileReader(hdf5::file::File file, uint64_t runStartTime,
                                  const int32_t fakeEventsPerPulse,
-                                 std::vector<int32_t> detectorNumbers)
-    : m_file(new H5File(filename, H5F_ACC_RDONLY)), m_runStart(runStartTime),
+                                 const std::vector<int32_t> &detectorNumbers)
+    : m_file(std::move(file)), m_runStart(runStartTime),
       m_fakeEventsPerPulse(fakeEventsPerPulse),
       m_timeOfFlightDist(10000, 100000), m_detectorNumbers(detectorNumbers),
       m_detectorIDDist(0, static_cast<uint32_t>(detectorNumbers.size() - 1)) {
-  DataSet dataset = m_file->openDataSet("/raw_data_1/good_frames");
-  size_t numOfFrames;
-  dataset.read(&numOfFrames, PredType::NATIVE_UINT64);
-  m_numberOfFrames = numOfFrames;
+  if (!m_file.is_valid()) {
+    throw std::runtime_error("Failed to open specified NeXus file");
+  }
+  auto rootGroup = m_file.root();
+  if (!getEntryGroup(rootGroup, m_entryGroup)) {
+    throw std::runtime_error(
+        "Failed to find an NXentry group in the NeXus file root");
+  }
+
+  if (!m_entryGroup.has_group("detector_1_events")) {
+    throw std::runtime_error("Required dataset \"detector_1_events\" missing "
+                             "from the NXentry group");
+  }
+
+  if (!m_entryGroup.has_dataset("good_frames")) {
+    throw std::runtime_error(
+        "Required dataset \"good_frames\" missing from the NXentry group");
+  }
+  auto dataset = m_entryGroup.get_dataset("good_frames");
+  dataset.read(m_numberOfFrames);
   // Use pulse times relative to start time rather than using the `offset`
   // attribute from the NeXus file, this makes the timestamps look as if this
   // data is coming from a live instrument
   m_frameStartOffset = m_runStart;
+}
+
+bool NexusFileReader::getEntryGroup(const hdf5::node::Group &rootGroup,
+                                    hdf5::node::Group &entryGroupOutput) {
+  for (const auto &rootChild : rootGroup.nodes) {
+    if (rootChild.attributes.exists("NX_class")) {
+      auto attr = rootChild.attributes["NX_class"];
+      std::string nxClassType;
+      attr.read(nxClassType, attr.datatype());
+      if (nxClassType == "NXentry") {
+        entryGroupOutput = rootChild;
+        return true;
+      }
+    }
+    return false;
+  }
 }
 
 size_t NexusFileReader::findFrameNumberOfTime(float time) {
@@ -42,92 +71,78 @@ size_t NexusFileReader::findFrameNumberOfTime(float time) {
 std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
   std::unordered_map<hsize_t, sEEventVector> sEEventMap;
 
-  auto groupNames = getNamesInGroup("/raw_data_1/selog");
-  for (auto const &name : groupNames) {
-    if ((name != "SECI_OUT_OF_RANGE_BLOCK") && (name != "gas_control")) {
-      std::vector<float> floatValues;
-      std::vector<int32_t> intValues;
-      std::vector<int64_t> longValues;
-      std::string valueDatasetName =
-          "/raw_data_1/selog/" + name + "/value_log/value";
-      auto times =
-          get1DDataset<float>(PredType::NATIVE_FLOAT,
-                              "/raw_data_1/selog/" + name + "/value_log/time");
-      auto valueType = getDatasetType(valueDatasetName);
-      if (valueType == PredType::NATIVE_FLOAT) {
-        floatValues = get1DDataset<float>(valueType, valueDatasetName);
-      } else if (valueType == PredType::NATIVE_INT32) {
-        intValues = get1DDataset<int32_t>(valueType, valueDatasetName);
-      } else if (valueType == PredType::NATIVE_INT64) {
-        longValues = get1DDataset<int64_t>(valueType, valueDatasetName);
-      } else {
-        std::cout << "Unsupported datatype in dataset " << name << std::endl;
+  auto sampleEnvGroup = m_entryGroup.get_group("selog");
+  for (auto const &sampleEnvChild : sampleEnvGroup.nodes) {
+    hdf5::node::Group logGroup;
+    hdf5::node::Group valueLog;
+    if (sampleEnvChild.type() == hdf5::node::Type::GROUP) {
+      logGroup = static_cast<hdf5::node::Group>(sampleEnvChild);
+      if (!logGroup.exists("value_log"))
         continue;
-      }
+      valueLog = logGroup.get_group("value_log");
+      if (!valueLog.exists("time") || !valueLog.exists("value"))
+        continue;
+    } else {
+      continue;
+    }
+    std::vector<float> times;
+    std::vector<float> floatValues;
+    std::vector<int32_t> intValues;
+    std::vector<int64_t> longValues;
 
-      for (size_t i = 0; i < times.size(); i++) {
-        // Ignore entries for events which do not occur during the run
-        if (times[i] > 0) {
-          // The number of the frame the event happened in
-          auto frameNumber = findFrameNumberOfTime(times[i]);
-          if (frameNumber > m_numberOfFrames) {
-            continue;
-          }
-          if (sEEventMap.count(frameNumber) == 0)
-            sEEventMap[frameNumber] = sEEventVector();
-          if (valueType == PredType::NATIVE_FLOAT)
-            sEEventMap[frameNumber].push_back(
-                std::make_shared<SampleEnvironmentEventDouble>(
-                    name, times[i], floatValues[i], m_runStart));
-          else if (valueType == PredType::NATIVE_INT32)
-            sEEventMap[frameNumber].push_back(
-                std::make_shared<SampleEnvironmentEventInt>(
-                    name, times[i], intValues[i], m_runStart));
-          else if (valueType == PredType::NATIVE_INT64)
-            sEEventMap[frameNumber].push_back(
-                std::make_shared<SampleEnvironmentEventLong>(
-                    name, times[i], longValues[i], m_runStart));
+    const auto floatType = hdf5::datatype::create<float>();
+    const auto int32Type = hdf5::datatype::create<int32_t>();
+    const auto int64Type = hdf5::datatype::create<int64_t>();
+
+    auto timeDataset = valueLog.get_dataset("time");
+    times.resize(static_cast<size_t>(timeDataset.dataspace().size()));
+    timeDataset.read(times);
+
+    std::string name = logGroup.link().target().object_path().name();
+
+    auto valueDataset = valueLog.get_dataset("value");
+    auto valueType = valueDataset.datatype();
+    auto dataSize = static_cast<size_t>(valueDataset.dataspace().size());
+    if (valueType == floatType) {
+      floatValues.resize(dataSize);
+      valueDataset.read(floatValues);
+    } else if (valueType == int32Type) {
+      intValues.resize(dataSize);
+      valueDataset.read(intValues);
+    } else if (valueType == int64Type) {
+      longValues.resize(dataSize);
+      valueDataset.read(longValues);
+    } else {
+      std::cout << "Unsupported datatype found in log dataset " << name << "\n";
+      continue;
+    }
+
+    for (size_t i = 0; i < times.size(); i++) {
+      // Ignore entries for events which do not occur during the run
+      if (times[i] > 0) {
+        // The number of the frame the event happened in
+        auto frameNumber = findFrameNumberOfTime(times[i]);
+        if (frameNumber > m_numberOfFrames) {
+          continue;
         }
+        if (sEEventMap.count(frameNumber) == 0)
+          sEEventMap[frameNumber] = sEEventVector();
+        if (valueType == floatType)
+          sEEventMap[frameNumber].push_back(
+              std::make_shared<SampleEnvironmentEventDouble>(
+                  name, times[i], floatValues[i], m_runStart));
+        else if (valueType == int32Type)
+          sEEventMap[frameNumber].push_back(
+              std::make_shared<SampleEnvironmentEventInt>(
+                  name, times[i], intValues[i], m_runStart));
+        else if (valueType == int64Type)
+          sEEventMap[frameNumber].push_back(
+              std::make_shared<SampleEnvironmentEventLong>(
+                  name, times[i], longValues[i], m_runStart));
       }
     }
   }
-
   return sEEventMap;
-}
-
-DataType NexusFileReader::getDatasetType(const std::string &datasetName) {
-  auto dataset = m_file->openDataSet(datasetName);
-  return dataset.getDataType();
-}
-
-template <typename valueType>
-std::vector<valueType>
-NexusFileReader::get1DDataset(DataType dataType,
-                              const std::string &datasetName) {
-  auto dataset = m_file->openDataSet(datasetName);
-  std::vector<valueType> values;
-
-  auto dataspace = dataset.getSpace();
-
-  // resize vector to the correct size to put the new data in
-  values.resize(static_cast<size_t>(dataspace.getSelectNpoints()));
-
-  dataset.read(values.data(), dataType, dataspace);
-  return values;
-}
-
-std::vector<std::string>
-NexusFileReader::get1DStringDataset(const std::string &datasetName) {
-  std::string value;
-  auto dataset = m_file->openDataSet(datasetName);
-  auto dataspace = dataset.getSpace();
-
-  dataset.read(value, dataset.getDataType(), dataspace);
-
-  std::vector<std::string> values;
-  values.push_back(value);
-
-  return values;
 }
 
 /**
@@ -135,7 +150,7 @@ NexusFileReader::get1DStringDataset(const std::string &datasetName) {
  *
  * @return - the size of the file in bytes
  */
-hsize_t NexusFileReader::getFileSize() { return m_file->getFileSize(); }
+hsize_t NexusFileReader::getFileSize() { return m_file.size(); }
 
 /**
  * Get the total number of events in the file
@@ -147,58 +162,15 @@ uint64_t NexusFileReader::getTotalEventCount() {
     return getNumberOfFrames() * m_fakeEventsPerPulse;
   }
 
-  DataSet dataset =
-      m_file->openDataSet("/raw_data_1/detector_1_events/total_counts");
+  auto dataset = m_entryGroup.get_dataset("detector_1_events/total_counts");
   uint64_t totalCount;
-  dataset.read(&totalCount, PredType::NATIVE_UINT64);
-
+  dataset.read(totalCount);
   return totalCount;
 }
 
-/**
- * Get the DAE period number
- *
- * @return - the DAE period number
- */
-uint32_t NexusFileReader::getPeriodNumber() {
-  DataSet dataset = m_file->openDataSet("/raw_data_1/periods/number");
-  int32_t periodNumber;
-  dataset.read(&periodNumber, PredType::NATIVE_INT32);
-  // -1 as period number starts at 1 in NeXus files but 0 everywhere else
-  periodNumber -= 1;
-  if (periodNumber < 0)
-    throw std::runtime_error(
-        "Period number in NeXus file is expected to be > 0");
+uint32_t NexusFileReader::getPeriodNumber() { return 0; }
 
-  return static_cast<uint32_t>(periodNumber);
-}
-
-/**
- * Get the number of DAE periods
- *
- * @return - the number of periods
- */
-int32_t NexusFileReader::getNumberOfPeriods() {
-  auto periodNumbers = get1DDataset<int32_t>(PredType::NATIVE_INT32,
-                                             "/raw_data_1/periods/number");
-  return static_cast<int32_t>(periodNumbers.size());
-}
-
-/**
- * Get the names of objects in a specified group
- *
- * @param name of the group
- * @return names of objects in the specified group
- */
-std::vector<std::string>
-NexusFileReader::getNamesInGroup(const std::string &groupName) {
-  Group group = m_file->openGroup(groupName);
-  std::vector<std::string> names;
-  for (hsize_t i = 0; i < group.getNumObjs(); i++) {
-    names.push_back(group.getObjnameByIdx(i));
-  }
-  return names;
-}
+int32_t NexusFileReader::getNumberOfPeriods() { return 1; }
 
 /**
  * Get instrument name
@@ -206,9 +178,9 @@ NexusFileReader::getNamesInGroup(const std::string &groupName) {
  * @return - instrument name
  */
 std::string NexusFileReader::getInstrumentName() {
-  DataSet dataset = m_file->openDataSet("/raw_data_1/name");
+  auto dataset = m_entryGroup.get_dataset("name");
   std::string instrumentName;
-  dataset.read(instrumentName, dataset.getDataType(), dataset.getSpace());
+  dataset.read(instrumentName, dataset.datatype(), dataset.dataspace());
   return instrumentName;
 }
 
@@ -218,10 +190,10 @@ std::string NexusFileReader::getInstrumentName() {
  * @return - the proton charge
  */
 float NexusFileReader::getProtonCharge(hsize_t frameNumber) {
-  std::string datasetName = "/raw_data_1/framelog/proton_charge/value";
+  std::string datasetName = "framelog/proton_charge/value";
 
-  auto protonCharge = getSingleValueFromDataset<float>(
-      datasetName, PredType::NATIVE_FLOAT, frameNumber);
+  auto protonCharge =
+      getSingleValueFromDataset<float>(datasetName, frameNumber);
 
   return protonCharge;
 }
@@ -233,10 +205,9 @@ float NexusFileReader::getProtonCharge(hsize_t frameNumber) {
  * @return - absolute time of frame start in nanoseconds since 1 Jan 1970
  */
 uint64_t NexusFileReader::getFrameTime(hsize_t frameNumber) {
-  std::string datasetName = "/raw_data_1/detector_1_events/event_time_zero";
+  std::string datasetName = "detector_1_events/event_time_zero";
 
-  auto frameTime = getSingleValueFromDataset<double>(
-      datasetName, PredType::NATIVE_DOUBLE, frameNumber);
+  auto frameTime = getSingleValueFromDataset<double>(datasetName, frameNumber);
   auto frameTimeFromOffsetNanoseconds =
       static_cast<uint64_t>(floor((frameTime * 1e9) + 0.5));
   return m_frameStartOffset + frameTimeFromOffsetNanoseconds;
@@ -244,22 +215,13 @@ uint64_t NexusFileReader::getFrameTime(hsize_t frameNumber) {
 
 template <typename T>
 T NexusFileReader::getSingleValueFromDataset(const std::string &datasetName,
-                                             H5::PredType datatype,
                                              hsize_t offset) {
-  auto dataset = m_file->openDataSet(datasetName);
+  auto dataset = m_entryGroup.get_dataset(datasetName);
   T value;
 
-  hsize_t count = 1;
-  hsize_t stride = 1;
-  hsize_t block = 1;
+  m_slab.offset({offset});
 
-  auto dataspace = dataset.getSpace();
-  dataspace.selectHyperslab(H5S_SELECT_SET, &count, &offset, &stride, &block);
-
-  hsize_t dimsm = 1;
-  DataSpace memspace(1, &dimsm);
-
-  dataset.read(&value, datatype, memspace, dataspace);
+  dataset.read(value, m_slab);
 
   return value;
 }
@@ -271,10 +233,10 @@ T NexusFileReader::getSingleValueFromDataset(const std::string &datasetName,
  * @return - event index corresponding to the start of the specified frame
  */
 hsize_t NexusFileReader::getFrameStart(hsize_t frameNumber) {
-  std::string datasetName = "/raw_data_1/detector_1_events/event_index";
+  std::string datasetName = "detector_1_events/event_index";
 
-  auto frameStart = getSingleValueFromDataset<hsize_t>(
-      datasetName, PredType::NATIVE_UINT64, frameNumber);
+  auto frameStart =
+      getSingleValueFromDataset<hsize_t>(datasetName, frameNumber);
 
   return frameStart;
 }
@@ -321,25 +283,17 @@ bool NexusFileReader::getEventDetIds(std::vector<uint32_t> &detIds,
     return true;
   }
 
-  auto dataset = m_file->openDataSet("/raw_data_1/detector_1_events/event_id");
+  auto dataset = m_entryGroup.get_dataset("detector_1_events/event_id");
 
   auto numberOfEventsInFrame = getNumberOfEventsInFrame(frameNumber);
 
   hsize_t count = numberOfEventsInFrame;
   hsize_t offset = getFrameStart(frameNumber);
-  hsize_t stride = 1;
-  hsize_t block = 1;
+  detIds.resize(count);
 
-  auto dataspace = dataset.getSpace();
-  dataspace.selectHyperslab(H5S_SELECT_SET, &count, &offset, &stride, &block);
+  auto slab = hdf5::dataspace::Hyperslab({offset}, {count}, {1});
 
-  // resize detIds to the correct size to put the new data in
-  detIds.resize(numberOfEventsInFrame);
-
-  hsize_t dimsm = numberOfEventsInFrame;
-  DataSpace memspace(1, &dimsm);
-
-  dataset.read(detIds.data(), PredType::NATIVE_UINT32, memspace, dataspace);
+  dataset.read(detIds, slab);
 
   return true;
 }
@@ -367,27 +321,18 @@ bool NexusFileReader::getEventTofs(std::vector<uint32_t> &tofs,
   }
 
   auto dataset =
-      m_file->openDataSet("/raw_data_1/detector_1_events/event_time_offset");
+      m_entryGroup.get_dataset("detector_1_events/event_time_offset");
 
   auto numberOfEventsInFrame = getNumberOfEventsInFrame(frameNumber);
 
   hsize_t count = numberOfEventsInFrame;
   hsize_t offset = getFrameStart(frameNumber);
-  hsize_t stride = 1;
-  hsize_t block = 1;
 
-  std::vector<float> tof_floats;
-
-  auto dataspace = dataset.getSpace();
-  dataspace.selectHyperslab(H5S_SELECT_SET, &count, &offset, &stride, &block);
-
+  auto slab = hdf5::dataspace::Hyperslab({offset}, {count}, {1});
+  std::vector<float> tof_floats(count);
   tofs.resize(numberOfEventsInFrame);
-  tof_floats.resize(numberOfEventsInFrame);
 
-  hsize_t dimsm = numberOfEventsInFrame;
-  DataSpace memspace(1, &dimsm);
-
-  dataset.read(tof_floats.data(), PredType::NATIVE_FLOAT, memspace, dataspace);
+  dataset.read(tof_floats, slab);
   // transform float in microseconds to uint32 in nanoseconds
   std::transform(tof_floats.begin(), tof_floats.end(), tofs.begin(),
                  [](float tof) {
