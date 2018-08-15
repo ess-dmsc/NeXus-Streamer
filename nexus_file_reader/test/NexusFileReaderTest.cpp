@@ -50,8 +50,7 @@ TEST(NexusFileReaderTest,
   EXPECT_NO_THROW(NexusFileReader(file, 0, 0, {0}));
 }
 
-TEST(NexusFileReaderTest,
-     expect_empty_map_if_no_selog_group_present) {
+TEST(NexusFileReaderTest, expect_empty_map_if_no_selog_group_present) {
   auto file = createInMemoryTestFile("fileWithRequisiteGroups.nxs");
   HDF5FileTestHelpers::addNXentryToFile(file);
   HDF5FileTestHelpers::addNXeventDataToFile(file);
