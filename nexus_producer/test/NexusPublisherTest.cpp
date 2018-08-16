@@ -39,8 +39,7 @@ TEST_F(NexusPublisherTest, test_create_message_data) {
   eventData[0]->getBufferPointer(rawbuf, 0);
 
   auto receivedEventData = EventData();
-  EXPECT_TRUE(receivedEventData.decodeMessage(
-      reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
+  EXPECT_TRUE(receivedEventData.decodeMessage(rawbuf));
   EXPECT_EQ(770, receivedEventData.getNumberOfEvents());
   EXPECT_FLOAT_EQ(0.001105368, receivedEventData.getProtonCharge());
   EXPECT_EQ(0, receivedEventData.getPeriod());
@@ -80,11 +79,6 @@ TEST_F(NexusPublisherTest, test_create_run_message_data) {
 
   std::string rawbuf;
   runData->getRunStartBufferPointer(rawbuf);
-
-  auto receivedData = EventData();
-  // Should return false as this is not event data
-  EXPECT_FALSE(receivedData.decodeMessage(
-      reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
 
   auto receivedRunData = RunData();
   EXPECT_TRUE(receivedRunData.decodeMessage(
