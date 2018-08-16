@@ -198,11 +198,14 @@ std::string NexusFileReader::getInstrumentName() {
  */
 float NexusFileReader::getProtonCharge(hsize_t frameNumber) {
   std::string datasetName = "framelog/proton_charge/value";
+  if (m_entryGroup.has_dataset(datasetName)) {
 
-  auto protonCharge =
-      getSingleValueFromDataset<float>(datasetName, frameNumber);
+    auto protonCharge =
+        getSingleValueFromDataset<float>(datasetName, frameNumber);
 
-  return protonCharge;
+    return protonCharge;
+  }
+  return -1;
 }
 
 /**
