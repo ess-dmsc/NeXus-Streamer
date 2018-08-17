@@ -27,6 +27,7 @@ void addNXentryToFile(hdf5::file::File &file) {
 void addNXeventDataToFile(hdf5::file::File &file) {
   hdf5::node::Group entryGroup = file.root()["entry"];
   auto eventGroup = entryGroup.create_group("detector_1_events");
+  write_attribute<std::string>(eventGroup, "NX_class", "NXevent_data");
 }
 
 void addEventTimeZeroToFile(hdf5::file::File &file) {
