@@ -39,6 +39,7 @@ private:
   T getSingleValueFromDataset(const hdf5::node::Group &group,
                               const std::string &dataset, hsize_t offset);
   hsize_t getFrameStart(hsize_t frameNumber);
+  void checkEventGroupHasRequiredDatasets(const hdf5::node::Group &eventGroup) const;
   size_t m_numberOfFrames;
   uint64_t m_frameStartOffset;
 

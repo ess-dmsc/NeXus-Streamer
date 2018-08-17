@@ -13,6 +13,6 @@ void addNXentryToFile(hdf5::file::File &file);
 /// Adds an NXevent_data group called "detector_1_events" to the entry group
 void addNXeventDataToFile(hdf5::file::File &file);
 
-/// Adds good_frames dataset to file
-void addEventTimeZeroToFile(hdf5::file::File &file);
+/// Adds datasets to event data group in file
+void addNXeventDataDatasetsToFile(hdf5::file::File &file);
 }

@@ -30,11 +30,26 @@ void addNXeventDataToFile(hdf5::file::File &file) {
   write_attribute<std::string>(eventGroup, "NX_class", "NXevent_data");
 }
 
-void addEventTimeZeroToFile(hdf5::file::File &file) {
+void addNXeventDataDatasetsToFile(hdf5::file::File &file) {
   hdf5::node::Group eventGroup = file.root()["entry/detector_1_events"];
-  auto dataset = eventGroup.create_dataset("event_time_zero",
-                                           hdf5::datatype::create<int32_t>(),
-                                           hdf5::dataspace::Scalar());
-  dataset.write(10);
+  auto eventTimeZero = eventGroup.create_dataset(
+      "event_time_zero", hdf5::datatype::create<int64_t>(),
+      hdf5::dataspace::Scalar());
+  eventTimeZero.write(1);
+
+  auto eventTimeOffset = eventGroup.create_dataset(
+      "event_time_offset", hdf5::datatype::create<int32_t>(),
+      hdf5::dataspace::Scalar());
+  eventTimeOffset.write(2);
+
+  auto eventIndex = eventGroup.create_dataset(
+      "event_index", hdf5::datatype::create<uint64_t>(),
+      hdf5::dataspace::Scalar());
+  eventIndex.write(3);
+
+  auto eventId =
+      eventGroup.create_dataset("event_id", hdf5::datatype::create<uint32_t>(),
+                                hdf5::dataspace::Scalar());
+  eventId.write(4);
 }
 }

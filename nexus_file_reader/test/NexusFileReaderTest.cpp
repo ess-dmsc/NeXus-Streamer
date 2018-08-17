@@ -45,7 +45,7 @@ TEST(NexusFileReaderTest,
   auto file = createInMemoryTestFile("fileWithRequisiteGroups.nxs");
   HDF5FileTestHelpers::addNXentryToFile(file);
   HDF5FileTestHelpers::addNXeventDataToFile(file);
-  HDF5FileTestHelpers::addEventTimeZeroToFile(file);
+  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(file);
 
   EXPECT_NO_THROW(NexusFileReader(file, 0, 0, {0}));
 }
@@ -54,7 +54,7 @@ TEST(NexusFileReaderTest, expect_empty_map_if_no_selog_group_present) {
   auto file = createInMemoryTestFile("fileWithRequisiteGroups.nxs");
   HDF5FileTestHelpers::addNXentryToFile(file);
   HDF5FileTestHelpers::addNXeventDataToFile(file);
-  HDF5FileTestHelpers::addEventTimeZeroToFile(file);
+  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(file);
 
   auto fileReader = NexusFileReader(file, 0, 0, {0});
   auto sEMap = fileReader.getSEEventMap();

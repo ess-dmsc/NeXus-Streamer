@@ -27,10 +27,6 @@ NexusFileReader::NexusFileReader(hdf5::file::File file, uint64_t runStartTime,
   getEntryGroup(m_file.root(), m_entryGroup);
   getEventGroup(m_entryGroup, m_eventGroup);
 
-  if (!m_eventGroup.has_dataset("event_time_zero")) {
-    throw std::runtime_error("Required dataset \"event_time_zero\" missing "
-                             "from the NXevent_data group");
-  }
   auto dataset = m_eventGroup.get_dataset("event_time_zero");
   m_numberOfFrames = static_cast<size_t>(dataset.dataspace().size());
   // Use pulse times relative to start time rather than using the `offset`
@@ -65,12 +61,28 @@ void NexusFileReader::getEventGroup(const hdf5::node::Group &entryGroup,
       attr.read(nxClassType, attr.datatype());
       if (nxClassType == "NXevent_data") {
         eventGroupOutput = entryChild;
+        checkEventGroupHasRequiredDatasets(eventGroupOutput);
         return;
       }
     }
   }
   throw std::runtime_error("Required NXevent_data group missing "
                            "from the NXentry group");
+}
+
+void NexusFileReader::checkEventGroupHasRequiredDatasets(
+    const hdf5::node::Group &eventGroup) const {
+  std::vector<std::string> requiredDatasets = {"event_time_zero",
+                                               "event_time_offset",
+                                               "event_id",
+                                               "event_index"};
+  for (const auto &datasetName : requiredDatasets) {
+    if (!eventGroup.has_dataset(datasetName)) {
+      throw std::runtime_error("Required dataset \"" + datasetName +
+                               "\" missing "
+                               "from the NXevent_data group");
+    }
+  }
 }
 
 size_t NexusFileReader::findFrameNumberOfTime(float time) {
