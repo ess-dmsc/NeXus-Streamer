@@ -12,7 +12,7 @@ public:
   EventData() = default;
 
   // Decode message into existing EventData instance
-  bool decodeMessage(const uint8_t *buf);
+  bool decodeMessage(const std::string &rawbuf);
 
   // Setters
   void setDetId(std::vector<uint32_t> detIds) { m_detId = std::move(detIds); }
@@ -44,6 +44,6 @@ private:
   uint64_t m_totalCounts = 0;
   size_t m_bufferSize = 0;
   uint64_t m_frameTime = 0;
-  float m_protonCharge = 0;
-  uint32_t m_period = 0;
+  float m_protonCharge = -1;
+  uint32_t m_period = std::numeric_limits<uint32_t>::max();
 };

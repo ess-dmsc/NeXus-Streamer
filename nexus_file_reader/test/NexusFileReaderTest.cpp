@@ -45,9 +45,20 @@ TEST(NexusFileReaderTest,
   auto file = createInMemoryTestFile("fileWithRequisiteGroups.nxs");
   HDF5FileTestHelpers::addNXentryToFile(file);
   HDF5FileTestHelpers::addNXeventDataToFile(file);
-  HDF5FileTestHelpers::addGoodFramesToFile(file);
+  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(file);
 
   EXPECT_NO_THROW(NexusFileReader(file, 0, 0, {0}));
+}
+
+TEST(NexusFileReaderTest, expect_empty_map_if_no_selog_group_present) {
+  auto file = createInMemoryTestFile("fileWithRequisiteGroups.nxs");
+  HDF5FileTestHelpers::addNXentryToFile(file);
+  HDF5FileTestHelpers::addNXeventDataToFile(file);
+  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(file);
+
+  auto fileReader = NexusFileReader(file, 0, 0, {0});
+  auto sEMap = fileReader.getSEEventMap();
+  EXPECT_EQ(sEMap.size(), 0);
 }
 
 TEST(NexusFileReaderTest, nexus_uncompressed_file_open_exists) {
@@ -69,7 +80,7 @@ TEST(NexusFileReaderTest, nexus_read_number_events) {
 
 TEST(NexusFileReaderTest, nexus_fake_number_of_events) {
   const int32_t numberOfFakeEventsPerPulse = 10;
-  const int32_t numberOfFrames = 18131;
+  const int32_t numberOfFrames = 18132;
   auto fileReader =
       NexusFileReader(hdf5::file::open(testDataPath + "SANS_test.nxs"), 0,
                       numberOfFakeEventsPerPulse, {0});
@@ -80,7 +91,7 @@ TEST(NexusFileReaderTest, nexus_fake_number_of_events) {
 TEST(NexusFileReaderTest, nexus_read_number_frames) {
   auto fileReader = NexusFileReader(
       hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0});
-  EXPECT_EQ(18131, fileReader.getNumberOfFrames());
+  EXPECT_EQ(18132, fileReader.getNumberOfFrames());
 }
 
 TEST(NexusFileReaderTest, get_detIds_first_frame) {

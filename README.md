@@ -29,6 +29,10 @@ Usage example:
 nexus-streamer --filename /path/to/NeXus-Streamer.git/data/SANS_test_uncompressed.hdf5 --det_spec_map /path/to/NeXus-Streamer.git/data/spectrum_gastubes_01.dat --broker localhost --instrument SANS2D --single_run
 ```
 
+## Minimum NeXus File Requirements
+The minimum requirements of a NeXus file to be streamed are having an NXentry group (with any name) in the file root, containing a `name` dataset for the instrument name, and an NXevent_data group (with any name) containing `event_id`, `event_index`, `event_time_zero` and `event_time_offset` datasets. 
+`/data/SANS2D_minimal.nxs` is an example of file meeting the minimum requirements.
+
 ## Broker Configuration
 Timestamped "run" start and stop messages are produced. With these Mantid can join the stream at the start of a run and has various options for behaviour at run stop. This makes use of the offset by timestamp lookup feature and thus requires Kafka version >0.10.2.0 on the brokers.
 It is also important to allow larger than the default message size by adding the following to the kafka configuration file (`server.properties`):

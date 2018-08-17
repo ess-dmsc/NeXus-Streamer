@@ -24,30 +24,18 @@ NexusFileReader::NexusFileReader(hdf5::file::File file, uint64_t runStartTime,
   if (!m_file.is_valid()) {
     throw std::runtime_error("Failed to open specified NeXus file");
   }
-  auto rootGroup = m_file.root();
-  if (!getEntryGroup(rootGroup, m_entryGroup)) {
-    throw std::runtime_error(
-        "Failed to find an NXentry group in the NeXus file root");
-  }
+  getEntryGroup(m_file.root(), m_entryGroup);
+  getEventGroup(m_entryGroup, m_eventGroup);
 
-  if (!m_entryGroup.has_group("detector_1_events")) {
-    throw std::runtime_error("Required dataset \"detector_1_events\" missing "
-                             "from the NXentry group");
-  }
-
-  if (!m_entryGroup.has_dataset("good_frames")) {
-    throw std::runtime_error(
-        "Required dataset \"good_frames\" missing from the NXentry group");
-  }
-  auto dataset = m_entryGroup.get_dataset("good_frames");
-  dataset.read(m_numberOfFrames);
+  auto dataset = m_eventGroup.get_dataset("event_time_zero");
+  m_numberOfFrames = static_cast<size_t>(dataset.dataspace().size());
   // Use pulse times relative to start time rather than using the `offset`
   // attribute from the NeXus file, this makes the timestamps look as if this
   // data is coming from a live instrument
   m_frameStartOffset = m_runStart;
 }
 
-bool NexusFileReader::getEntryGroup(const hdf5::node::Group &rootGroup,
+void NexusFileReader::getEntryGroup(const hdf5::node::Group &rootGroup,
                                     hdf5::node::Group &entryGroupOutput) {
   for (const auto &rootChild : rootGroup.nodes) {
     if (rootChild.attributes.exists("NX_class")) {
@@ -56,10 +44,42 @@ bool NexusFileReader::getEntryGroup(const hdf5::node::Group &rootGroup,
       attr.read(nxClassType, attr.datatype());
       if (nxClassType == "NXentry") {
         entryGroupOutput = rootChild;
-        return true;
+        return;
       }
     }
-    return false;
+  }
+  throw std::runtime_error(
+      "Failed to find an NXentry group in the NeXus file root");
+}
+
+void NexusFileReader::getEventGroup(const hdf5::node::Group &entryGroup,
+                                    hdf5::node::Group &eventGroupOutput) {
+  for (const auto &entryChild : entryGroup.nodes) {
+    if (entryChild.attributes.exists("NX_class")) {
+      auto attr = entryChild.attributes["NX_class"];
+      std::string nxClassType;
+      attr.read(nxClassType, attr.datatype());
+      if (nxClassType == "NXevent_data") {
+        eventGroupOutput = entryChild;
+        checkEventGroupHasRequiredDatasets(eventGroupOutput);
+        return;
+      }
+    }
+  }
+  throw std::runtime_error("Required NXevent_data group missing "
+                           "from the NXentry group");
+}
+
+void NexusFileReader::checkEventGroupHasRequiredDatasets(
+    const hdf5::node::Group &eventGroup) const {
+  std::vector<std::string> requiredDatasets = {
+      "event_time_zero", "event_time_offset", "event_id", "event_index"};
+  for (const auto &datasetName : requiredDatasets) {
+    if (!eventGroup.has_dataset(datasetName)) {
+      throw std::runtime_error("Required dataset \"" + datasetName +
+                               "\" missing "
+                               "from the NXevent_data group");
+    }
   }
 }
 
@@ -70,6 +90,12 @@ size_t NexusFileReader::findFrameNumberOfTime(float time) {
 
 std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
   std::unordered_map<hsize_t, sEEventVector> sEEventMap;
+
+  if (!m_entryGroup.has_group("selog")) {
+    std::cout << "Warning: no selog group found, not publishing sample "
+                 "environment log data\n";
+    return sEEventMap;
+  }
 
   auto sampleEnvGroup = m_entryGroup.get_group("selog");
   for (auto const &sampleEnvChild : sampleEnvGroup.nodes) {
@@ -162,10 +188,8 @@ uint64_t NexusFileReader::getTotalEventCount() {
     return getNumberOfFrames() * m_fakeEventsPerPulse;
   }
 
-  auto dataset = m_entryGroup.get_dataset("detector_1_events/total_counts");
-  uint64_t totalCount;
-  dataset.read(totalCount);
-  return totalCount;
+  auto dataset = m_eventGroup.get_dataset("event_time_offset");
+  return static_cast<uint64_t>(dataset.dataspace().size());
 }
 
 uint32_t NexusFileReader::getPeriodNumber() { return 0; }
@@ -191,11 +215,14 @@ std::string NexusFileReader::getInstrumentName() {
  */
 float NexusFileReader::getProtonCharge(hsize_t frameNumber) {
   std::string datasetName = "framelog/proton_charge/value";
+  if (m_entryGroup.has_dataset(datasetName)) {
 
-  auto protonCharge =
-      getSingleValueFromDataset<float>(datasetName, frameNumber);
+    auto protonCharge = getSingleValueFromDataset<float>(
+        m_entryGroup, datasetName, frameNumber);
 
-  return protonCharge;
+    return protonCharge;
+  }
+  return -1;
 }
 
 /**
@@ -205,18 +232,20 @@ float NexusFileReader::getProtonCharge(hsize_t frameNumber) {
  * @return - absolute time of frame start in nanoseconds since 1 Jan 1970
  */
 uint64_t NexusFileReader::getFrameTime(hsize_t frameNumber) {
-  std::string datasetName = "detector_1_events/event_time_zero";
+  std::string datasetName = "event_time_zero";
 
-  auto frameTime = getSingleValueFromDataset<double>(datasetName, frameNumber);
+  auto frameTime =
+      getSingleValueFromDataset<double>(m_eventGroup, datasetName, frameNumber);
   auto frameTimeFromOffsetNanoseconds =
       static_cast<uint64_t>(floor((frameTime * 1e9) + 0.5));
   return m_frameStartOffset + frameTimeFromOffsetNanoseconds;
 }
 
 template <typename T>
-T NexusFileReader::getSingleValueFromDataset(const std::string &datasetName,
+T NexusFileReader::getSingleValueFromDataset(const hdf5::node::Group &group,
+                                             const std::string &datasetName,
                                              hsize_t offset) {
-  auto dataset = m_entryGroup.get_dataset(datasetName);
+  auto dataset = group.get_dataset(datasetName);
   T value;
 
   m_slab.offset({offset});
@@ -233,10 +262,10 @@ T NexusFileReader::getSingleValueFromDataset(const std::string &datasetName,
  * @return - event index corresponding to the start of the specified frame
  */
 hsize_t NexusFileReader::getFrameStart(hsize_t frameNumber) {
-  std::string datasetName = "detector_1_events/event_index";
+  std::string datasetName = "event_index";
 
-  auto frameStart =
-      getSingleValueFromDataset<hsize_t>(datasetName, frameNumber);
+  auto frameStart = getSingleValueFromDataset<hsize_t>(
+      m_eventGroup, datasetName, frameNumber);
 
   return frameStart;
 }
@@ -254,7 +283,6 @@ hsize_t NexusFileReader::getNumberOfEventsInFrame(hsize_t frameNumber) {
   }
   // if this is the last frame then we cannot get number of events by looking at
   // event index of next frame
-  // instead use the total_counts field
   if (frameNumber == (m_numberOfFrames - 1)) {
     return getTotalEventCount() - getFrameStart(frameNumber);
   }
@@ -283,7 +311,7 @@ bool NexusFileReader::getEventDetIds(std::vector<uint32_t> &detIds,
     return true;
   }
 
-  auto dataset = m_entryGroup.get_dataset("detector_1_events/event_id");
+  auto dataset = m_eventGroup.get_dataset("event_id");
 
   auto numberOfEventsInFrame = getNumberOfEventsInFrame(frameNumber);
 
@@ -320,8 +348,7 @@ bool NexusFileReader::getEventTofs(std::vector<uint32_t> &tofs,
     return true;
   }
 
-  auto dataset =
-      m_entryGroup.get_dataset("detector_1_events/event_time_offset");
+  auto dataset = m_eventGroup.get_dataset("event_time_offset");
 
   auto numberOfEventsInFrame = getNumberOfEventsInFrame(frameNumber);
 

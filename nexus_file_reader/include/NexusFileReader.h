@@ -27,20 +27,26 @@ public:
   std::string getInstrumentName();
   std::unordered_map<hsize_t, sEEventVector> getSEEventMap();
   int32_t getNumberOfPeriods();
-  bool getEntryGroup(const hdf5::node::Group &rootGroup,
+  void getEntryGroup(const hdf5::node::Group &rootGroup,
                      hdf5::node::Group &entryGroupOutput);
+  void getEventGroup(const hdf5::node::Group &entryGroup,
+                     hdf5::node::Group &eventGroupOutput);
 
 private:
   uint64_t m_runStart;
   size_t findFrameNumberOfTime(float time);
   template <typename T>
-  T getSingleValueFromDataset(const std::string &dataset, hsize_t offset);
+  T getSingleValueFromDataset(const hdf5::node::Group &group,
+                              const std::string &dataset, hsize_t offset);
   hsize_t getFrameStart(hsize_t frameNumber);
+  void
+  checkEventGroupHasRequiredDatasets(const hdf5::node::Group &eventGroup) const;
   size_t m_numberOfFrames;
   uint64_t m_frameStartOffset;
 
   hdf5::file::File m_file;
   hdf5::node::Group m_entryGroup;
+  hdf5::node::Group m_eventGroup;
   hdf5::dataspace::Hyperslab m_slab{{0}, {1}};
 
   const int32_t m_fakeEventsPerPulse;
