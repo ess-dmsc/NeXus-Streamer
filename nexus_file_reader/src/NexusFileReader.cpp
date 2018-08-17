@@ -72,10 +72,8 @@ void NexusFileReader::getEventGroup(const hdf5::node::Group &entryGroup,
 
 void NexusFileReader::checkEventGroupHasRequiredDatasets(
     const hdf5::node::Group &eventGroup) const {
-  std::vector<std::string> requiredDatasets = {"event_time_zero",
-                                               "event_time_offset",
-                                               "event_id",
-                                               "event_index"};
+  std::vector<std::string> requiredDatasets = {
+      "event_time_zero", "event_time_offset", "event_id", "event_index"};
   for (const auto &datasetName : requiredDatasets) {
     if (!eventGroup.has_dataset(datasetName)) {
       throw std::runtime_error("Required dataset \"" + datasetName +
