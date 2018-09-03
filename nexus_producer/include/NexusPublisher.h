@@ -7,14 +7,12 @@
 #include "../../event_data/include/RunData.h"
 #include "../../nexus_file_reader/include/NexusFileReader.h"
 #include "EventPublisher.h"
+#include "OptionalArgs.h"
 
 class NexusPublisher {
 public:
   NexusPublisher(std::shared_ptr<EventPublisher> publisher,
-                 const std::string &brokerAddress,
-                 const std::string &instrumentName, const std::string &filename,
-                 const std::string &detSpecMapFilename, bool quietMode,
-                 int32_t fakeEventsPerPulse = 0);
+                 const OptionalArgs &settings);
   std::vector<std::shared_ptr<EventData>>
   createMessageData(hsize_t frameNumber);
   size_t createAndSendRunMessage(std::string &rawbuf, int runNumber);

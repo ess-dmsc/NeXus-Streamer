@@ -3,7 +3,8 @@ project(nexus-publisher)
 set( SRC_FILES  src/NexusPublisher.cpp)
 
 set( INC_FILES  include/EventPublisher.h
-                include/NexusPublisher.h)
+                include/NexusPublisher.h
+                include/OptionalArgs.h)
 
 set( TEST_FILES test/NexusPublisherTest.cpp)
 

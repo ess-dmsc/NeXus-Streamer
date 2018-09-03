@@ -4,25 +4,34 @@
 #include "../../event_data/include/DetectorSpectrumMapData.h"
 #include "MockEventPublisher.h"
 #include "NexusPublisher.h"
+#include "OptionalArgs.h"
 
 using ::testing::AtLeast;
 using ::testing::_;
 
 class NexusPublisherTest : public ::testing::Test {
 public:
-  NexusPublisher createStreamer(bool quiet) {
+
+  OptionalArgs createSettings(bool quiet) {
     extern std::string testDataPath;
 
-    const std::string broker = "broker_name";
-    const std::string instrumentName = "unitTest";
+    OptionalArgs settings;
+    settings.broker = "broker_name";
+    settings.instrumentName = "unitTest";
+    settings.quietMode = quiet;
+    settings.filename = testDataPath + "SANS_test_reduced.hdf5";
+    settings.detSpecFilename = testDataPath + "spectrum_gastubes_01.dat";
+    return settings;
+  }
+
+  NexusPublisher createStreamer(bool quiet) {
+    const auto settings = createSettings(quiet);
 
     auto publisher = std::make_shared<MockEventPublisher>();
-    EXPECT_CALL(*publisher.get(), setUp(broker, instrumentName))
+    EXPECT_CALL(*publisher.get(), setUp(settings.broker, settings.instrumentName))
         .Times(AtLeast(1));
 
-    NexusPublisher streamer(publisher, broker, instrumentName,
-                            testDataPath + "SANS_test_reduced.hdf5",
-                            testDataPath + "spectrum_gastubes_01.dat", quiet);
+    NexusPublisher streamer(publisher, settings);
     return streamer;
   }
 };
@@ -47,16 +56,14 @@ TEST_F(NexusPublisherTest, test_create_message_data) {
 
 TEST_F(NexusPublisherTest, test_stream_data) {
   using ::testing::Sequence;
-  extern std::string testDataPath;
 
-  const std::string broker = "broker_name";
-  const std::string instrumentName = "unitTest";
+  const auto settings = createSettings(true);
 
   auto publisher = std::make_shared<MockEventPublisher>();
 
   const int numberOfFrames = 300;
 
-  EXPECT_CALL(*publisher.get(), setUp(broker, instrumentName))
+  EXPECT_CALL(*publisher.get(), setUp(settings.broker, settings.instrumentName))
       .Times(AtLeast(1));
 
   EXPECT_CALL(*publisher.get(), sendEventMessage(_, _)).Times(numberOfFrames);
@@ -66,9 +73,7 @@ TEST_F(NexusPublisherTest, test_stream_data) {
       .Times(2); // Start and stop messages
   EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_, _)).Times(1);
 
-  NexusPublisher streamer(publisher, broker, instrumentName,
-                          testDataPath + "SANS_test_reduced.hdf5",
-                          testDataPath + "spectrum_gastubes_01.dat", true);
+  NexusPublisher streamer(publisher, settings);
   EXPECT_NO_THROW(streamer.streamData(1, false));
 }
 

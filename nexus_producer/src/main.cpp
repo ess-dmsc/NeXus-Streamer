@@ -5,55 +5,49 @@
 
 #include "KafkaEventPublisher.h"
 #include "NexusPublisher.h"
+#include "OptionalArgs.h"
 
 int main(int argc, char **argv) {
 
   CLI::App App{"Stream neutron detection event and sample environment data "
                "from a NeXus file into Kafka"};
 
-  std::string filename;
-  std::string detSpecFilename;
-  std::string broker;
-  std::string instrumentName = "test";
-  std::string compression;
-  bool slow = false;
-  bool quietMode = false;
-  bool singleRun = false;
-  int32_t fakeEventsPerPulse = 0;
+  OptionalArgs settings;
 
-  App.add_option("-f,--filename", filename, "Full path of the NeXus file");
-  App.add_option("-d,--det_spec_map", detSpecFilename,
+  App.add_option("-f,--filename", settings.filename, "Full path of the NeXus file");
+  App.add_option("-d,--det_spec_map", settings.detSpecFilename,
                  "Full path of the detector-spectrum map");
-  App.add_option("-b,--broker", broker, "Hostname or IP of Kafka broker");
-  App.add_option("-i,--instrument", instrumentName,
+  App.add_option("-b,--broker", settings.broker, "Hostname or IP of Kafka broker");
+  App.add_option("-i,--instrument", settings.instrumentName,
                  "Used as prefix for topic names");
-  App.add_option("-m,--compression", compression,
+  App.add_option("-m,--compression", settings.compression,
                  "Compression option for Kafka messages");
-  App.add_option("-e,--fake_events_per_pulse", fakeEventsPerPulse,
+  App.add_option("-e,--fake_events_per_pulse", settings.fakeEventsPerPulse,
                  "Generates this number of fake events per pulse instead of "
                  "publishing real data from file");
-  App.add_flag("-s,--slow", slow,
+  App.add_option("-p,--pulse_rate_hz", settings.pulseRateInHz,
+                 "Specify pulse rate in Hz, default is 10 Hz");
+  App.add_flag("-s,--slow", settings.slow,
                "Publish data at approx realistic rate (10 pulses per second)");
-  App.add_flag("-q,--quiet", quietMode, "Less chatty on stdout");
+  App.add_flag("-q,--quiet", settings.quietMode, "Less chatty on stdout");
   App.add_flag(
-      "-z,--single_run", singleRun,
+      "-z,--single_run", settings.singleRun,
       "Publish only a single run (otherwise repeats until interrupted)");
   App.set_config("-c,--config_file", "", "Read configuration from an ini file",
                  false);
 
   CLI11_PARSE(App, argc, argv);
 
-  auto publisher = std::make_shared<KafkaEventPublisher>(compression);
+  auto publisher = std::make_shared<KafkaEventPublisher>(settings.compression);
   int runNumber = 1;
-  NexusPublisher streamer(publisher, broker, instrumentName, filename,
-                          detSpecFilename, quietMode, fakeEventsPerPulse);
+  NexusPublisher streamer(publisher, settings);
 
   // Publish the same data repeatedly, with incrementing run numbers
-  if (singleRun) {
-    streamer.streamData(runNumber, slow);
+  if (settings.singleRun) {
+    streamer.streamData(runNumber, settings.slow);
   } else {
     while (true) {
-      streamer.streamData(runNumber, slow);
+      streamer.streamData(runNumber, settings.slow);
       std::this_thread::sleep_for(std::chrono::seconds(2));
       runNumber++;
     }
