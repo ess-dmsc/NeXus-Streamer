@@ -14,10 +14,12 @@ int main(int argc, char **argv) {
 
   OptionalArgs settings;
 
-  App.add_option("-f,--filename", settings.filename, "Full path of the NeXus file");
+  App.add_option("-f,--filename", settings.filename,
+                 "Full path of the NeXus file");
   App.add_option("-d,--det_spec_map", settings.detSpecFilename,
                  "Full path of the detector-spectrum map");
-  App.add_option("-b,--broker", settings.broker, "Hostname or IP of Kafka broker");
+  App.add_option("-b,--broker", settings.broker,
+                 "Hostname or IP of Kafka broker");
   App.add_option("-i,--instrument", settings.instrumentName,
                  "Used as prefix for topic names");
   App.add_option("-m,--compression", settings.compression,

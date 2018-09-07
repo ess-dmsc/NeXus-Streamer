@@ -11,7 +11,6 @@ using ::testing::_;
 
 class NexusPublisherTest : public ::testing::Test {
 public:
-
   OptionalArgs createSettings(bool quiet) {
     extern std::string testDataPath;
 
@@ -28,7 +27,8 @@ public:
     const auto settings = createSettings(quiet);
 
     auto publisher = std::make_shared<MockEventPublisher>();
-    EXPECT_CALL(*publisher.get(), setUp(settings.broker, settings.instrumentName))
+    EXPECT_CALL(*publisher.get(),
+                setUp(settings.broker, settings.instrumentName))
         .Times(AtLeast(1));
 
     NexusPublisher streamer(publisher, settings);
