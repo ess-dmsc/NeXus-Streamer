@@ -31,6 +31,7 @@ public:
                      hdf5::node::Group &entryGroupOutput);
   void getEventGroup(const hdf5::node::Group &entryGroup,
                      hdf5::node::Group &eventGroupOutput);
+  uint64_t getRelativeFrameTimeMilliseconds(hsize_t frameNumber);
 
 private:
   uint64_t m_runStart;

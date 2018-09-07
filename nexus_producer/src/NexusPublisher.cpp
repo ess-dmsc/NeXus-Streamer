@@ -32,8 +32,8 @@ NexusPublisher::NexusPublisher(std::shared_ptr<EventPublisher> publisher,
   auto detectorNumbers = detSpecMap.getDetectors();
 
   m_fileReader = std::make_shared<NexusFileReader>(
-      hdf5::file::open(settings.filename), m_runStartTime, settings.fakeEventsPerPulse,
-      detectorNumbers);
+      hdf5::file::open(settings.filename), m_runStartTime,
+      settings.fakeEventsPerPulse, detectorNumbers);
   publisher->setUp(settings.broker, settings.instrumentName);
   m_sEEventMap = m_fileReader->getSEEventMap();
 }
@@ -111,17 +111,21 @@ void NexusPublisher::streamData(int runNumber, bool slow) {
   totalBytesSent += createAndSendRunMessage(rawbuf, runNumber);
   totalBytesSent += createAndSendDetSpecMessage(rawbuf);
 
+  uint64_t lastFrameTime = 0;
   for (size_t frameNumber = 0; frameNumber < numberOfFrames; frameNumber++) {
+    // Publish messages at approx real message rate
+    if (slow) {
+      auto frameTime =
+          m_fileReader->getRelativeFrameTimeMilliseconds(frameNumber);
+      auto frameDuration = frameTime - lastFrameTime;
+      std::this_thread::sleep_for(std::chrono::milliseconds(frameDuration));
+      lastFrameTime = frameTime;
+    }
+
     totalBytesSent += createAndSendMessage(rawbuf, frameNumber);
     createAndSendSampleEnvMessages(sampleEnvBuf, frameNumber);
     reportProgress(static_cast<float>(frameNumber) /
                    static_cast<float>(numberOfFrames));
-
-    // Publish messages at roughly realistic message rate (~10 frames per
-    // second)
-    if (slow) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
   }
   totalBytesSent += createAndSendRunStopMessage(rawbuf);
   reportProgress(1.0);
