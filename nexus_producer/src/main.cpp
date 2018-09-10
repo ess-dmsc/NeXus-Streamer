@@ -7,6 +7,19 @@
 #include "NexusPublisher.h"
 #include "OptionalArgs.h"
 
+uint64_t getTimeNowNanosecondsFromEpoch() {
+  auto now = std::chrono::system_clock::now();
+  auto now_c = std::chrono::system_clock::to_time_t(now);
+  auto runStartTime = static_cast<uint64_t>(now_c) * 1000000000L;
+  return runStartTime;
+}
+
+std::vector<int32_t> getDetectorNumbers(const OptionalArgs &settings) {
+  auto detSpecMap = DetectorSpectrumMapData(settings.detSpecFilename);
+  auto detectorNumbers = detSpecMap.getDetectors();
+  return detectorNumbers;
+}
+
 int main(int argc, char **argv) {
 
   CLI::App App{"Stream neutron detection event and sample environment data "
@@ -40,9 +53,16 @@ int main(int argc, char **argv) {
 
   CLI11_PARSE(App, argc, argv);
 
+  auto detectorNumbers = getDetectorNumbers(settings);
+  auto runStartTime = getTimeNowNanosecondsFromEpoch();
+
   auto publisher = std::make_shared<KafkaEventPublisher>(settings.compression);
+  auto fileReader = std::make_shared<NexusFileReader>(
+      hdf5::file::open(settings.filename), runStartTime,
+      settings.fakeEventsPerPulse, detectorNumbers);
+  publisher->setUp(settings.broker, settings.instrumentName);
   int runNumber = 1;
-  NexusPublisher streamer(publisher, settings);
+  NexusPublisher streamer(publisher, fileReader, settings);
 
   // Publish the same data repeatedly, with incrementing run numbers
   if (settings.singleRun) {

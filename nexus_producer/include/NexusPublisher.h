@@ -12,6 +12,7 @@
 class NexusPublisher {
 public:
   NexusPublisher(std::shared_ptr<EventPublisher> publisher,
+                 std::shared_ptr<NexusFileReader> fileReader,
                  const OptionalArgs &settings);
   std::vector<std::shared_ptr<EventData>>
   createMessageData(hsize_t frameNumber);
@@ -35,5 +36,4 @@ private:
   std::string m_detSpecMapFilename;
   std::unordered_map<hsize_t, sEEventVector> m_sEEventMap;
   uint64_t m_messageID = 0;
-  uint64_t m_runStartTime;
 };

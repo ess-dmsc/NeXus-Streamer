@@ -21,20 +21,12 @@
  * data
  */
 NexusPublisher::NexusPublisher(std::shared_ptr<EventPublisher> publisher,
+                               std::shared_ptr<NexusFileReader> fileReader,
                                const OptionalArgs &settings)
-    : m_publisher(publisher), m_quietMode(settings.quietMode),
+    : m_publisher(std::move(publisher)), m_fileReader(std::move(fileReader)),
+      m_quietMode(settings.quietMode),
       m_detSpecMapFilename(settings.detSpecFilename) {
-  auto now = std::chrono::system_clock::now();
-  auto now_c = std::chrono::system_clock::to_time_t(now);
-  m_runStartTime = static_cast<uint64_t>(now_c) * 1000000000L;
 
-  auto detSpecMap = DetectorSpectrumMapData(m_detSpecMapFilename);
-  auto detectorNumbers = detSpecMap.getDetectors();
-
-  m_fileReader = std::make_shared<NexusFileReader>(
-      hdf5::file::open(settings.filename), m_runStartTime,
-      settings.fakeEventsPerPulse, detectorNumbers);
-  publisher->setUp(settings.broker, settings.instrumentName);
   m_sEEventMap = m_fileReader->getSEEventMap();
 }
 
