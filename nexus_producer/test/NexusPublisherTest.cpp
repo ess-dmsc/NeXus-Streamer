@@ -96,5 +96,5 @@ TEST_F(NexusPublisherTest, test_create_det_spec_map_message_data) {
   auto receivedData = DetectorSpectrumMapData();
   EXPECT_NO_THROW(receivedData.decodeMessage(
       reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
-  EXPECT_EQ(245768, receivedData.getNumberOfEntries());
+  EXPECT_EQ(122888, receivedData.getNumberOfEntries());
 }
