@@ -3,6 +3,7 @@
 #include "../../event_data/include/SampleEnvironmentEvent.h"
 #include <h5cpp/hdf5.hpp>
 #include <unordered_map>
+#include <cmath>
 
 using sEEventVector = std::vector<std::shared_ptr<SampleEnvironmentEvent>>;
 
@@ -25,4 +26,4 @@ public:
   virtual std::unordered_map<hsize_t, sEEventVector> getSEEventMap() = 0;
   virtual int32_t getNumberOfPeriods() = 0;
   virtual uint64_t getRelativeFrameTimeMilliseconds(hsize_t frameNumber) = 0;
-}
+};

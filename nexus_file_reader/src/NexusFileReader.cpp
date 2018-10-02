@@ -2,7 +2,6 @@
 #include "../../event_data/include/SampleEnvironmentEventDouble.h"
 #include "../../event_data/include/SampleEnvironmentEventInt.h"
 #include "../../event_data/include/SampleEnvironmentEventLong.h"
-#include <cmath>
 #include <ctime>
 #include <iomanip>
 #include <iostream>

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 struct OptionalArgs {
   std::string filename;
   std::string detSpecFilename;
