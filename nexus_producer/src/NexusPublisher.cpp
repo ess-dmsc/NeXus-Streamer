@@ -21,7 +21,7 @@
  * data
  */
 NexusPublisher::NexusPublisher(std::shared_ptr<EventPublisher> publisher,
-                               std::shared_ptr<NexusFileReader> fileReader,
+                               std::shared_ptr<FileReader> fileReader,
                                const OptionalArgs &settings)
     : m_publisher(std::move(publisher)), m_fileReader(std::move(fileReader)),
       m_quietMode(settings.quietMode),

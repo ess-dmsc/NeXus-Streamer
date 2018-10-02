@@ -5,14 +5,14 @@
 #include "../../event_data/include/DetectorSpectrumMapData.h"
 #include "../../event_data/include/EventData.h"
 #include "../../event_data/include/RunData.h"
-#include "../../nexus_file_reader/include/NexusFileReader.h"
+#include "../../nexus_file_reader/include/FileReader.h"
 #include "EventPublisher.h"
 #include "OptionalArgs.h"
 
 class NexusPublisher {
 public:
   NexusPublisher(std::shared_ptr<EventPublisher> publisher,
-                 std::shared_ptr<NexusFileReader> fileReader,
+                 std::shared_ptr<FileReader> fileReader,
                  const OptionalArgs &settings);
   std::vector<std::shared_ptr<EventData>>
   createMessageData(hsize_t frameNumber);
@@ -31,7 +31,7 @@ private:
   void reportProgress(float progress);
 
   std::shared_ptr<EventPublisher> m_publisher;
-  std::shared_ptr<NexusFileReader> m_fileReader;
+  std::shared_ptr<FileReader> m_fileReader;
   bool m_quietMode = false;
   std::string m_detSpecMapFilename;
   std::unordered_map<hsize_t, sEEventVector> m_sEEventMap;

@@ -9,7 +9,7 @@ using sEEventVector = std::vector<std::shared_ptr<SampleEnvironmentEvent>>;
 
 class FileReader {
 public:
-  virtual ~FileReader() = 0;
+  virtual ~FileReader() = default;
 
   virtual hsize_t getFileSize() = 0;
   virtual uint64_t getTotalEventCount() = 0;

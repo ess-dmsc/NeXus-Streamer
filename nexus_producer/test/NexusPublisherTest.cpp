@@ -9,6 +9,36 @@
 using ::testing::AtLeast;
 using ::testing::_;
 
+class FakeFileReader : public FileReader {
+  hsize_t getFileSize() override { return 0; };
+  uint64_t getTotalEventCount() override { return 3; };
+  uint32_t getPeriodNumber() override { return 0; };
+  float getProtonCharge(hsize_t frameNumber) override { return 0; };
+
+  bool getEventDetIds(std::vector<uint32_t> &detIds,
+                      hsize_t frameNumber) override {
+    detIds = {0, 1, 2};
+    return true;
+  };
+
+  bool getEventTofs(std::vector<uint32_t> &tofs, hsize_t frameNumber) override {
+    tofs = {0, 1, 2};
+    return true;
+  };
+
+  size_t getNumberOfFrames() override { return 1; };
+  hsize_t getNumberOfEventsInFrame(hsize_t frameNumber) override { return 3; };
+  uint64_t getFrameTime(hsize_t frameNumber) override { return 0; };
+  std::string getInstrumentName() override { return "FAKE"; };
+  std::unordered_map<hsize_t, sEEventVector> getSEEventMap() override {
+    return {};
+  };
+  int32_t getNumberOfPeriods() override { return 1; };
+  uint64_t getRelativeFrameTimeMilliseconds(hsize_t frameNumber) override {
+    return 0;
+  };
+};
+
 class NexusPublisherTest : public ::testing::Test {
 public:
   OptionalArgs createSettings(bool quiet) {
@@ -31,7 +61,9 @@ public:
                 setUp(settings.broker, settings.instrumentName))
         .Times(AtLeast(1));
 
-    NexusPublisher streamer(publisher, settings);
+    std::shared_ptr<FileReader> fakeFileReader =
+        std::make_shared<FakeFileReader>();
+    NexusPublisher streamer(publisher, fakeFileReader, settings);
     return streamer;
   }
 };
@@ -73,7 +105,9 @@ TEST_F(NexusPublisherTest, test_stream_data) {
       .Times(2); // Start and stop messages
   EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_, _)).Times(1);
 
-  NexusPublisher streamer(publisher, settings);
+  std::shared_ptr<FileReader> fakeFileReader =
+      std::make_shared<FakeFileReader>();
+  NexusPublisher streamer(publisher, fakeFileReader, settings);
   EXPECT_NO_THROW(streamer.streamData(1, false));
 }
 
