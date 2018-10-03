@@ -8,7 +8,6 @@
 #include <unordered_map>
 #include <vector>
 
-
 class NexusFileReader : public FileReader {
 public:
   NexusFileReader(hdf5::file::File file, uint64_t runStartTime,
@@ -19,7 +18,8 @@ public:
   uint64_t getTotalEventCount() override;
   uint32_t getPeriodNumber() override;
   float getProtonCharge(hsize_t frameNumber) override;
-  bool getEventDetIds(std::vector<uint32_t> &detIds, hsize_t frameNumber) override;
+  bool getEventDetIds(std::vector<uint32_t> &detIds,
+                      hsize_t frameNumber) override;
   bool getEventTofs(std::vector<uint32_t> &tofs, hsize_t frameNumber) override;
   size_t getNumberOfFrames() override { return m_numberOfFrames; };
   hsize_t getNumberOfEventsInFrame(hsize_t frameNumber) override;

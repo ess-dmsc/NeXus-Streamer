@@ -94,7 +94,7 @@ TEST_F(NexusPublisherTest, test_stream_data) {
   const int numberOfFrames = 1;
 
   EXPECT_CALL(*publisher.get(), sendEventMessage(_, _)).Times(numberOfFrames);
-  //EXPECT_CALL(*publisher.get(), sendSampleEnvMessage(_, _)).Times(16);
+  // EXPECT_CALL(*publisher.get(), sendSampleEnvMessage(_, _)).Times(16);
   EXPECT_CALL(*publisher.get(), sendRunMessage(_, _))
       .Times(2); // Start and stop messages
   EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_, _)).Times(1);

@@ -1,9 +1,9 @@
 #pragma once
 
 #include "../../event_data/include/SampleEnvironmentEvent.h"
+#include <cmath>
 #include <h5cpp/hdf5.hpp>
 #include <unordered_map>
-#include <cmath>
 
 using sEEventVector = std::vector<std::shared_ptr<SampleEnvironmentEvent>>;
 
