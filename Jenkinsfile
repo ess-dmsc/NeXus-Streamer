@@ -116,7 +116,7 @@ builders = pipeline_builder.createBuilders { container ->
         }  // if/else
     }  // stage
 
-    if (container.key != release_os) {
+    if (container.key == release_os) {
         pipeline_builder.stage("${container.key}: archive") {
             container.sh """
                 mkdir -p archive/${pipeline_builder.project}
