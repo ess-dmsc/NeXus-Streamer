@@ -20,24 +20,24 @@ TEST(DetectorSpectrumMapDataTest, read_detector_spectrum_map_detectors) {
   extern std::string testDataPath;
   auto detSpecMap =
       DetectorSpectrumMapData(testDataPath + "spectrum_gastubes_01.dat");
-  EXPECT_EQ(245768, detSpecMap.getNumberOfEntries());
+  EXPECT_EQ(122888, detSpecMap.getNumberOfEntries());
 
   auto detectors = detSpecMap.getDetectors();
   EXPECT_EQ(1, detectors[0]);
   EXPECT_EQ(1100000, detectors[8]);
-  EXPECT_EQ(4523511, detectors[245767]);
+  EXPECT_EQ(2523511, detectors[122887]);
 }
 
 TEST(DetectorSpectrumMapDataTest, read_detector_spectrum_map_spectra) {
   extern std::string testDataPath;
   auto detSpecMap =
       DetectorSpectrumMapData(testDataPath + "spectrum_gastubes_01.dat");
-  EXPECT_EQ(245768, detSpecMap.getNumberOfEntries());
+  EXPECT_EQ(122888, detSpecMap.getNumberOfEntries());
 
   auto spectra = detSpecMap.getSpectra();
   EXPECT_EQ(1, spectra[0]);
   EXPECT_EQ(9, spectra[8]);
-  EXPECT_EQ(245768, spectra[245767]);
+  EXPECT_EQ(122888, spectra[122887]);
 }
 
 TEST(DetectorSpectrumMapDataTest, create_message_buffer) {
@@ -51,15 +51,15 @@ TEST(DetectorSpectrumMapDataTest, create_message_buffer) {
   auto receivedMapData = DetectorSpectrumMapData();
   EXPECT_NO_THROW(receivedMapData.decodeMessage(
       reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
-  EXPECT_EQ(245768, receivedMapData.getNumberOfEntries());
+  EXPECT_EQ(122888, receivedMapData.getNumberOfEntries());
 
   auto detectors = receivedMapData.getDetectors();
   EXPECT_EQ(1, detectors[0]);
   EXPECT_EQ(1100000, detectors[8]);
-  EXPECT_EQ(4523511, detectors[245767]);
+  EXPECT_EQ(2523511, detectors[122887]);
 
   auto spectra = receivedMapData.getSpectra();
   EXPECT_EQ(1, spectra[0]);
   EXPECT_EQ(9, spectra[8]);
-  EXPECT_EQ(245768, spectra[245767]);
+  EXPECT_EQ(122888, spectra[122887]);
 }

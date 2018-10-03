@@ -18,4 +18,5 @@ then
    exit 1
 fi
 
+source /nexus_streamer/activate_run.sh
 /nexus_streamer/bin/nexus-streamer -c ${CONFIG_FILE}
