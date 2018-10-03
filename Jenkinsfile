@@ -49,16 +49,18 @@ builders = pipeline_builder.createBuilders { container ->
     }  // stage
 
     pipeline_builder.stage("${container.key}: configure") {
+        def coverage_on
         if (container.key == test_and_coverage_os) {
-            def coverage_on = "-DCOV=1"
+            coverage_on = "-DCOV=1"
         } else {
-            def coverage_on = ""
+            coverage_on = ""
         }
 
+        def cmake_cmd
         if (container.key == "centos7") {
-            def cmake_cmd = "cmake3"
+            cmake_cmd = "cmake3"
         } else {
-            def cmake_cmd = "cmake"
+            cmake_cmd = "cmake"
         }
 
         container.sh """
