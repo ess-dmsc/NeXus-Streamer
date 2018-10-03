@@ -65,7 +65,6 @@ builders = pipeline_builder.createBuilders { container ->
 
         container.sh """
             cd build
-            . ./activate_run.sh
             ${cmake_cmd} ../${pipeline_builder.project} ${coverage_on}
         """
     }  // stage
