@@ -5,7 +5,7 @@ archive_os = "centos7-gcc6"
 
 images = [
         'centos7-gcc6': [
-                'name': 'essdmscdm/centos7-gcc6-build-node:3.2.0',
+                'name': 'essdmscdm/centos7-build-node:3.2.0',
                 'sh'  : '/usr/bin/scl enable rh-python35 devtoolset-6 -- /bin/bash -e'
         ],
         'debian9'    : [
