@@ -12,3 +12,8 @@ virtualrunenv
 [options]
 hdf5:shared=True
 librdkafka:shared=True
+
+[imports]
+lib, * -> ./lib
+lib64, * -> ./lib
+., LICENSE* -> ./licenses @ folder=True, ignore_case=True
