@@ -1,11 +1,11 @@
+#include "KafkaEventPublisher.h"
+#include "NexusPublisher.h"
+#include "OptionalArgs.h"
+#include "../../nexus_file_reader/include/NexusFileReader.h"
 #include <CLI/CLI.hpp>
 #include <chrono>
 #include <iostream>
 #include <thread>
-
-#include "KafkaEventPublisher.h"
-#include "NexusPublisher.h"
-#include "OptionalArgs.h"
 
 uint64_t getTimeNowNanosecondsFromEpoch() {
   auto now = std::chrono::system_clock::now();

@@ -13,7 +13,7 @@ class FakeFileReader : public FileReader {
   hsize_t getFileSize() override { return 0; };
   uint64_t getTotalEventCount() override { return 3; };
   uint32_t getPeriodNumber() override { return 0; };
-  float getProtonCharge(hsize_t frameNumber) override { return 0; };
+  float getProtonCharge(hsize_t frameNumber) override { return 0.002; };
 
   bool getEventDetIds(std::vector<uint32_t> &detIds,
                       hsize_t frameNumber) override {
@@ -57,9 +57,6 @@ public:
     const auto settings = createSettings(quiet);
 
     auto publisher = std::make_shared<MockEventPublisher>();
-    EXPECT_CALL(*publisher.get(),
-                setUp(settings.broker, settings.instrumentName))
-        .Times(AtLeast(1));
 
     std::shared_ptr<FileReader> fakeFileReader =
         std::make_shared<FakeFileReader>();
@@ -74,15 +71,15 @@ TEST_F(NexusPublisherTest, test_create_streamer_quiet) { createStreamer(true); }
 
 TEST_F(NexusPublisherTest, test_create_message_data) {
   auto streamer = createStreamer(true);
-  auto eventData = streamer.createMessageData(static_cast<hsize_t>(1));
+  auto eventData = streamer.createMessageData(static_cast<hsize_t>(0));
 
   std::string rawbuf;
   eventData[0]->getBufferPointer(rawbuf, 0);
 
   auto receivedEventData = EventData();
   EXPECT_TRUE(receivedEventData.decodeMessage(rawbuf));
-  EXPECT_EQ(770, receivedEventData.getNumberOfEvents());
-  EXPECT_FLOAT_EQ(0.001105368, receivedEventData.getProtonCharge());
+  EXPECT_EQ(3, receivedEventData.getNumberOfEvents());
+  EXPECT_FLOAT_EQ(0.002, receivedEventData.getProtonCharge());
   EXPECT_EQ(0, receivedEventData.getPeriod());
 }
 
@@ -92,15 +89,12 @@ TEST_F(NexusPublisherTest, test_stream_data) {
   const auto settings = createSettings(true);
 
   auto publisher = std::make_shared<MockEventPublisher>();
+  publisher->setUp(settings.broker, settings.instrumentName);
 
-  const int numberOfFrames = 300;
-
-  EXPECT_CALL(*publisher.get(), setUp(settings.broker, settings.instrumentName))
-      .Times(AtLeast(1));
+  const int numberOfFrames = 1;
 
   EXPECT_CALL(*publisher.get(), sendEventMessage(_, _)).Times(numberOfFrames);
-
-  EXPECT_CALL(*publisher.get(), sendSampleEnvMessage(_, _)).Times(16);
+  //EXPECT_CALL(*publisher.get(), sendSampleEnvMessage(_, _)).Times(16);
   EXPECT_CALL(*publisher.get(), sendRunMessage(_, _))
       .Times(2); // Start and stop messages
   EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_, _)).Times(1);
