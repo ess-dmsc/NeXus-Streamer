@@ -75,7 +75,7 @@ builders = pipeline_builder.createBuilders { container ->
                 cd build
                 cmake3 -DCMAKE_SKIP_BUILD_RPATH=ON -DCMAKE_BUILD_TYPE=Release ../${pipeline_builder.project}
             """
-        }
+        }  // if/else
     }  // stage
 
     pipeline_builder.stage("${container.key}: build") {
@@ -86,33 +86,51 @@ builders = pipeline_builder.createBuilders { container ->
         """
     }  // stage
 
-    if (container.key == test_and_coverage_os) {
-        // Run tests with coverage.
-        def test_output = "TestResults.xml"
-        container.sh """
-            cd build
-            . ./activate_run.sh
-            ./bin/UnitTests ../${pipeline_builder.project}/data/ --gtest_output=xml:${test_output}
-            make coverage
-            lcov --directory . --capture --output-file coverage.info
-            lcov --remove coverage.info '*_generated.h' '*/.conan/data/*' '*/usr/*' '*Test.cpp' '*gmock*' '*gtest*' --output-file coverage.info
-        """
+    pipeline_builder.stage("${container.key}: test") {
+        if (container.key == test_and_coverage_os) {
+            // Run tests with coverage.
+            def test_output = "TestResults.xml"
+            container.sh """
+                cd build
+                . ./activate_run.sh
+                ./bin/UnitTests ../${pipeline_builder.project}/data/ --gtest_output=xml:${test_output}
+                make coverage
+                lcov --directory . --capture --output-file coverage.info
+                lcov --remove coverage.info '*_generated.h' '*/.conan/data/*' '*/usr/*' '*Test.cpp' '*gmock*' '*gtest*' --output-file coverage.info
+            """
 
-        container.copyFrom('build', '.')
-        junit "build/${test_output}"
+            container.copyFrom('build', '.')
+            junit "build/${test_output}"
 
-        withCredentials([string(credentialsId: 'nexus-streamer-codecov-token', variable: 'TOKEN')]) {
-            sh "cp ${pipeline_builder.project}/codecov.yml codecov.yml"
-            sh "curl -s https://codecov.io/bash | bash -s - -f build/coverage.info -t ${TOKEN} -C ${scm_vars.GIT_COMMIT}"
-        }  // withCredentials
-    } else {
-        // Run tests.
-        container.sh """
-            cd build
-            . ./activate_run.sh
-            ./bin/UnitTests ../${pipeline_builder.project}/data/
-        """
-    }  // if/else
+            withCredentials([string(credentialsId: 'nexus-streamer-codecov-token', variable: 'TOKEN')]) {
+                sh "cp ${pipeline_builder.project}/codecov.yml codecov.yml"
+                sh "curl -s https://codecov.io/bash | bash -s - -f build/coverage.info -t ${TOKEN} -C ${scm_vars.GIT_COMMIT}"
+            }  // withCredentials
+        } else {
+            // Run tests.
+            container.sh """
+                cd build
+                . ./activate_run.sh
+                ./bin/UnitTests ../${pipeline_builder.project}/data/
+            """
+        }  // if/else
+    }  // stage
+
+    if (container.key != release_os) {
+        pipeline_builder.stage("${container.key}: archive") {
+            container.sh """
+                mkdir -p archive/${pipeline_builder.project}
+                cp -r build/bin archive/${pipeline_builder.project}
+                cp -r build/lib archive/${pipeline_builder.project}
+                cp -r build/licenses archive/${pipeline_builder.project}
+                cp -r ${pipeline_builder.project}/data archive/${pipeline_builder.project}
+                cd archive
+                tar czvf ${pipeline_builder.project}-${container.key}.tar.gz ${pipeline_builder.project}
+            """
+            container.copyFrom("${pipeline_builder.project}-${container.key}.tar.gz", '.')
+            archiveArtifacts "${pipeline_builder.project}-${container.key}.tar.gz"
+        }  // stage
+    }  // if
 
     if (container.key == clangformat_os) {
         container.sh """
