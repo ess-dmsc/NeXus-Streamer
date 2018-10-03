@@ -19,9 +19,11 @@ properties([
 clangformat_os = "debian9"
 test_and_coverage_os = "centos7"
 archive_os = "centos7"
+release_os = "centos7-release"
 
 container_build_nodes = [
     'centos7': new ContainerBuildNode('essdmscdm/centos7-build-node:3.2.0', '/usr/bin/scl enable rh-python35 devtoolset-6 -- /bin/bash -e'),
+    'centos7-release': new ContainerBuildNode('essdmscdm/centos7-build-node:3.2.0', '/usr/bin/scl enable rh-python35 devtoolset-6 -- /bin/bash -e'),
     'debian9': new ContainerBuildNode('essdmscdm/debian9-build-node:2.3.0', 'bash -e'),
     'ubuntu1804': new ContainerBuildNode('essdmscdm/ubuntu18.04-build-node:1.2.0', 'bash -e')
 ]
@@ -49,24 +51,31 @@ builders = pipeline_builder.createBuilders { container ->
     }  // stage
 
     pipeline_builder.stage("${container.key}: configure") {
-        def coverage_on
-        if (container.key == test_and_coverage_os) {
-            coverage_on = "-DCOV=1"
-        } else {
-            coverage_on = ""
-        }
+        if (container.key != release_os) {
+            def coverage_on
+            if (container.key == test_and_coverage_os) {
+                coverage_on = "-DCOV=1"
+            } else {
+                coverage_on = ""
+            }
 
-        def cmake_cmd
-        if (container.key == "centos7") {
-            cmake_cmd = "cmake3"
-        } else {
-            cmake_cmd = "cmake"
-        }
+            def cmake_cmd
+            if (container.key == "centos7") {
+                cmake_cmd = "cmake3"
+            } else {
+                cmake_cmd = "cmake"
+            }
 
-        container.sh """
-            cd build
-            ${cmake_cmd} ../${pipeline_builder.project} ${coverage_on}
-        """
+            container.sh """
+                cd build
+                ${cmake_cmd} ../${pipeline_builder.project} ${coverage_on}
+            """
+        } else {
+            container.sh """
+                cd build
+                cmake3 -DCMAKE_SKIP_BUILD_RPATH=ON -DCMAKE_BUILD_TYPE=Release ../${pipeline_builder.project}
+            """
+        }
     }  // stage
 
     pipeline_builder.stage("${container.key}: build") {
