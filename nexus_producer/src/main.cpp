@@ -25,14 +25,18 @@ int main(int argc, char **argv) {
   CLI::App App{"Stream neutron detection event and sample environment data "
                "from a NeXus file into Kafka"};
 
-  App.add_option("-f,--filename", settings.filename, "Full path of the NeXus file")
+  OptionalArgs settings;
+
+  App.add_option("-f,--filename", settings.filename,
+                 "Full path of the NeXus file")
       ->check(CLI::ExistingFile)
       ->required();
   App.add_option("-d,--det_spec_map", settings.detSpecFilename,
                  "Full path of the detector-spectrum map")
       ->check(CLI::ExistingFile)
       ->required();
-  App.add_option("-b,--broker", settings.broker, "Hostname or IP of Kafka broker")
+  App.add_option("-b,--broker", settings.broker,
+                 "Hostname or IP of Kafka broker")
       ->required();
   App.add_option("-i,--instrument", settings.instrumentName,
                  "Used as prefix for topic names")
