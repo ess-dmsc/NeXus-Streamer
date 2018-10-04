@@ -21,12 +21,18 @@ int main(int argc, char **argv) {
   bool singleRun = false;
   int32_t fakeEventsPerPulse = 0;
 
-  App.add_option("-f,--filename", filename, "Full path of the NeXus file");
+  App.add_option("-f,--filename", filename, "Full path of the NeXus file")
+      ->check(CLI::ExistingFile)
+      ->required();
   App.add_option("-d,--det_spec_map", detSpecFilename,
-                 "Full path of the detector-spectrum map");
-  App.add_option("-b,--broker", broker, "Hostname or IP of Kafka broker");
+                 "Full path of the detector-spectrum map")
+      ->check(CLI::ExistingFile)
+      ->required();
+  App.add_option("-b,--broker", broker, "Hostname or IP of Kafka broker")
+      ->required();
   App.add_option("-i,--instrument", instrumentName,
-                 "Used as prefix for topic names");
+                 "Used as prefix for topic names")
+      ->required();
   App.add_option("-m,--compression", compression,
                  "Compression option for Kafka messages");
   App.add_option("-e,--fake_events_per_pulse", fakeEventsPerPulse,
