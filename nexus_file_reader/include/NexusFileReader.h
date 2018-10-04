@@ -1,38 +1,39 @@
 #pragma once
 
 #include "../../event_data/include/SampleEnvironmentEvent.h"
+#include "FileReader.h"
 #include <h5cpp/hdf5.hpp>
 #include <memory>
 #include <random>
 #include <unordered_map>
 #include <vector>
 
-using sEEventVector = std::vector<std::shared_ptr<SampleEnvironmentEvent>>;
-
-class NexusFileReader {
+class NexusFileReader : public FileReader {
 public:
   NexusFileReader(hdf5::file::File file, uint64_t runStartTime,
                   int32_t fakeEventsPerPulse,
                   const std::vector<int32_t> &detectorNumbers);
 
-  hsize_t getFileSize();
-  uint64_t getTotalEventCount();
-  uint32_t getPeriodNumber();
-  float getProtonCharge(hsize_t frameNumber);
-  bool getEventDetIds(std::vector<uint32_t> &detIds, hsize_t frameNumber);
-  bool getEventTofs(std::vector<uint32_t> &tofs, hsize_t frameNumber);
-  size_t getNumberOfFrames() { return m_numberOfFrames; };
-  hsize_t getNumberOfEventsInFrame(hsize_t frameNumber);
-  uint64_t getFrameTime(hsize_t frameNumber);
-  std::string getInstrumentName();
-  std::unordered_map<hsize_t, sEEventVector> getSEEventMap();
-  int32_t getNumberOfPeriods();
+  hsize_t getFileSize() override;
+  uint64_t getTotalEventCount() override;
+  uint32_t getPeriodNumber() override;
+  float getProtonCharge(hsize_t frameNumber) override;
+  bool getEventDetIds(std::vector<uint32_t> &detIds,
+                      hsize_t frameNumber) override;
+  bool getEventTofs(std::vector<uint32_t> &tofs, hsize_t frameNumber) override;
+  size_t getNumberOfFrames() override { return m_numberOfFrames; };
+  hsize_t getNumberOfEventsInFrame(hsize_t frameNumber) override;
+  uint64_t getFrameTime(hsize_t frameNumber) override;
+  std::string getInstrumentName() override;
+  std::unordered_map<hsize_t, sEEventVector> getSEEventMap() override;
+  int32_t getNumberOfPeriods() override;
+  uint64_t getRelativeFrameTimeMilliseconds(hsize_t frameNumber) override;
+
+private:
   void getEntryGroup(const hdf5::node::Group &rootGroup,
                      hdf5::node::Group &entryGroupOutput);
   void getEventGroup(const hdf5::node::Group &entryGroup,
                      hdf5::node::Group &eventGroupOutput);
-
-private:
   uint64_t m_runStart;
   size_t findFrameNumberOfTime(float time);
   template <typename T>

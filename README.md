@@ -18,7 +18,7 @@ Options:
   -m,--compression TEXT       Compression option for Kafka messages
   -e,--fake_events_per_pulse INT
                               Generates this number of fake events per pulse instead of publishing real data from file
-  -s,--slow                   Publish data at approx realistic rate (10 pulses per second)
+  -s,--slow                   Publish data at approx realistic rate (detected from file)
   -q,--quiet                  Less chatty on stdout
   -z,--single_run             Publish only a single run (otherwise repeats until interrupted)
   -c,--config_file TEXT       Read configuration from an ini file

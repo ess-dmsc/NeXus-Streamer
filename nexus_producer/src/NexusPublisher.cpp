@@ -21,25 +21,12 @@
  * data
  */
 NexusPublisher::NexusPublisher(std::shared_ptr<EventPublisher> publisher,
-                               const std::string &brokerAddress,
-                               const std::string &instrumentName,
-                               const std::string &filename,
-                               const std::string &detSpecMapFilename,
-                               const bool quietMode,
-                               const int32_t fakeEventsPerPulse)
-    : m_publisher(publisher), m_quietMode(quietMode),
-      m_detSpecMapFilename(detSpecMapFilename) {
-  auto now = std::chrono::system_clock::now();
-  auto now_c = std::chrono::system_clock::to_time_t(now);
-  m_runStartTime = static_cast<uint64_t>(now_c) * 1000000000L;
+                               std::shared_ptr<FileReader> fileReader,
+                               const OptionalArgs &settings)
+    : m_publisher(std::move(publisher)), m_fileReader(std::move(fileReader)),
+      m_quietMode(settings.quietMode),
+      m_detSpecMapFilename(settings.detSpecFilename) {
 
-  auto detSpecMap = DetectorSpectrumMapData(m_detSpecMapFilename);
-  auto detectorNumbers = detSpecMap.getDetectors();
-
-  m_fileReader = std::make_shared<NexusFileReader>(
-      hdf5::file::open(filename), m_runStartTime, fakeEventsPerPulse,
-      detectorNumbers);
-  publisher->setUp(brokerAddress, instrumentName);
   m_sEEventMap = m_fileReader->getSEEventMap();
 }
 
@@ -116,17 +103,21 @@ void NexusPublisher::streamData(int runNumber, bool slow) {
   totalBytesSent += createAndSendRunMessage(rawbuf, runNumber);
   totalBytesSent += createAndSendDetSpecMessage(rawbuf);
 
+  uint64_t lastFrameTime = 0;
   for (size_t frameNumber = 0; frameNumber < numberOfFrames; frameNumber++) {
+    // Publish messages at approx real message rate
+    if (slow) {
+      auto frameTime =
+          m_fileReader->getRelativeFrameTimeMilliseconds(frameNumber);
+      auto frameDuration = frameTime - lastFrameTime;
+      std::this_thread::sleep_for(std::chrono::milliseconds(frameDuration));
+      lastFrameTime = frameTime;
+    }
+
     totalBytesSent += createAndSendMessage(rawbuf, frameNumber);
     createAndSendSampleEnvMessages(sampleEnvBuf, frameNumber);
     reportProgress(static_cast<float>(frameNumber) /
                    static_cast<float>(numberOfFrames));
-
-    // Publish messages at roughly realistic message rate (~10 frames per
-    // second)
-    if (slow) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
   }
   totalBytesSent += createAndSendRunStopMessage(rawbuf);
   reportProgress(1.0);

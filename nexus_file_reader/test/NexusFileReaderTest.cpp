@@ -8,6 +8,7 @@ class NexusFileReaderTest : public ::testing::Test {};
 extern std::string testDataPath;
 
 using HDF5FileTestHelpers::createInMemoryTestFile;
+using HDF5FileTestHelpers::createInMemoryTestFileWithEventData;
 
 TEST(NexusFileReaderTest, error_thrown_for_non_existent_file) {
   EXPECT_THROW(
@@ -42,19 +43,15 @@ TEST(
 
 TEST(NexusFileReaderTest,
      no_error_thrown_when_file_exists_with_requisite_groups) {
-  auto file = createInMemoryTestFile("fileWithRequisiteGroups.nxs");
-  HDF5FileTestHelpers::addNXentryToFile(file);
-  HDF5FileTestHelpers::addNXeventDataToFile(file);
-  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(file);
+  auto file =
+      createInMemoryTestFileWithEventData("fileWithRequisiteGroups.nxs");
 
   EXPECT_NO_THROW(NexusFileReader(file, 0, 0, {0}));
 }
 
 TEST(NexusFileReaderTest, expect_empty_map_if_no_selog_group_present) {
-  auto file = createInMemoryTestFile("fileWithRequisiteGroups.nxs");
-  HDF5FileTestHelpers::addNXentryToFile(file);
-  HDF5FileTestHelpers::addNXeventDataToFile(file);
-  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(file);
+  auto file =
+      createInMemoryTestFileWithEventData("fileWithRequisiteGroups.nxs");
 
   auto fileReader = NexusFileReader(file, 0, 0, {0});
   auto sEMap = fileReader.getSEEventMap();
@@ -183,6 +180,22 @@ TEST(NexusFileReaderTest, get_frame_time) {
       hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0});
   EXPECT_EQ(2940000057, fileReader.getFrameTime(0));
   EXPECT_EQ(3638999939, fileReader.getFrameTime(7));
+}
+
+TEST(NexusFileReaderTest,
+     get_relative_frame_time_returns_frame_time_from_file_in_milliseconds) {
+  int64_t relativeFrameTimeInSeconds = 42;
+
+  auto file = createInMemoryTestFile("fileWithEventData");
+  HDF5FileTestHelpers::addNXentryToFile(file);
+  HDF5FileTestHelpers::addNXeventDataToFile(file);
+  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(
+      file, {relativeFrameTimeInSeconds}, {2}, {3}, {4});
+
+  auto fileReader = NexusFileReader(file, 0, 0, {0});
+  auto relativeFrameTimeInMilliseconds = relativeFrameTimeInSeconds * 1000;
+  EXPECT_EQ(relativeFrameTimeInMilliseconds,
+            fileReader.getRelativeFrameTimeMilliseconds(0));
 }
 
 TEST(NexusFileReaderTest, get_instrument_name) {

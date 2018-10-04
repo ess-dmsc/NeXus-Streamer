@@ -4,7 +4,8 @@ set( SRC_FILES
         src/NexusFileReader.cpp)
 
 set( INC_FILES
-        include/NexusFileReader.h)
+        include/NexusFileReader.h
+        include/FileReader.h)
 
 set( TEST_FILES
         test/NexusFileReaderTest.cpp
