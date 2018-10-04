@@ -2,7 +2,6 @@
 #include "../../event_data/include/SampleEnvironmentEventDouble.h"
 #include "../../event_data/include/SampleEnvironmentEventInt.h"
 #include "../../event_data/include/SampleEnvironmentEventLong.h"
-#include <cmath>
 #include <ctime>
 #include <iomanip>
 #include <iostream>
@@ -237,8 +236,24 @@ uint64_t NexusFileReader::getFrameTime(hsize_t frameNumber) {
   auto frameTime =
       getSingleValueFromDataset<double>(m_eventGroup, datasetName, frameNumber);
   auto frameTimeFromOffsetNanoseconds =
-      static_cast<uint64_t>(floor((frameTime * 1e9) + 0.5));
+      static_cast<uint64_t>(round(frameTime * 1e9));
   return m_frameStartOffset + frameTimeFromOffsetNanoseconds;
+}
+
+/**
+ * Gets the frame time relative to the start of run, in milliseconds
+ *
+ * @param frameNumber - find the event index for the start of this frame
+ * @return - relative time of frame in milliseconds since run start
+ */
+uint64_t
+NexusFileReader::getRelativeFrameTimeMilliseconds(const hsize_t frameNumber) {
+  std::string datasetName = "event_time_zero";
+
+  auto frameTime =
+      getSingleValueFromDataset<double>(m_eventGroup, datasetName, frameNumber);
+  return static_cast<uint64_t>(
+      round(frameTime * 1e3)); // seconds to milliseconds
 }
 
 template <typename T>
