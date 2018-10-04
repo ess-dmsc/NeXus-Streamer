@@ -39,6 +39,8 @@ instrument=test
 slow=true
 ```
 
+Please note this requires the long argument, short arguments such as `-z` cannot be used in the `.ini` file.
+
 ## Minimum NeXus File Requirements
 The minimum requirements of a NeXus file to be streamed are having an NXentry group (with any name) in the file root, containing a `name` dataset for the instrument name, and an NXevent_data group (with any name) containing `event_id`, `event_index`, `event_time_zero` and `event_time_offset` datasets. 
 `/data/SANS2D_minimal.nxs` is an example of file meeting the minimum requirements.
