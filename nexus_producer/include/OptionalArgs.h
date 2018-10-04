@@ -12,5 +12,4 @@ struct OptionalArgs {
   bool quietMode = false;
   bool singleRun = false;
   int32_t fakeEventsPerPulse = 0;
-  float pulseRateInHz = 10;
 };

@@ -247,7 +247,7 @@ uint64_t NexusFileReader::getFrameTime(hsize_t frameNumber) {
  * @return - relative time of frame in milliseconds since run start
  */
 uint64_t
-NexusFileReader::getRelativeFrameTimeMilliseconds(hsize_t frameNumber) {
+NexusFileReader::getRelativeFrameTimeMilliseconds(const hsize_t frameNumber) {
   std::string datasetName = "event_time_zero";
 
   auto frameTime =

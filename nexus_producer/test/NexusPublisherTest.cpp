@@ -53,7 +53,7 @@ public:
     return settings;
   }
 
-  NexusPublisher createStreamer(bool quiet) {
+  NexusPublisher createStreamer(const bool quiet) {
     const auto settings = createSettings(quiet);
 
     auto publisher = std::make_shared<MockEventPublisher>();
