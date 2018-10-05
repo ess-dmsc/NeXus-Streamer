@@ -32,10 +32,10 @@ nexus-streamer --filename /path/to/NeXus-Streamer.git/data/SANS_test_uncompresse
 The NeXus Streamer can also be started using a configuration `ini` file with the `--config-file` argument, for example: 
 
 ```ini
-filename=/path/to/nexus/file
-det_spec_map=./paths/can/also/be/relative
+filename=/path/to/nexus/file.nxs
+det_spec_map=./paths/can/also/be/relative.dat
 broker=localhost:9092
-instrument=test
+instrument=TEST
 slow=true
 ```
 
