@@ -29,8 +29,8 @@ datasets_selogs = [
 ]
 
 for dataset in datasets_selogs:
-    datasets.append('/raw_data_1/selog/' + dataset + '/value_log/time')
-    datasets.append('/raw_data_1/selog/' + dataset + '/value_log/value')
+    datasets.append('/raw_data_1/selog/{}/value_log/time'.format(dataset))
+    datasets.append('/raw_data_1/selog/{}/value_log/value'.format(dataset))
 
 with h5py.File(uncompressed_file, 'w') as f_write:
     pass
