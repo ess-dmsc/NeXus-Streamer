@@ -5,6 +5,8 @@ import time
 
 """
 Read data from nexus file and write it to a new BLOSC compressed one.
+
+tables import is required to load blosc codec.
 """
 
 
@@ -18,7 +20,7 @@ def write_file(output_file, compress_type=32001, compress_opts=None):
                 dset = f_read[name]
                 if isinstance(dset, h5py.Dataset):
                     try:
-                        print name
+                        print(name)
                         output_dataset = f_write.create_dataset(name, dset[...].shape, compression=compress_type,
                                                                 compression_opts=compress_opts)
                         output_dataset[...] = dset[...]
@@ -28,7 +30,7 @@ def write_file(output_file, compress_type=32001, compress_opts=None):
                     except IOError:
                         pass
                 else:
-                    print name
+                    print(name)
                     f_write.create_group(name)
 
             f_read.visit(write_in_new_file)
@@ -45,5 +47,5 @@ if __name__ == '__main__':
     t2 = time.time()
 
     # Time here includes reading the file
-    print "Usual gzip compression took " + str(t1-t0) + " seconds and produced a file of " + str(os.stat(gzip_file_name).st_size) + " bytes"
-    print "Blosc compression took " + str(t2-t1) + " seconds and produced a file of " + str(os.stat(blosc_file_name).st_size) + " bytes"
+    print("Usual gzip compression took {} seconds and produced a file of {} bytes".format(t1-t0, os.stat(gzip_file_name).st_size))
+    print("Blosc compression took {} seconds and produced a file of {} bytes".format(t2-t1, os.stat(blosc_file_name).st_size))

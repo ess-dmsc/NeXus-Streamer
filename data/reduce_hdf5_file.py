@@ -62,8 +62,8 @@ with h5py.File(compressed_file, 'r') as f_read:
             f_write[dataset] = data_1[0:max_frame]
 
     for dataset in datasets_selogs:
-        time_dataset = '/raw_data_1/selog/' + dataset + '/value_log/time'
-        value_dataset = '/raw_data_1/selog/' + dataset + '/value_log/value'
+        time_dataset = '/raw_data_1/selog/{}/value_log/time'.format(dataset)
+        value_dataset = '/raw_data_1/selog/{}/value_log/value'.format(dataset)
         data_time = f_read.get(time_dataset)
         data_value = f_read.get(value_dataset)
 

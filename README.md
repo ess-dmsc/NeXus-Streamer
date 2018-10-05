@@ -11,23 +11,38 @@ nexus-streamer <OPTIONS>
 
 Options:
   -h,--help                   Print this help message and exit
-  -f,--filename TEXT          Full path of the NeXus file
-  -d,--det_spec_map TEXT      Full path of the detector-spectrum map
-  -b,--broker TEXT            Hostname or IP of Kafka broker
-  -i,--instrument TEXT        Used as prefix for topic names
+  -f,--filename FILE REQUIRED Full path of the NeXus file
+  -d,--det_spec_map FILE REQUIRED
+                              Full path of the detector-spectrum map
+  -b,--broker TEXT REQUIRED   Hostname or IP of Kafka broker
+  -i,--instrument TEXT REQUIRED
+                              Used as prefix for topic names
   -m,--compression TEXT       Compression option for Kafka messages
   -e,--fake_events_per_pulse INT
                               Generates this number of fake events per pulse instead of publishing real data from file
-  -s,--slow                   Publish data at approx realistic rate (10 pulses per second)
+  -s,--slow                   Publish data at approx realistic rate (detected from file)
   -q,--quiet                  Less chatty on stdout
   -z,--single_run             Publish only a single run (otherwise repeats until interrupted)
   -c,--config_file TEXT       Read configuration from an ini file
 ```
+Arguments not marked with `REQUIRED` are Optional. 
 
 Usage example:
 ```
 nexus-streamer --filename /path/to/NeXus-Streamer.git/data/SANS_test_uncompressed.hdf5 --det_spec_map /path/to/NeXus-Streamer.git/data/spectrum_gastubes_01.dat --broker localhost --instrument SANS2D --single_run
 ```
+
+The NeXus Streamer can also be started using a configuration `ini` file with the `--config-file` argument, for example: 
+
+```ini
+filename=/path/to/nexus/file.nxs
+det_spec_map=./paths/can/also/be/relative.dat
+broker=localhost:9092
+instrument=TEST
+slow=true
+```
+
+Please note this requires the long argument, short arguments such as `-z` cannot be used in the `.ini` file.
 
 ## Minimum NeXus File Requirements
 The minimum requirements of a NeXus file to be streamed are having an NXentry group (with any name) in the file root, containing a `name` dataset for the instrument name, and an NXevent_data group (with any name) containing `event_id`, `event_index`, `event_time_zero` and `event_time_offset` datasets. 
@@ -74,6 +89,27 @@ conan remote add <local-name> <remote-url>
 ```
 where `<local-name>` must be substituted by a locally unique name. Configured
 remotes can be listed with `conan remote list`.
+
+If conan does not pick up your compiler settings, you can manually specify these by editing your conan profile.
+
+for example to build with gcc 6.3 on Centos7 with c++11 support: 
+
+```
+[build_requires]
+cmake_installer/3.10.0@conan/stable
+[settings]
+os=Linux
+os_build=Linux
+arch=x86_64
+arch_build=x86_64
+compiler=gcc
+compiler.version=6.3
+compiler.libcxx=libstdc++11
+build_type=Release
+[options]
+[scopes]
+[env]
+```
 
 ## Build
 

@@ -25,7 +25,6 @@ include(CTest)
 enable_testing()
 
 find_package(Gperftools)
-find_package(h5cpp REQUIRED)
 
 #####################
 ## Doxygen         ##
