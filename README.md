@@ -92,7 +92,7 @@ remotes can be listed with `conan remote list`.
 
 If conan does not pick up your compiler settings, you can manually specify these by editing your conan profile.
 
-for example to build with gcc 7.3 on Centos7 with c++11 support: 
+for example to build with gcc 6.3 on Centos7 with c++11 support: 
 
 ```
 [build_requires]
