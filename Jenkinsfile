@@ -24,7 +24,7 @@ release_os = "centos7-release"
 container_build_nodes = [
     'centos7': new ContainerBuildNode('essdmscdm/centos7-build-node:3.2.0', '/usr/bin/scl enable rh-python35 devtoolset-6 -- /bin/bash -e'),
     'debian9': new ContainerBuildNode('essdmscdm/debian9-build-node:2.3.0', 'bash -e'),
-    'ubuntu1804': new ContainerBuildNode('essdmscdm/ubuntu18.04-build-node:1.2.0', 'bash -e')
+    'ubuntu1804': new ContainerBuildNode('essdmscdm/ubuntu18.04-build-node:1.2.0', 'bash -e')]
 
 if (env.CHANGE_ID) {
     container_build_nodes += ['centos7-release': new ContainerBuildNode('essdmscdm/centos7-build-node:3.2.0', '/usr/bin/scl enable rh-python35 devtoolset-6 -- /bin/bash -e')]
