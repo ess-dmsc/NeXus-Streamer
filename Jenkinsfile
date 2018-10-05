@@ -127,7 +127,7 @@ builders = pipeline_builder.createBuilders { container ->
                 cd archive
                 tar czvf ${pipeline_builder.project}-${container.key}.tar.gz ${pipeline_builder.project}
             """
-            container.copyFrom("${pipeline_builder.project}-${container.key}.tar.gz", '.')
+            container.copyFrom("archive/${pipeline_builder.project}-${container.key}.tar.gz", '.')
             archiveArtifacts "${pipeline_builder.project}-${container.key}.tar.gz"
         }  // stage
     }  // if
