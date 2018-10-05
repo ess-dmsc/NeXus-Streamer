@@ -1,27 +1,170 @@
-project = "NeXus-Streamer"
-clangformat_os = "debian9"
-test_and_coverage_os = "centos7-gcc6"
-archive_os = "centos7-gcc6"
+@Library('ecdc-pipeline')
+import ecdcpipeline.ContainerBuildNode
+import ecdcpipeline.PipelineBuilder
 
-images = [
-        'centos7-gcc6': [
-                'name': 'essdmscdm/centos7-build-node:3.2.0',
-                'sh'  : '/usr/bin/scl enable rh-python35 devtoolset-6 -- /bin/bash -e'
-        ],
-        'debian9'    : [
-                'name': 'essdmscdm/debian9-build-node:2.3.0',
-                'sh'  : 'bash -e'
-        ],
-        'ubuntu1804'  : [
-                'name': 'essdmscdm/ubuntu18.04-build-node:1.2.0',
-                'sh'  : 'bash -e'
-        ]
+project = "NeXus-Streamer"
+
+// Set number of old artefacts to keep.
+properties([
+    buildDiscarder(
+        logRotator(
+            artifactDaysToKeepStr: '',
+            artifactNumToKeepStr: '5',
+            daysToKeepStr: '',
+            numToKeepStr: ''
+        )
+    )
+])
+
+clangformat_os = "debian9"
+test_and_coverage_os = "centos7"
+archive_os = "centos7"
+release_os = "centos7-release"
+
+container_build_nodes = [
+    'centos7': new ContainerBuildNode('essdmscdm/centos7-build-node:3.2.0', '/usr/bin/scl enable rh-python35 devtoolset-6 -- /bin/bash -e'),
+    'centos7-release': new ContainerBuildNode('essdmscdm/centos7-build-node:3.2.0', '/usr/bin/scl enable rh-python35 devtoolset-6 -- /bin/bash -e'),
+    'debian9': new ContainerBuildNode('essdmscdm/debian9-build-node:2.3.0', 'bash -e'),
+    'ubuntu1804': new ContainerBuildNode('essdmscdm/ubuntu18.04-build-node:1.2.0', 'bash -e')
 ]
 
-base_container_name = "${project}-${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
+pipeline_builder = new PipelineBuilder(this, container_build_nodes)
+pipeline_builder.activateEmailFailureNotifications()
+pipeline_builder.activateSlackFailureNotifications()
 
-def Object container_name(image_key) {
-    return "${base_container_name}-${image_key}"
+builders = pipeline_builder.createBuilders { container ->
+
+    pipeline_builder.stage("${container.key}: checkout") {
+        dir(pipeline_builder.project) {
+            scm_vars = checkout scm
+        }
+        // Copy source code to container
+        container.copyTo(pipeline_builder.project, pipeline_builder.project)
+    }  // stage
+
+    pipeline_builder.stage("${container.key}: get dependencies") {
+        container.sh """
+            mkdir build
+            cd build
+            conan remote add --insert 0 ess-dmsc-local ${local_conan_server}
+        """
+    }  // stage
+
+    pipeline_builder.stage("${container.key}: configure") {
+        if (container.key != release_os) {
+            def coverage_on
+            if (container.key == test_and_coverage_os) {
+                coverage_on = "-DCOV=1"
+            } else {
+                coverage_on = ""
+            }
+
+            def cmake_cmd
+            if (container.key == "centos7") {
+                cmake_cmd = "cmake3"
+            } else {
+                cmake_cmd = "cmake"
+            }
+
+            container.sh """
+                cd build
+                ${cmake_cmd} ../${pipeline_builder.project} ${coverage_on}
+            """
+        } else {
+            container.sh """
+                cd build
+                cmake3 -DCMAKE_SKIP_BUILD_RPATH=ON -DCMAKE_BUILD_TYPE=Release ../${pipeline_builder.project}
+            """
+        }  // if/else
+    }  // stage
+
+    pipeline_builder.stage("${container.key}: build") {
+        container.sh """
+            cd build
+            . ./activate_run.sh
+            make all UnitTests VERBOSE=1
+        """
+    }  // stage
+
+    pipeline_builder.stage("${container.key}: test") {
+        if (container.key == test_and_coverage_os) {
+            // Run tests with coverage.
+            def test_output = "TestResults.xml"
+            container.sh """
+                cd build
+                . ./activate_run.sh
+                ./bin/UnitTests ../${pipeline_builder.project}/data/ --gtest_output=xml:${test_output}
+                make coverage
+                lcov --directory . --capture --output-file coverage.info
+                lcov --remove coverage.info '*_generated.h' '*/.conan/data/*' '*/usr/*' '*Test.cpp' '*gmock*' '*gtest*' --output-file coverage.info
+            """
+
+            container.copyFrom('build', '.')
+            junit "build/${test_output}"
+
+            withCredentials([string(credentialsId: 'nexus-streamer-codecov-token', variable: 'TOKEN')]) {
+                sh "cp ${pipeline_builder.project}/codecov.yml codecov.yml"
+                sh "curl -s https://codecov.io/bash | bash -s - -f build/coverage.info -t ${TOKEN} -C ${scm_vars.GIT_COMMIT}"
+            }  // withCredentials
+        } else {
+            // Run tests.
+            container.sh """
+                cd build
+                . ./activate_run.sh
+                ./bin/UnitTests ../${pipeline_builder.project}/data/
+            """
+        }  // if/else
+    }  // stage
+
+    if (container.key == release_os) {
+        pipeline_builder.stage("${container.key}: archive") {
+            container.sh """
+                mkdir -p archive/${pipeline_builder.project}
+                cp -r build/bin archive/${pipeline_builder.project}
+                cp -r build/lib archive/${pipeline_builder.project}
+                cp -r build/licenses archive/${pipeline_builder.project}
+                cp -r ${pipeline_builder.project}/data archive/${pipeline_builder.project}
+                cd archive
+                tar czvf ${pipeline_builder.project}-${container.key}.tar.gz ${pipeline_builder.project}
+            """
+            container.copyFrom("archive/${pipeline_builder.project}-${container.key}.tar.gz", '.')
+            archiveArtifacts "${pipeline_builder.project}-${container.key}.tar.gz"
+        }  // stage
+    }  // if
+
+    if (container.key == clangformat_os) {
+        container.sh """
+            clang-format -version
+            cd ${pipeline_builder.project}
+            find . \\\\( -name '*.cpp' -or -name '*.cxx' -or -name '*.h' -or -name '*.hpp' \\\\) \\
+                -exec clangformatdiff.sh {} +
+        """
+    }  // if
+
+}  // createBuilders
+
+node('docker') {
+    // Delete workspace when build is done.
+    cleanWs()
+
+    stage('Checkout') {
+        dir("${project}") {
+            try {
+                scm_vars = checkout scm
+            } catch (e) {
+                failure_function(e, 'Checkout failed')
+            }
+        }
+    }
+
+    builders['macOS'] = get_macos_pipeline()
+
+    try {
+        parallel builders
+    } catch (e) {
+        pipeline_builder.handleFailureMessages()
+        throw e
+    }
 }
 
 def failure_function(exception_obj, failureMessage) {
@@ -29,166 +172,6 @@ def failure_function(exception_obj, failureMessage) {
     emailext body: '${DEFAULT_CONTENT}\n\"' + failureMessage + '\"\n\nCheck console output at $BUILD_URL to view the results.', recipientProviders: toEmails, subject: '${DEFAULT_SUBJECT}'
     slackSend color: 'danger', message: "${project}: " + failureMessage
     throw exception_obj
-}
-
-def create_container(image_key) {
-    def image = docker.image(images[image_key]['name'])
-    def container = image.run("\
-        --name ${container_name(image_key)} \
-        --tty \
-        --network=host \
-        --env http_proxy=${env.http_proxy} \
-        --env https_proxy=${env.https_proxy} \
-        --env local_conan_server=${env.local_conan_server} \
-          ")
-}
-
-def docker_copy_code(image_key) {
-    def custom_sh = images[image_key]['sh']
-    sh "docker cp ${project} ${container_name(image_key)}:/home/jenkins/${project}"
-    sh """docker exec --user root ${container_name(image_key)} ${custom_sh} -c \"
-                        chown -R jenkins.jenkins /home/jenkins/${project}
-                        \""""
-}
-
-def docker_dependencies(image_key) {
-    try {
-        def custom_sh = images[image_key]['sh']
-        def conan_remote = "ess-dmsc-local"
-        def dependencies_script = """
-                        mkdir build
-                        cd build
-                        conan remote add \
-                            --insert 0 \
-                            ${conan_remote} ${local_conan_server}
-                    """
-        sh "docker exec ${container_name(image_key)} ${custom_sh} -c \"${dependencies_script}\""
-    } catch (e) {
-        failure_function(e, "Add conan remote for (${container_name(image_key)}) failed")
-    }
-}
-
-def docker_cmake(image_key) {
-    try {
-        def custom_sh = images[image_key]['sh']
-        def coverage_on = ""
-        if (image_key == test_and_coverage_os) {
-            coverage_on = "-DCOV=1"
-        }
-        def cmake_cmd = "cmake"
-        if (image_key == "centos7-gcc6") {
-            cmake_cmd = "cmake3"
-        }
-        def configure_script = """
-                        cd build
-                        ${cmake_cmd} ../${project} ${coverage_on}
-                    """
-        sh "docker exec ${container_name(image_key)} ${custom_sh} -c \"${configure_script}\""
-    } catch (e) {
-        failure_function(e, "CMake step for (${container_name(image_key)}) failed")
-    }
-}
-
-def docker_build(image_key) {
-    try {
-        def custom_sh = images[image_key]['sh']
-        def build_script = """
-                      cd build
-                      . ./activate_run.sh
-                      make all UnitTests VERBOSE=1
-                  """
-        sh "docker exec ${container_name(image_key)} ${custom_sh} -c \"${build_script}\""
-    } catch (e) {
-        failure_function(e, "Build step for (${container_name(image_key)}) failed")
-    }
-}
-
-def docker_test(image_key) {
-    try {
-        def custom_sh = images[image_key]['sh']
-        def test_script = """
-                        cd build
-                        . ./activate_run.sh
-                        ./bin/UnitTests ../${project}/data/
-                    """
-        sh "docker exec ${container_name(image_key)} ${custom_sh} -c \"${test_script}\""
-    } catch (e) {
-        failure_function(e, "Test step for (${container_name(image_key)}) failed")
-    }
-}
-
-def docker_coverage(image_key) {
-    try {
-        def custom_sh = images[image_key]['sh']
-        def test_output = "TestResults.xml"
-        def coverage_script = """
-                        cd build
-                        . ./activate_run.sh
-                        ./bin/UnitTests ../${project}/data/ --gtest_output=xml:${test_output}
-                        make coverage
-                        lcov --directory . --capture --output-file coverage.info
-                        lcov --remove coverage.info '*_generated.h' '*/.conan/data/*' '*/usr/*' '*Test.cpp' '*gmock*' '*gtest*' --output-file coverage.info
-                    """
-        sh "docker exec ${container_name(image_key)} ${custom_sh} -c \"${coverage_script}\""
-        sh "docker cp ${container_name(image_key)}:/home/jenkins/build ./"
-        junit "build/${test_output}"
-
-        withCredentials([string(credentialsId: 'nexus-streamer-codecov-token', variable: 'TOKEN')]) {
-            sh "cp ${project}/codecov.yml codecov.yml"
-            sh "curl -s https://codecov.io/bash | bash -s - -f build/coverage.info -t ${TOKEN} -C ${scm_vars.GIT_COMMIT}"
-        }
-    } catch (e) {
-        failure_function(e, "Coverage step for (${container_name(image_key)}) failed")
-    }
-}
-
-def docker_formatting(image_key) {
-    try {
-        def custom_sh = images[image_key]['sh']
-        def script = """
-                    clang-format -version
-                    cd ${project}
-                    find . \\\\( -name '*.cpp' -or -name '*.cxx' -or -name '*.h' -or -name '*.hpp' \\\\) \\
-                        -exec clangformatdiff.sh {} +
-                  """
-        sh "docker exec ${container_name(image_key)} ${custom_sh} -c \"${script}\""
-    } catch (e) {
-        failure_function(e, "Check formatting step for (${container_name(image_key)}) failed")
-    }
-}
-
-
-def get_pipeline(image_key) {
-    return {
-        stage("${image_key}") {
-
-            try {
-                create_container(image_key)
-
-                docker_copy_code(image_key)
-                docker_dependencies(image_key)
-                docker_cmake(image_key)
-                docker_build(image_key)
-
-                if (image_key == test_and_coverage_os) {
-                    docker_coverage(image_key)
-                }
-                else {
-                    docker_test(image_key)
-                }
-
-                if (image_key == clangformat_os) {
-                    docker_formatting(image_key)
-                }
-
-            } catch (e) {
-                failure_function(e, "Unknown build failure for ${image_key}")
-            } finally {
-                sh "docker stop ${container_name(image_key)}"
-                sh "docker rm -f ${container_name(image_key)}"
-            }
-        }
-    }
 }
 
 def get_macos_pipeline()
@@ -221,34 +204,7 @@ def get_macos_pipeline()
                         failure_function(e, 'MacOSX / build+test failed')
                     }
                 }
-
             }
         }
     }
-}
-
-node('docker') {
-    cleanWs()
-
-    stage('Checkout') {
-        dir("${project}") {
-            try {
-                scm_vars = checkout scm
-            } catch (e) {
-                failure_function(e, 'Checkout failed')
-            }
-        }
-    }
-
-    def builders = [:]
-    for (x in images.keySet()) {
-        def image_key = x
-        builders[image_key] = get_pipeline(image_key)
-    }
-    builders['macOS'] = get_macos_pipeline()
-
-    parallel builders
-
-    // Delete workspace when build is done
-    cleanWs()
 }
