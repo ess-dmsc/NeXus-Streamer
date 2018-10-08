@@ -40,7 +40,10 @@ RUN rm -rf /tmp/* /var/tmp/*
 
 # Add directory to mount external data for docker image
 RUN mkdir nexus_streamer/data
+
 COPY docker/docker-start.sh nexus_streamer/docker-start.sh
+
+# Add example data
 COPY data/SANS_test.nxs nexus_streamer/SANS_test.nxs
 COPY data/spectrum_gastubes_01.dat nexus_streamer/spectrum_gastubes_01.dat
 
