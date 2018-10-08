@@ -138,7 +138,7 @@ size_t NexusPublisher::createAndSendMessage(std::string &rawbuf,
   auto messageData = createMessageData(frameNumber);
   std::vector<int> indexes;
   indexes.reserve(messageData.size());
-  for (int i = 0; i < messageData.size(); ++i)
+  for (int i = 0; i < static_cast<int>(messageData.size()); ++i)
     indexes.push_back(i);
   size_t dataSize = 0;
   for (const auto &index : indexes) {
