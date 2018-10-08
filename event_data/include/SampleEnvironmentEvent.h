@@ -25,7 +25,7 @@ public:
 
 protected:
   size_t m_bufferSize;
-  std::string m_name;
   uint64_t m_runStartNanosecondsPastUnixEpoch;
   float m_time;
+  std::string m_name;
 };

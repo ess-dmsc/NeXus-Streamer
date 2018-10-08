@@ -34,7 +34,6 @@ private:
                      hdf5::node::Group &entryGroupOutput);
   void getEventGroup(const hdf5::node::Group &entryGroup,
                      hdf5::node::Group &eventGroupOutput);
-  uint64_t m_runStart;
   size_t findFrameNumberOfTime(float time);
   template <typename T>
   T getSingleValueFromDataset(const hdf5::node::Group &group,
@@ -50,12 +49,13 @@ private:
   hdf5::node::Group m_eventGroup;
   hdf5::dataspace::Hyperslab m_slab{{0}, {1}};
 
+  uint64_t m_runStart;
   const int32_t m_fakeEventsPerPulse;
+
+  std::vector<int32_t> m_detectorNumbers;
 
   /// Tools for generating events
   std::uniform_int_distribution<uint32_t> m_timeOfFlightDist;
   std::uniform_int_distribution<uint32_t> m_detectorIDDist;
   std::default_random_engine RandomEngine;
-
-  std::vector<int32_t> m_detectorNumbers;
 };

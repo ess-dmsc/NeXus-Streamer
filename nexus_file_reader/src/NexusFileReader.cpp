@@ -18,7 +18,7 @@ NexusFileReader::NexusFileReader(hdf5::file::File file, uint64_t runStartTime,
                                  const std::vector<int32_t> &detectorNumbers)
     : m_file(std::move(file)), m_runStart(runStartTime),
       m_fakeEventsPerPulse(fakeEventsPerPulse),
-      m_timeOfFlightDist(10000, 100000), m_detectorNumbers(detectorNumbers),
+      m_detectorNumbers(detectorNumbers), m_timeOfFlightDist(10000, 100000),
       m_detectorIDDist(0, static_cast<uint32_t>(detectorNumbers.size() - 1)) {
   if (!m_file.is_valid()) {
     throw std::runtime_error("Failed to open specified NeXus file");
@@ -319,7 +319,7 @@ bool NexusFileReader::getEventDetIds(std::vector<uint32_t> &detIds,
 
   if (m_fakeEventsPerPulse > 0) {
     detIds.reserve(static_cast<size_t>(m_fakeEventsPerPulse));
-    for (size_t i = 0; i < m_fakeEventsPerPulse; i++) {
+    for (size_t i = 0; i < static_cast<size_t>(m_fakeEventsPerPulse); i++) {
       detIds.push_back(static_cast<uint32_t>(
           m_detectorNumbers[m_detectorIDDist(RandomEngine)]));
     }
@@ -357,7 +357,7 @@ bool NexusFileReader::getEventTofs(std::vector<uint32_t> &tofs,
 
   if (m_fakeEventsPerPulse > 0) {
     tofs.reserve(static_cast<size_t>(m_fakeEventsPerPulse));
-    for (size_t i = 0; i < m_fakeEventsPerPulse; i++) {
+    for (size_t i = 0; i < static_cast<size_t>(m_fakeEventsPerPulse); i++) {
       tofs.push_back(static_cast<uint32_t>(m_timeOfFlightDist(RandomEngine)));
     }
     return true;
