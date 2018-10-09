@@ -68,7 +68,7 @@ builders = pipeline_builder.createBuilders { container ->
 
             container.sh """
                 cd build
-                ${cmake_cmd} ../${pipeline_builder.project} ${coverage_on}
+                ${cmake_cmd} -DCMAKE_BUILD_TYPE=Debug ../${pipeline_builder.project} ${coverage_on}
             """
         } else {
             container.sh """
@@ -192,7 +192,7 @@ def get_macos_pipeline()
 
                 dir("${project}/build") {
                     try {
-                        sh "cmake ../code"
+                        sh "cmake -DCMAKE_BUILD_TYPE=Debug ../code"
                     } catch (e) {
                         failure_function(e, 'MacOSX / CMake failed')
                     }
