@@ -29,7 +29,7 @@ COPY nexus_file_reader nexus_streamer_src/nexus_file_reader/
 COPY nexus_producer nexus_streamer_src/nexus_producer/
 COPY CMakeLists.txt nexus_streamer_src/CMakeLists.txt
 RUN cd nexus_streamer && \
-    cmake ../nexus_streamer_src -DCONAN=MANUAL && \
+    cmake ../nexus_streamer_src -DCONAN=MANUAL -DCMAKE_BUILD_TYPE=Release && \
     make nexus-streamer -j8
 
 # Clean up
