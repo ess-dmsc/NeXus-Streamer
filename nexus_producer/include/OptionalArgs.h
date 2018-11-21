@@ -8,6 +8,7 @@ struct OptionalArgs {
   std::string broker;
   std::string instrumentName = "test";
   std::string compression;
+  bool disableDetSpecMap = false;
   bool slow = false;
   bool quietMode = false;
   bool singleRun = false;

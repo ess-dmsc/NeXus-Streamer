@@ -33,8 +33,7 @@ int main(int argc, char **argv) {
       ->required();
   App.add_option("-d,--det_spec_map", settings.detSpecFilename,
                  "Full path of the detector-spectrum map")
-      ->check(CLI::ExistingFile)
-      ->required();
+      ->check(CLI::ExistingFile);
   App.add_option("-b,--broker", settings.broker,
                  "Hostname or IP of Kafka broker")
       ->required();
@@ -46,6 +45,8 @@ int main(int argc, char **argv) {
   App.add_option("-e,--fake_events_per_pulse", settings.fakeEventsPerPulse,
                  "Generates this number of fake events per pulse instead of "
                  "publishing real data from file");
+  App.add_flag("-x,--disable-map", settings.disableDetSpecMap,
+               "Disable sending detector-spectrum map");
   App.add_flag("-s,--slow", settings.slow,
                "Publish data at approx realistic rate (detected from file)");
   App.add_flag("-q,--quiet", settings.quietMode, "Less chatty on stdout");
