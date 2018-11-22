@@ -97,10 +97,10 @@ int main(int argc, char **argv) {
 
   // Publish the same data repeatedly, with incrementing run numbers
   if (settings.singleRun) {
-    streamer.streamData(runNumber, settings.slow);
+    streamer.streamData(runNumber, settings.slow, settings.minMaxDetectorNums);
   } else {
     while (true) {
-      streamer.streamData(runNumber, settings.slow);
+      streamer.streamData(runNumber, settings.slow, settings.minMaxDetectorNums);
       std::this_thread::sleep_for(std::chrono::seconds(2));
       runNumber++;
     }

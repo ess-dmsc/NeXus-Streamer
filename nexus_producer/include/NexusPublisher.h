@@ -20,7 +20,7 @@ public:
   size_t createAndSendDetSpecMessage(std::string &rawbuf);
   std::shared_ptr<RunData> createRunMessageData(int runNumber);
   std::shared_ptr<DetectorSpectrumMapData> createDetSpecMessageData();
-  void streamData(int runNumber, bool slow);
+  void streamData(int runNumber, bool slow, std::pair<int32_t, int32_t> minMaxDetNums);
 
 private:
   int64_t getTimeNowInNanoseconds();
