@@ -101,6 +101,7 @@ void NexusPublisher::streamData(int runNumber, bool slow) {
   const auto numberOfFrames = m_fileReader->getNumberOfFrames();
 
   totalBytesSent += createAndSendRunMessage(rawbuf, runNumber);
+  // TODO: disable sending this if flag exists
   totalBytesSent += createAndSendDetSpecMessage(rawbuf);
 
   uint64_t lastFrameTime = 0;

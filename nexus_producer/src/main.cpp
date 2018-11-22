@@ -15,8 +15,21 @@ uint64_t getTimeNowNanosecondsFromEpoch() {
 }
 
 std::vector<int32_t> getDetectorNumbers(const OptionalArgs &settings) {
-  auto detSpecMap = DetectorSpectrumMapData(settings.detSpecFilename);
-  auto detectorNumbers = detSpecMap.getDetectors();
+  std::vector<int32_t> detectorNumbers;
+  if (settings.minMaxDetectorNums.first > 0 &&
+      settings.minMaxDetectorNums.second > 0) {
+    // Allocate space in vector equal to the difference between the minimum and
+    // maximum detector number. Then use iota to fill with sequential values
+    // until the vector is full.
+    detectorNumbers =
+        std::vector<int32_t>(settings.minMaxDetectorNums.second -
+                             settings.minMaxDetectorNums.first + 1);
+    std::iota(detectorNumbers.begin(), detectorNumbers.end(),
+              settings.minMaxDetectorNums.first);
+  } else {
+    auto detSpecMap = DetectorSpectrumMapData(settings.detSpecFilename);
+    detectorNumbers = detSpecMap.getDetectors();
+  }
   return detectorNumbers;
 }
 
@@ -45,8 +58,21 @@ int main(int argc, char **argv) {
   App.add_option("-e,--fake_events_per_pulse", settings.fakeEventsPerPulse,
                  "Generates this number of fake events per pulse instead of "
                  "publishing real data from file");
-  App.add_flag("-x,--disable-map", settings.disableDetSpecMap,
-               "Disable sending detector-spectrum map");
+  App.add_option(
+         "-x,--disable-map",
+         [&settings](CLI::results_t Results) {
+           auto min = std::stoi(Results.at(0));
+           auto max = std::stoi(Results.at(1));
+           if (min >= max)
+             throw std::runtime_error(
+                 "given MIN detector number is larger than or equal to MAX");
+           settings.minMaxDetectorNums = std::make_pair(min, max);
+           return true;
+         },
+         "Use MIN and MAX detector numbers in inclusive range instead of using "
+         "a det-spec map file")
+      ->type_size(2)
+      ->type_name("INT INT");
   App.add_flag("-s,--slow", settings.slow,
                "Publish data at approx realistic rate (detected from file)");
   App.add_flag("-q,--quiet", settings.quietMode, "Less chatty on stdout");
