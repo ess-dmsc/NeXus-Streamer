@@ -124,7 +124,7 @@ TEST_F(NexusPublisherTest, test_det_spec_not_sent_when_pair_is_empty) {
       std::make_shared<FakeFileReader>();
   NexusPublisher streamer(publisher, fakeFileReader, settings);
   EXPECT_NO_THROW(
-      streamer.streamData(1, false, std::make_pair<int32_t, int32_t>(1, 256)));
+      streamer.streamData(1, false, std::make_pair<int32_t, int32_t>(1, 2)));
 }
 
 TEST_F(NexusPublisherTest, test_data_is_streamed_in_slow_mode) {
