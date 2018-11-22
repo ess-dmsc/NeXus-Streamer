@@ -93,7 +93,8 @@ NexusPublisher::createDetSpecMessageData() {
 /**
  * Start streaming all the data from the file
  */
-void NexusPublisher::streamData(int runNumber, bool slow, std::pair<int32_t, int32_t> minMaxDetNums) {
+void NexusPublisher::streamData(int runNumber, bool slow,
+                                std::pair<int32_t, int32_t> minMaxDetNums) {
   std::string rawbuf;
   std::string sampleEnvBuf;
   // frame numbers run from 0 to numberOfFrames-1
