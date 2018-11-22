@@ -25,7 +25,8 @@ Options:
   -z,--single_run             Publish only a single run (otherwise repeats until interrupted)
   -c,--config_file TEXT       Read configuration from an ini file
 ```
-Arguments not marked with `REQUIRED` are Optional. 
+Arguments not marked with `REQUIRED` are Optional.
+A detector-spectrum map must be provided for use with Mantid. 
 
 Usage example:
 ```
