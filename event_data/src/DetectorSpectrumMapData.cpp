@@ -61,13 +61,12 @@ DetectorSpectrumMapData::getBufferPointer(std::string &buffer) {
   auto messageFlatbuf = CreateSpectraDetectorMapping(
       builder, builder.CreateVector(m_spectra),
       builder.CreateVector(m_detectors), m_numberOfEntries);
-  builder.Finish(messageFlatbuf);
+  FinishSpectraDetectorMappingBuffer(builder, messageFlatbuf);
 
   auto bufferpointer =
       reinterpret_cast<const char *>(builder.GetBufferPointer());
   buffer.assign(bufferpointer, bufferpointer + builder.GetSize());
 
   m_bufferSize = builder.GetSize();
-
   return builder.ReleaseBufferPointer();
 }
