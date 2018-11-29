@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
                  "Full path of the NeXus file")
       ->check(CLI::ExistingFile)
       ->required();
-  App.add_option("-d,--det_spec_map", settings.detSpecFilename,
+  App.add_option("-d,--det-spec-map", settings.detSpecFilename,
                  "Full path of the detector-spectrum map")
       ->check(CLI::ExistingFile);
   App.add_option("-b,--broker", settings.broker,
@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
       ->required();
   App.add_option("-m,--compression", settings.compression,
                  "Compression option for Kafka messages");
-  App.add_option("-e,--fake_events_per_pulse", settings.fakeEventsPerPulse,
+  App.add_option("-e,--fake-events-per-pulse", settings.fakeEventsPerPulse,
                  "Generates this number of fake events per pulse instead of "
                  "publishing real data from file");
   App.add_option(
@@ -77,9 +77,9 @@ int main(int argc, char **argv) {
                "Publish data at approx realistic rate (detected from file)");
   App.add_flag("-q,--quiet", settings.quietMode, "Less chatty on stdout");
   App.add_flag(
-      "-z,--single_run", settings.singleRun,
+      "-z,--single-run", settings.singleRun,
       "Publish only a single run (otherwise repeats until interrupted)");
-  App.set_config("-c,--config_file", "", "Read configuration from an ini file",
+  App.set_config("-c,--config-file", "", "Read configuration from an ini file",
                  false);
 
   CLI11_PARSE(App, argc, argv);

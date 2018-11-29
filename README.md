@@ -12,32 +12,33 @@ nexus-streamer <OPTIONS>
 Options:
   -h,--help                   Print this help message and exit
   -f,--filename FILE REQUIRED Full path of the NeXus file
-  -d,--det_spec_map FILE      Full path of the detector-spectrum map
+  -d,--det-spec-map FILE 
+                              Full path of the detector-spectrum map
   -b,--broker TEXT REQUIRED   Hostname or IP of Kafka broker
   -i,--instrument TEXT REQUIRED
                               Used as prefix for topic names
   -m,--compression TEXT       Compression option for Kafka messages
-  -e,--fake_events_per_pulse INT
+  -e,--fake-events-per-pulse INT
                               Generates this number of fake events per pulse instead of publishing real data from file
   -x,--disable-map INT INT    Use MIN and MAX detector numbers in inclusive range instead of using a det-spec map file
   -s,--slow                   Publish data at approx realistic rate (detected from file)
   -q,--quiet                  Less chatty on stdout
-  -z,--single_run             Publish only a single run (otherwise repeats until interrupted)
-  -c,--config_file TEXT       Read configuration from an ini file
+  -z,--single-run             Publish only a single run (otherwise repeats until interrupted)
+  -c,--config-file TEXT       Read configuration from an ini file
 ```
 Arguments not marked with `REQUIRED` are Optional.
 A detector-spectrum map must be provided for use with Mantid. 
 
 Usage example:
 ```
-nexus-streamer --filename /path/to/NeXus-Streamer.git/data/SANS_test_uncompressed.hdf5 --det_spec_map /path/to/NeXus-Streamer.git/data/spectrum_gastubes_01.dat --broker localhost --instrument SANS2D --single_run
+nexus-streamer --filename /path/to/NeXus-Streamer.git/data/SANS_test_uncompressed.hdf5 --det-spec-map /path/to/NeXus-Streamer.git/data/spectrum_gastubes_01.dat --broker localhost --instrument SANS2D --single-run
 ```
 
 The NeXus Streamer can also be started using a configuration `ini` file with the `--config-file` argument, for example: 
 
 ```ini
 filename=/path/to/nexus/file.nxs
-det_spec_map=./paths/can/also/be/relative.dat
+det-spec-map=./paths/can/also/be/relative.dat
 broker=localhost:9092
 instrument=TEST
 slow=true
