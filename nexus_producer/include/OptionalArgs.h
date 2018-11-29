@@ -3,6 +3,7 @@
 #include <string>
 
 struct OptionalArgs {
+  std::pair<int32_t, int32_t> minMaxDetectorNums = {0, 0};
   std::string filename;
   std::string detSpecFilename;
   std::string broker;

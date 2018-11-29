@@ -93,7 +93,8 @@ NexusPublisher::createDetSpecMessageData() {
 /**
  * Start streaming all the data from the file
  */
-void NexusPublisher::streamData(int runNumber, bool slow) {
+void NexusPublisher::streamData(int runNumber, bool slow,
+                                std::pair<int32_t, int32_t> minMaxDetNums) {
   std::string rawbuf;
   std::string sampleEnvBuf;
   // frame numbers run from 0 to numberOfFrames-1
@@ -101,7 +102,9 @@ void NexusPublisher::streamData(int runNumber, bool slow) {
   const auto numberOfFrames = m_fileReader->getNumberOfFrames();
 
   totalBytesSent += createAndSendRunMessage(rawbuf, runNumber);
-  totalBytesSent += createAndSendDetSpecMessage(rawbuf);
+  if (minMaxDetNums.first == 0 && minMaxDetNums.second == 0) {
+    totalBytesSent += createAndSendDetSpecMessage(rawbuf);
+  }
 
   uint64_t lastFrameTime = 0;
   for (size_t frameNumber = 0; frameNumber < numberOfFrames; frameNumber++) {
