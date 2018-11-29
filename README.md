@@ -29,7 +29,7 @@ Arguments not marked with `REQUIRED` are Optional.
 
 Usage example:
 ```
-nexus-streamer --filename /path/to/NeXus-Streamer.git/data/SANS_test_uncompressed.hdf5 --det_spec_map /path/to/NeXus-Streamer.git/data/spectrum_gastubes_01.dat --broker localhost --instrument SANS2D --single_run
+nexus-streamer --filename /path/to/NeXus-Streamer.git/data/SANS_test_uncompressed.hdf5 --det-spec-map /path/to/NeXus-Streamer.git/data/spectrum_gastubes_01.dat --broker localhost --instrument SANS2D --single-run
 ```
 
 The NeXus Streamer can also be started using a configuration `ini` file with the `--config-file` argument, for example: 
