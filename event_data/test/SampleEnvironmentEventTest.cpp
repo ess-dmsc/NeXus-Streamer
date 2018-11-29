@@ -12,7 +12,6 @@ public:
     auto messageData =
         GetLogData(reinterpret_cast<const uint8_t *>(messageBuffer.c_str()));
     std::string name = messageData->source_name()->str();
-    auto timestamp = messageData->timestamp();
 
     EXPECT_EQ(inputName, name);
 

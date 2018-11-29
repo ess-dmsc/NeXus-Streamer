@@ -1,8 +1,9 @@
 [requires]
-hdf5/1.10.2-dm1@ess-dmsc/stable
-librdkafka/0.11.3-dm3@ess-dmsc/testing
+h5cpp/0.0.9@ess-dmsc/testing
+librdkafka/0.11.4@ess-dmsc/stable
 gtest/3121b20-dm3@ess-dmsc/stable
-cli11/1.3.0@bincrafters/stable
+cli11/1.6.0@bincrafters/stable
+google-benchmark/4c2af07-dm3@ess-dmsc/stable
 
 [generators]
 cmake
@@ -11,3 +12,10 @@ virtualrunenv
 [options]
 hdf5:shared=True
 librdkafka:shared=True
+
+[imports]
+lib, * -> ./lib
+lib64, * -> ./lib
+filesystem/lib, *.so* -> ./lib
+system/lib, *.so* -> ./lib
+., LICENSE* -> ./licenses @ folder=True, ignore_case=True

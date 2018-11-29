@@ -6,7 +6,7 @@ class SampleEnvironmentEventInt : public SampleEnvironmentEvent {
 public:
   SampleEnvironmentEventInt(const std::string &name, float time, int32_t value,
                             uint64_t runStart)
-      : m_value(value), SampleEnvironmentEvent(runStart, time, name) {}
+      : SampleEnvironmentEvent(runStart, time, name), m_value(value) {}
 
   flatbuffers::Offset<LogData>
   getSEEvent(flatbuffers::FlatBufferBuilder &builder) override;

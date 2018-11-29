@@ -11,6 +11,9 @@ bool file_exists(const std::string &name) {
 }
 
 DetectorSpectrumMapData::DetectorSpectrumMapData(const std::string &filename) {
+  if (filename.empty()) {
+    throw std::runtime_error("A detector-spectrum map file must be specified.");
+  }
   if (!file_exists(filename))
     throw std::runtime_error(
         filename +
@@ -58,13 +61,12 @@ DetectorSpectrumMapData::getBufferPointer(std::string &buffer) {
   auto messageFlatbuf = CreateSpectraDetectorMapping(
       builder, builder.CreateVector(m_spectra),
       builder.CreateVector(m_detectors), m_numberOfEntries);
-  builder.Finish(messageFlatbuf);
+  FinishSpectraDetectorMappingBuffer(builder, messageFlatbuf);
 
   auto bufferpointer =
       reinterpret_cast<const char *>(builder.GetBufferPointer());
   buffer.assign(bufferpointer, bufferpointer + builder.GetSize());
 
   m_bufferSize = builder.GetSize();
-
   return builder.ReleaseBufferPointer();
 }

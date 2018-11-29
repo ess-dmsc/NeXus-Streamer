@@ -3,7 +3,8 @@ project(nexus-publisher)
 set( SRC_FILES  src/NexusPublisher.cpp)
 
 set( INC_FILES  include/EventPublisher.h
-                include/NexusPublisher.h)
+                include/NexusPublisher.h
+                include/OptionalArgs.h)
 
 set( TEST_FILES test/NexusPublisherTest.cpp)
 
@@ -38,7 +39,7 @@ set(core_libraries
 ## Main executable ##
 #####################
 
-set(publisher-target main_nexusPublisher)
+set(publisher-target nexus-streamer)
 add_executable(${publisher-target} ${PROJECT_SOURCE_DIR}/src/main.cpp)
 
 target_link_libraries(${publisher-target}

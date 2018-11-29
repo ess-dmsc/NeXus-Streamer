@@ -4,10 +4,13 @@ set( SRC_FILES
         src/NexusFileReader.cpp)
 
 set( INC_FILES
-        include/NexusFileReader.h)
+        include/NexusFileReader.h
+        include/FileReader.h)
 
 set( TEST_FILES
-        test/NexusFileReaderTest.cpp)
+        test/NexusFileReaderTest.cpp
+        test/HDF5FileTestHelpers.cpp
+        test/HDF5FileTestHelpers.h)
 
 #####################
 ## Libraries       ##
@@ -15,13 +18,15 @@ set( TEST_FILES
 
 include_directories(
         CONAN_PKG::hdf5
+        CONAN_PKG::h5cpp
         ${PROJECT_SOURCE_DIR}/include)
 
 add_library(nexusFileReader_lib ${SRC_FILES} ${INC_FILES})
 
 target_link_libraries(nexusFileReader_lib
         eventdata_lib
-        CONAN_PKG::hdf5)
+        CONAN_PKG::hdf5
+        CONAN_PKG::h5cpp)
 
 #####################
 ## Unit Tests      ##

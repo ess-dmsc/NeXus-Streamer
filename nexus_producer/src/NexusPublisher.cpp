@@ -21,18 +21,12 @@
  * data
  */
 NexusPublisher::NexusPublisher(std::shared_ptr<EventPublisher> publisher,
-                               const std::string &brokerAddress,
-                               const std::string &instrumentName,
-                               const std::string &filename,
-                               const std::string &detSpecMapFilename,
-                               const bool quietMode)
-    : m_publisher(publisher), m_quietMode(quietMode),
-      m_detSpecMapFilename(detSpecMapFilename) {
-  auto now = std::chrono::system_clock::now();
-  auto now_c = std::chrono::system_clock::to_time_t(now);
-  m_runStartTime = static_cast<uint64_t>(now_c) * 1000000000L;
-  m_fileReader = std::make_shared<NexusFileReader>(filename, m_runStartTime);
-  publisher->setUp(brokerAddress, instrumentName);
+                               std::shared_ptr<FileReader> fileReader,
+                               const OptionalArgs &settings)
+    : m_publisher(std::move(publisher)), m_fileReader(std::move(fileReader)),
+      m_quietMode(settings.quietMode),
+      m_detSpecMapFilename(settings.detSpecFilename) {
+
   m_sEEventMap = m_fileReader->getSEEventMap();
 }
 
@@ -99,7 +93,8 @@ NexusPublisher::createDetSpecMessageData() {
 /**
  * Start streaming all the data from the file
  */
-void NexusPublisher::streamData(int runNumber, bool slow) {
+void NexusPublisher::streamData(int runNumber, bool slow,
+                                std::pair<int32_t, int32_t> minMaxDetNums) {
   std::string rawbuf;
   std::string sampleEnvBuf;
   // frame numbers run from 0 to numberOfFrames-1
@@ -107,19 +102,25 @@ void NexusPublisher::streamData(int runNumber, bool slow) {
   const auto numberOfFrames = m_fileReader->getNumberOfFrames();
 
   totalBytesSent += createAndSendRunMessage(rawbuf, runNumber);
-  totalBytesSent += createAndSendDetSpecMessage(rawbuf);
+  if (minMaxDetNums.first == 0 && minMaxDetNums.second == 0) {
+    totalBytesSent += createAndSendDetSpecMessage(rawbuf);
+  }
 
+  uint64_t lastFrameTime = 0;
   for (size_t frameNumber = 0; frameNumber < numberOfFrames; frameNumber++) {
+    // Publish messages at approx real message rate
+    if (slow) {
+      auto frameTime =
+          m_fileReader->getRelativeFrameTimeMilliseconds(frameNumber);
+      auto frameDuration = frameTime - lastFrameTime;
+      std::this_thread::sleep_for(std::chrono::milliseconds(frameDuration));
+      lastFrameTime = frameTime;
+    }
+
     totalBytesSent += createAndSendMessage(rawbuf, frameNumber);
     createAndSendSampleEnvMessages(sampleEnvBuf, frameNumber);
     reportProgress(static_cast<float>(frameNumber) /
                    static_cast<float>(numberOfFrames));
-
-    // Publish messages at roughly realistic message rate (~10 frames per
-    // second)
-    if (slow) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    }
   }
   totalBytesSent += createAndSendRunStopMessage(rawbuf);
   reportProgress(1.0);
@@ -140,7 +141,7 @@ size_t NexusPublisher::createAndSendMessage(std::string &rawbuf,
   auto messageData = createMessageData(frameNumber);
   std::vector<int> indexes;
   indexes.reserve(messageData.size());
-  for (int i = 0; i < messageData.size(); ++i)
+  for (int i = 0; i < static_cast<int>(messageData.size()); ++i)
     indexes.push_back(i);
   size_t dataSize = 0;
   for (const auto &index : indexes) {

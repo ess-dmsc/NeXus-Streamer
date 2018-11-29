@@ -3,28 +3,54 @@
 # NeXus Streamer
 Stream event data from a NeXus file to an Apache Kafka cluster. Each message sent over Kafka comprises the event data from a single neutron pulse. Using the `--slow` flag results in sending 10 messages per second, approximately a realistic rate. Sample environment data are also sent during streaming, resulting in a stream of real data which looks as if it were coming from a live instrument.
 
-The client runs until the user terminates it, repeatedly sending data from the same file but with incrementing run numbers. However the `--singlerun` flag can be used to produce only a single run.
+The client runs until the user terminates it, repeatedly sending data from the same file but with incrementing run numbers. However the `--single_run` flag can be used to produce only a single run.
 
 Usage:
 ```
-main_nexusPublisher <OPTIONS>
+nexus-streamer <OPTIONS>
 
 Options:
   -h,--help                   Print this help message and exit
-  --filename TEXT             Full path of the NeXus file
-  --detspecmap TEXT           Full path of the detector-spectrum map
-  --broker TEXT               Hostname or IP of Kafka broker
-  --instrument TEXT           Used as prefix for topic names
-  --compression TEXT          Compression option for Kafka messages
-  --slow                      Publish data at approx realistic rate (10 pulses per second)
-  --quiet                     Less chatty on stdout
-  --singlerun                 Publish only a single run (otherwise repeats until interrupted)
+  -f,--filename FILE REQUIRED Full path of the NeXus file
+  -d,--det-spec-map FILE 
+                              Full path of the detector-spectrum map
+  -b,--broker TEXT REQUIRED   Hostname or IP of Kafka broker
+  -i,--instrument TEXT REQUIRED
+                              Used as prefix for topic names
+  -m,--compression TEXT       Compression option for Kafka messages
+  -e,--fake-events-per-pulse INT
+                              Generates this number of fake events per pulse instead of publishing real data from file
+  -x,--disable-map INT INT    Use MIN and MAX detector numbers in inclusive range instead of using a det-spec map file
+  -s,--slow                   Publish data at approx realistic rate (detected from file)
+  -q,--quiet                  Less chatty on stdout
+  -z,--single-run             Publish only a single run (otherwise repeats until interrupted)
+  -c,--config-file TEXT       Read configuration from an ini file
 ```
+Arguments not marked with `REQUIRED` are Optional.
+A detector-spectrum map must be provided for use with Mantid. 
 
 Usage example:
 ```
-main_nexusPublisher --filename /path/to/NeXus-Streamer.git/data/SANS_test_uncompressed.hdf5 --detspecmap /path/to/NeXus-Streamer.git/data/spectrum_gastubes_01.dat --broker localhost --instrument SANS2D --singlerun
+nexus-streamer --filename /path/to/NeXus-Streamer.git/data/SANS_test_uncompressed.hdf5 --det-spec-map /path/to/NeXus-Streamer.git/data/spectrum_gastubes_01.dat --broker localhost --instrument SANS2D --single-run
 ```
+
+The NeXus Streamer can also be started using a configuration `ini` file with the `--config-file` argument, for example: 
+
+```ini
+filename=/path/to/nexus/file.nxs
+det-spec-map=./paths/can/also/be/relative.dat
+broker=localhost:9092
+instrument=TEST
+slow=true
+```
+
+There is an `ini` example file at `docker/example_config.ini`
+
+Please note this requires the long argument, short arguments such as `-z` cannot be used in the `.ini` file.
+
+## Minimum NeXus File Requirements
+The minimum requirements of a NeXus file to be streamed are having an NXentry group (with any name) in the file root, containing a `name` dataset for the instrument name, and an NXevent_data group (with any name) containing `event_id`, `event_index`, `event_time_zero` and `event_time_offset` datasets. 
+`/data/SANS2D_minimal.nxs` is an example of file meeting the minimum requirements.
 
 ## Broker Configuration
 Timestamped "run" start and stop messages are produced. With these Mantid can join the stream at the start of a run and has various options for behaviour at run stop. This makes use of the offset by timestamp lookup feature and thus requires Kafka version >0.10.2.0 on the brokers.
@@ -52,6 +78,8 @@ docker-compose up
 ```
 By default the streamer publishes some test data using the instrument name TEST. The Kafka broker is accessible at `localhost:9092`.
 
+Pre-built containers are available at [Docker Hub](https://hub.docker.com/r/screamingudder/nexus-streamer/) tagged by the last commit on master at the time of building.  
+
 ## Dependencies
 
 Dependencies are managed by [Conan](https://conan.io/). Conan can be installed using pip and CMake handles running Conan.
@@ -67,6 +95,27 @@ conan remote add <local-name> <remote-url>
 ```
 where `<local-name>` must be substituted by a locally unique name. Configured
 remotes can be listed with `conan remote list`.
+
+If conan does not pick up your compiler settings, you can manually specify these by editing your conan profile.
+
+for example to build with gcc 6.3 on Centos7 with c++11 support: 
+
+```
+[build_requires]
+cmake_installer/3.10.0@conan/stable
+[settings]
+os=Linux
+os_build=Linux
+arch=x86_64
+arch_build=x86_64
+compiler=gcc
+compiler.version=6.3
+compiler.libcxx=libstdc++11
+build_type=Release
+[options]
+[scopes]
+[env]
+```
 
 ## Build
 
