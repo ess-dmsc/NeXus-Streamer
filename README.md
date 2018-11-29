@@ -74,6 +74,8 @@ docker-compose up
 ```
 By default the streamer publishes some test data using the instrument name TEST. The Kafka broker is accessible at `localhost:9092`.
 
+Pre-built containers are available at [Docker Hub](https://hub.docker.com/r/screamingudder/nexus-streamer/) tagged by the last commit on master at the time of building.  
+
 ## Dependencies
 
 Dependencies are managed by [Conan](https://conan.io/). Conan can be installed using pip and CMake handles running Conan.
