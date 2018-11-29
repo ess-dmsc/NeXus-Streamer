@@ -101,7 +101,30 @@ TEST_F(NexusPublisherTest, test_stream_data) {
   std::shared_ptr<FileReader> fakeFileReader =
       std::make_shared<FakeFileReader>();
   NexusPublisher streamer(publisher, fakeFileReader, settings);
-  EXPECT_NO_THROW(streamer.streamData(1, false));
+  EXPECT_NO_THROW(
+      streamer.streamData(1, false, std::make_pair<int32_t, int32_t>(0, 0)));
+}
+
+TEST_F(NexusPublisherTest, test_det_spec_not_sent_when_pair_is_empty) {
+  using ::testing::Sequence;
+
+  const auto settings = createSettings(true);
+
+  auto publisher = std::make_shared<MockEventPublisher>();
+  publisher->setUp(settings.broker, settings.instrumentName);
+
+  const int numberOfFrames = 1;
+
+  EXPECT_CALL(*publisher.get(), sendEventMessage(_, _)).Times(numberOfFrames);
+  EXPECT_CALL(*publisher.get(), sendRunMessage(_, _))
+      .Times(2); // Start and stop messages
+  EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_, _)).Times(0);
+
+  std::shared_ptr<FileReader> fakeFileReader =
+      std::make_shared<FakeFileReader>();
+  NexusPublisher streamer(publisher, fakeFileReader, settings);
+  EXPECT_NO_THROW(
+      streamer.streamData(1, false, std::make_pair<int32_t, int32_t>(1, 2)));
 }
 
 TEST_F(NexusPublisherTest, test_data_is_streamed_in_slow_mode) {
@@ -122,7 +145,8 @@ TEST_F(NexusPublisherTest, test_data_is_streamed_in_slow_mode) {
   std::shared_ptr<FileReader> fakeFileReader =
       std::make_shared<FakeFileReader>();
   NexusPublisher streamer(publisher, fakeFileReader, settings);
-  EXPECT_NO_THROW(streamer.streamData(1, true));
+  EXPECT_NO_THROW(
+      streamer.streamData(1, false, std::make_pair<int32_t, int32_t>(0, 0)));
 }
 
 TEST_F(NexusPublisherTest, test_create_run_message_data) {

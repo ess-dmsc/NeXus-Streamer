@@ -12,7 +12,7 @@ nexus-streamer <OPTIONS>
 Options:
   -h,--help                   Print this help message and exit
   -f,--filename FILE REQUIRED Full path of the NeXus file
-  -d,--det-spec-map FILE REQUIRED
+  -d,--det-spec-map FILE 
                               Full path of the detector-spectrum map
   -b,--broker TEXT REQUIRED   Hostname or IP of Kafka broker
   -i,--instrument TEXT REQUIRED
@@ -20,12 +20,14 @@ Options:
   -m,--compression TEXT       Compression option for Kafka messages
   -e,--fake-events-per-pulse INT
                               Generates this number of fake events per pulse instead of publishing real data from file
+  -x,--disable-map INT INT    Use MIN and MAX detector numbers in inclusive range instead of using a det-spec map file
   -s,--slow                   Publish data at approx realistic rate (detected from file)
   -q,--quiet                  Less chatty on stdout
   -z,--single-run             Publish only a single run (otherwise repeats until interrupted)
   -c,--config-file TEXT       Read configuration from an ini file
 ```
-Arguments not marked with `REQUIRED` are Optional. 
+Arguments not marked with `REQUIRED` are Optional.
+A detector-spectrum map must be provided for use with Mantid. 
 
 Usage example:
 ```
@@ -41,6 +43,8 @@ broker=localhost:9092
 instrument=TEST
 slow=true
 ```
+
+There is an `ini` example file at `docker/example_config.ini`
 
 Please note this requires the long argument, short arguments such as `-z` cannot be used in the `.ini` file.
 
@@ -73,6 +77,8 @@ Run the following in the root directory of the repository to launch the containe
 docker-compose up
 ```
 By default the streamer publishes some test data using the instrument name TEST. The Kafka broker is accessible at `localhost:9092`.
+
+Pre-built containers are available at [Docker Hub](https://hub.docker.com/r/screamingudder/nexus-streamer/) tagged by the last commit on master at the time of building.  
 
 ## Dependencies
 
