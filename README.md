@@ -43,6 +43,8 @@ instrument=TEST
 slow=true
 ```
 
+There is an `ini` example file at `docker/example_config.ini`
+
 Please note this requires the long argument, short arguments such as `-z` cannot be used in the `.ini` file.
 
 ## Minimum NeXus File Requirements
@@ -74,6 +76,8 @@ Run the following in the root directory of the repository to launch the containe
 docker-compose up
 ```
 By default the streamer publishes some test data using the instrument name TEST. The Kafka broker is accessible at `localhost:9092`.
+
+Pre-built containers are available at [Docker Hub](https://hub.docker.com/r/screamingudder/nexus-streamer/) tagged by the last commit on master at the time of building.  
 
 ## Dependencies
 
