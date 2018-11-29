@@ -42,6 +42,8 @@ instrument=TEST
 slow=true
 ```
 
+There is an `ini` example file at `docker/example_config.ini`
+
 Please note this requires the long argument, short arguments such as `-z` cannot be used in the `.ini` file.
 
 ## Minimum NeXus File Requirements
