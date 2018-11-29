@@ -23,7 +23,7 @@ Options:
   -s,--slow                   Publish data at approx realistic rate (detected from file)
   -q,--quiet                  Less chatty on stdout
   -z,--single_run             Publish only a single run (otherwise repeats until interrupted)
-  -c,--config_file TEXT       Read configuration from an ini file
+  -c,--config-file TEXT       Read configuration from an ini file
 ```
 Arguments not marked with `REQUIRED` are Optional. 
 

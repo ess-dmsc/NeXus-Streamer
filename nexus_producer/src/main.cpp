@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
   App.add_flag(
       "-z,--single_run", settings.singleRun,
       "Publish only a single run (otherwise repeats until interrupted)");
-  App.set_config("-c,--config_file", "", "Read configuration from an ini file",
+  App.set_config("-c,--config-file", "", "Read configuration from an ini file",
                  false);
 
   CLI11_PARSE(App, argc, argv);
