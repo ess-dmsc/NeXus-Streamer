@@ -36,7 +36,7 @@ The NeXus Streamer can also be started using a configuration `ini` file with the
 
 ```ini
 filename=/path/to/nexus/file.nxs
-det_spec_map=./paths/can/also/be/relative.dat
+det-spec-map=./paths/can/also/be/relative.dat
 broker=localhost:9092
 instrument=TEST
 slow=true
