@@ -12,17 +12,17 @@ nexus-streamer <OPTIONS>
 Options:
   -h,--help                   Print this help message and exit
   -f,--filename FILE REQUIRED Full path of the NeXus file
-  -d,--det_spec_map FILE REQUIRED
+  -d,--det-spec-map FILE REQUIRED
                               Full path of the detector-spectrum map
   -b,--broker TEXT REQUIRED   Hostname or IP of Kafka broker
   -i,--instrument TEXT REQUIRED
                               Used as prefix for topic names
   -m,--compression TEXT       Compression option for Kafka messages
-  -e,--fake_events_per_pulse INT
+  -e,--fake-events-per-pulse INT
                               Generates this number of fake events per pulse instead of publishing real data from file
   -s,--slow                   Publish data at approx realistic rate (detected from file)
   -q,--quiet                  Less chatty on stdout
-  -z,--single_run             Publish only a single run (otherwise repeats until interrupted)
+  -z,--single-run             Publish only a single run (otherwise repeats until interrupted)
   -c,--config-file TEXT       Read configuration from an ini file
 ```
 Arguments not marked with `REQUIRED` are Optional. 
