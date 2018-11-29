@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
                "Publish data at approx realistic rate (detected from file)");
   App.add_flag("-q,--quiet", settings.quietMode, "Less chatty on stdout");
   App.add_flag(
-      "-z,--single_run", settings.singleRun,
+      "-z,--single-run", settings.singleRun,
       "Publish only a single run (otherwise repeats until interrupted)");
   App.set_config("-c,--config-file", "", "Read configuration from an ini file",
                  false);
