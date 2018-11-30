@@ -34,6 +34,9 @@ private:
                      hdf5::node::Group &entryGroupOutput);
   void getEventGroup(const hdf5::node::Group &entryGroup,
                      hdf5::node::Group &eventGroupOutput);
+  void getFirstNXGroup(const hdf5::node::Group &entryGroup,
+                       hdf5::node::Group &groupOutput,
+                       const std::string &nxClassName);
   size_t findFrameNumberOfTime(float time);
   template <typename T>
   T getSingleValueFromDataset(const hdf5::node::Group &group,

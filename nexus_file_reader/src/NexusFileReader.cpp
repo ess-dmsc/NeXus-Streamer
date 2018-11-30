@@ -69,6 +69,24 @@ void NexusFileReader::getEventGroup(const hdf5::node::Group &entryGroup,
                            "from the NXentry group");
 }
 
+void NexusFileReader::getFirstNXGroup(const hdf5::node::Group &entryGroup,
+                                      hdf5::node::Group &groupOutput,
+                                      const std::string &nxClassName) {
+  for (const auto &entryChild : entryGroup.nodes) {
+    if (entryChild.attributes.exists("NX_class")) {
+      auto attr = entryChild.attributes["NX_class"];
+      std::string nxClassType;
+      attr.read(nxClassType, attr.datatype());
+      if (nxClassType == nxClassName) {
+        groupOutput = entryChild;
+        return;
+      }
+    }
+  }
+  throw std::runtime_error("Required group missing "
+                           "from the NXentry group");
+}
+
 void NexusFileReader::checkEventGroupHasRequiredDatasets(
     const hdf5::node::Group &eventGroup) const {
   std::vector<std::string> requiredDatasets = {
@@ -196,12 +214,20 @@ uint32_t NexusFileReader::getPeriodNumber() { return 0; }
 int32_t NexusFileReader::getNumberOfPeriods() { return 1; }
 
 /**
- * Get instrument name
+ * Get instrument name from name dataset in the NXentry, or failing that, from
+ * the NXinstrument
  *
  * @return - instrument name
  */
 std::string NexusFileReader::getInstrumentName() {
-  auto dataset = m_entryGroup.get_dataset("name");
+  hdf5::node::Dataset dataset;
+  try {
+    dataset = m_entryGroup.get_dataset("name");
+  } catch (std::runtime_error &e) {
+    hdf5::node::Group instrumentGroup;
+    getFirstNXGroup(m_entryGroup, instrumentGroup, "NXinstrument");
+    dataset = instrumentGroup.get_dataset("name");
+  }
   std::string instrumentName;
   dataset.read(instrumentName, dataset.datatype(), dataset.dataspace());
   return instrumentName;
