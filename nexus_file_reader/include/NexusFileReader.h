@@ -12,7 +12,7 @@ class NexusFileReader : public FileReader {
 public:
   NexusFileReader(hdf5::file::File file, uint64_t runStartTime,
                   int32_t fakeEventsPerPulse,
-                  const std::vector<int32_t> &detectorNumbers);
+                  const std::vector<uint32_t> &detectorNumbers);
 
   hsize_t getFileSize() override;
   uint64_t getTotalEventCount() override;
@@ -52,7 +52,7 @@ private:
   uint64_t m_runStart;
   const int32_t m_fakeEventsPerPulse;
 
-  std::vector<int32_t> m_detectorNumbers;
+  std::vector<uint32_t> m_detectorNumbers;
 
   /// Tools for generating events
   std::uniform_int_distribution<uint32_t> m_timeOfFlightDist;

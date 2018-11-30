@@ -14,16 +14,16 @@ uint64_t getTimeNowNanosecondsFromEpoch() {
   return runStartTime;
 }
 
-std::vector<int32_t> getDetectorNumbers(const OptionalArgs &settings) {
-  std::vector<int32_t> detectorNumbers;
-  if (settings.minMaxDetectorNums.first > 0 &&
+std::vector<uint32_t> getDetectorNumbers(const OptionalArgs &settings) {
+  std::vector<uint32_t> detectorNumbers;
+  if (settings.minMaxDetectorNums.first >= 0 &&
       settings.minMaxDetectorNums.second > 0) {
     // Allocate space in vector equal to the difference between the minimum and
     // maximum detector number. Then use iota to fill with sequential values
     // until the vector is full.
     detectorNumbers =
-        std::vector<int32_t>(settings.minMaxDetectorNums.second -
-                             settings.minMaxDetectorNums.first + 1);
+        std::vector<uint32_t>(settings.minMaxDetectorNums.second -
+                              settings.minMaxDetectorNums.first + 1);
     std::iota(detectorNumbers.begin(), detectorNumbers.end(),
               settings.minMaxDetectorNums.first);
   } else {
@@ -61,8 +61,8 @@ int main(int argc, char **argv) {
   App.add_option(
          "-x,--disable-map",
          [&settings](CLI::results_t Results) {
-           auto min = std::stoi(Results.at(0));
-           auto max = std::stoi(Results.at(1));
+           auto min = std::stol(Results.at(0));
+           auto max = std::stol(Results.at(1));
            if (min >= max)
              throw std::runtime_error(
                  "given MIN detector number is larger than or equal to MAX");

@@ -15,7 +15,7 @@
  */
 NexusFileReader::NexusFileReader(hdf5::file::File file, uint64_t runStartTime,
                                  const int32_t fakeEventsPerPulse,
-                                 const std::vector<int32_t> &detectorNumbers)
+                                 const std::vector<uint32_t> &detectorNumbers)
     : m_file(std::move(file)), m_runStart(runStartTime),
       m_fakeEventsPerPulse(fakeEventsPerPulse),
       m_detectorNumbers(detectorNumbers), m_timeOfFlightDist(10000, 100000),

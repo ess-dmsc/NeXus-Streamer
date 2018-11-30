@@ -57,10 +57,15 @@ void DetectorSpectrumMapData::decodeMessage(const uint8_t *buf) {
 flatbuffers::unique_ptr_t
 DetectorSpectrumMapData::getBufferPointer(std::string &buffer) {
   flatbuffers::FlatBufferBuilder builder;
-
+  std::vector<int32_t> detectorNumbers(m_detectors.begin(), m_detectors.end());
+  if (std::any_of(detectorNumbers.cbegin(), detectorNumbers.cend(),
+                  [](int32_t i) { return i < 0; })) {
+    throw std::runtime_error(
+        "Detector IDs in det-spec map must be smaller than max int32");
+  }
   auto messageFlatbuf = CreateSpectraDetectorMapping(
       builder, builder.CreateVector(m_spectra),
-      builder.CreateVector(m_detectors), m_numberOfEntries);
+      builder.CreateVector(detectorNumbers), m_numberOfEntries);
   FinishSpectraDetectorMappingBuffer(builder, messageFlatbuf);
 
   auto bufferpointer =
