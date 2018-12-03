@@ -89,27 +89,32 @@ size_t NexusFileReader::findFrameNumberOfTime(float time) {
 
 std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
   std::unordered_map<hsize_t, sEEventVector> sEEventMap;
+  std::vector<hdf5::node::Group> NXlogs;
 
-  if (!m_entryGroup.has_group("selog")) {
-    std::cout << "Warning: no selog group found, not publishing sample "
+  // instead of get_group("selog") visit every group and check attrs for NXlog
+  std::for_each(hdf5::node::RecursiveNodeIterator::begin(m_entryGroup),
+                hdf5::node::RecursiveNodeIterator::end(m_entryGroup),
+                [&NXlogs](const hdf5::node::Node &node) {
+                  if (node.type() == hdf5::node::Type::GROUP) {
+                    std::string NXClassValue;
+                    if (node.attributes.exists("NX_class")) {
+                      node.attributes["NX_class"].read(NXClassValue);
+                      if (NXClassValue == "NXlog") {
+                        NXlogs.emplace_back(node);
+                      }
+                    }
+                  }
+                });
+
+  if (NXlogs.empty()) {
+    std::cout << "Warning: no NXlog groups found, not publishing sample "
                  "environment log data\n";
     return sEEventMap;
   }
 
-  auto sampleEnvGroup = m_entryGroup.get_group("selog");
-  for (auto const &sampleEnvChild : sampleEnvGroup.nodes) {
-    hdf5::node::Group logGroup;
-    hdf5::node::Group valueLog;
-    if (sampleEnvChild.type() == hdf5::node::Type::GROUP) {
-      logGroup = static_cast<hdf5::node::Group>(sampleEnvChild);
-      if (!logGroup.exists("value_log"))
-        continue;
-      valueLog = logGroup.get_group("value_log");
-      if (!valueLog.exists("time") || !valueLog.exists("value"))
-        continue;
-    } else {
+  for (auto const &sampleEnvGroup : NXlogs) {
+    if (!sampleEnvGroup.exists("time") || !sampleEnvGroup.exists("value"))
       continue;
-    }
     std::vector<float> times;
     std::vector<float> floatValues;
     std::vector<int32_t> intValues;
@@ -119,13 +124,19 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
     const auto int32Type = hdf5::datatype::create<int32_t>();
     const auto int64Type = hdf5::datatype::create<int64_t>();
 
-    auto timeDataset = valueLog.get_dataset("time");
+    auto timeDataset = sampleEnvGroup.get_dataset("time");
     times.resize(static_cast<size_t>(timeDataset.dataspace().size()));
     timeDataset.read(times);
 
-    std::string name = logGroup.link().target().object_path().name();
+    std::string name = sampleEnvGroup.link().target().object_path().name();
 
-    auto valueDataset = valueLog.get_dataset("value");
+    // For ISIS files as the name of the log is the name of the parent object
+    if (name == "value_log") {
+      name =
+          sampleEnvGroup.link().parent().link().target().object_path().name();
+    }
+
+    auto valueDataset = sampleEnvGroup.get_dataset("value");
     auto valueType = valueDataset.datatype();
     auto dataSize = static_cast<size_t>(valueDataset.dataspace().size());
     if (valueType == floatType) {
