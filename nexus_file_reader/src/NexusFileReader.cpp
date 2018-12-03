@@ -89,8 +89,6 @@ size_t NexusFileReader::findFrameNumberOfTime(float time) {
 
 std::vector<hdf5::node::Group> NexusFileReader::findNXLogs() {
   std::vector<hdf5::node::Group> NXlogs;
-
-  // instead of get_group("selog") visit every group and check attrs for NXlog
   std::for_each(hdf5::node::RecursiveNodeIterator::begin(m_entryGroup),
                 hdf5::node::RecursiveNodeIterator::end(m_entryGroup),
                 [&NXlogs](const hdf5::node::Node &node) {
