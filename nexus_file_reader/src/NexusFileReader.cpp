@@ -87,8 +87,7 @@ size_t NexusFileReader::findFrameNumberOfTime(float time) {
   return frameNumber;
 }
 
-std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
-  std::unordered_map<hsize_t, sEEventVector> sEEventMap;
+std::vector<hdf5::node::Group> NexusFileReader::findNXLogs() {
   std::vector<hdf5::node::Group> NXlogs;
 
   // instead of get_group("selog") visit every group and check attrs for NXlog
@@ -105,6 +104,13 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
                     }
                   }
                 });
+
+  return NXlogs;
+}
+
+std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
+  std::unordered_map<hsize_t, sEEventVector> sEEventMap;
+  auto NXlogs = findNXLogs();
 
   if (NXlogs.empty()) {
     std::cout << "Warning: no NXlog groups found, not publishing sample "
