@@ -38,6 +38,7 @@ private:
                        hdf5::node::Group &groupOutput,
                        const std::string &nxClassName);
   size_t findFrameNumberOfTime(float time);
+  std::vector<hdf5::node::Group> findNXLogs();
   template <typename T>
   T getSingleValueFromDataset(const hdf5::node::Group &group,
                               const std::string &dataset, hsize_t offset);
