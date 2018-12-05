@@ -8,7 +8,7 @@ set( SRC_FILES
         src/SampleEnvironmentEventInt.cpp
         src/SampleEnvironmentEventLong.cpp
         src/SampleEnvironmentEventDouble.cpp
-        )
+        src/SampleEnvironmentEventULong.cpp)
 
 set( INC_FILES
         include/EventData.h
@@ -18,7 +18,7 @@ set( INC_FILES
         include/SampleEnvironmentEventInt.h
         include/SampleEnvironmentEventLong.h
         include/SampleEnvironmentEventDouble.h
-        )
+        include/SampleEnvironmentEventULong.h)
 
 set( TEST_FILES
         test/EventDataTest.cpp

@@ -2,6 +2,7 @@
 #include "../../event_data/include/SampleEnvironmentEventDouble.h"
 #include "../../event_data/include/SampleEnvironmentEventInt.h"
 #include "../../event_data/include/SampleEnvironmentEventLong.h"
+#include "../../event_data/include/SampleEnvironmentEventULong.h"
 #include <ctime>
 #include <iomanip>
 #include <iostream>
@@ -139,12 +140,16 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
       continue;
     std::vector<float> times;
     std::vector<float> floatValues;
+    std::vector<float> doubleValues;
     std::vector<int32_t> intValues;
     std::vector<int64_t> longValues;
+    std::vector<uint64_t> ulongValues;
 
     const auto floatType = hdf5::datatype::create<float>();
+    const auto doubleType = hdf5::datatype::create<double>();
     const auto int32Type = hdf5::datatype::create<int32_t>();
     const auto int64Type = hdf5::datatype::create<int64_t>();
+    const auto uint64Type = hdf5::datatype::create<uint64_t>();
 
     auto timeDataset = sampleEnvGroup.get_dataset("time");
     times.resize(static_cast<size_t>(timeDataset.dataspace().size()));
@@ -164,12 +169,18 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
     if (valueType == floatType) {
       floatValues.resize(dataSize);
       valueDataset.read(floatValues);
+    } else if (valueType == doubleType) {
+      doubleValues.resize(dataSize);
+      valueDataset.read(doubleValues);
     } else if (valueType == int32Type) {
       intValues.resize(dataSize);
       valueDataset.read(intValues);
     } else if (valueType == int64Type) {
       longValues.resize(dataSize);
       valueDataset.read(longValues);
+    } else if (valueType == uint64Type) {
+      ulongValues.resize(dataSize);
+      valueDataset.read(ulongValues);
     } else {
       std::cout << "Unsupported datatype found in log dataset " << name << "\n";
       continue;
@@ -189,6 +200,10 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
           sEEventMap[frameNumber].push_back(
               std::make_shared<SampleEnvironmentEventDouble>(
                   name, times[i], floatValues[i], m_runStart));
+        else if (valueType == doubleType)
+          sEEventMap[frameNumber].push_back(
+              std::make_shared<SampleEnvironmentEventDouble>(
+                  name, times[i], doubleValues[i], m_runStart));
         else if (valueType == int32Type)
           sEEventMap[frameNumber].push_back(
               std::make_shared<SampleEnvironmentEventInt>(
@@ -197,6 +212,10 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
           sEEventMap[frameNumber].push_back(
               std::make_shared<SampleEnvironmentEventLong>(
                   name, times[i], longValues[i], m_runStart));
+        else if (valueType == uint64Type)
+          sEEventMap[frameNumber].push_back(
+              std::make_shared<SampleEnvironmentEventULong>(
+                  name, times[i], ulongValues[i], m_runStart));
       }
     }
   }
