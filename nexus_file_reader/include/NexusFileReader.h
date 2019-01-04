@@ -5,6 +5,7 @@
 #include <h5cpp/hdf5.hpp>
 #include <memory>
 #include <random>
+#include <spdlog/spdlog.h>
 #include <unordered_map>
 #include <vector>
 
@@ -59,4 +60,6 @@ private:
   std::uniform_int_distribution<uint32_t> m_timeOfFlightDist;
   std::uniform_int_distribution<uint32_t> m_detectorIDDist;
   std::default_random_engine RandomEngine;
+
+  std::shared_ptr<spdlog::logger> m_logger = spdlog::get("LOG");
 };
