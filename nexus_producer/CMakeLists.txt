@@ -24,8 +24,10 @@ add_library(eventPublisher_lib
         src/KafkaEventPublisher.cpp include/KafkaEventPublisher.h)
 
 target_link_libraries(eventPublisher_lib
-        CONAN_PKG::librdkafka)
+        CONAN_PKG::librdkafka
+        CONAN_PKG::spdlog)
 target_link_libraries(nexusPublisher_lib
+        CONAN_PKG::spdlog
         nexusFileReader_lib
         eventdata_lib)
 
@@ -44,6 +46,7 @@ add_executable(${publisher-target} ${PROJECT_SOURCE_DIR}/src/main.cpp)
 
 target_link_libraries(${publisher-target}
         CONAN_PKG::cli11
+        CONAN_PKG::spdlog
         ${core_libraries})
 
 #####################

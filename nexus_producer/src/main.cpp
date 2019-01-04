@@ -5,6 +5,8 @@
 #include <CLI/CLI.hpp>
 #include <chrono>
 #include <iostream>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
 #include <thread>
 
 uint64_t getTimeNowNanosecondsFromEpoch() {
@@ -83,6 +85,8 @@ int main(int argc, char **argv) {
                  false);
 
   CLI11_PARSE(App, argc, argv);
+  auto Logger = spdlog::stderr_color_mt("LOG");
+  Logger->debug("Application launched");
 
   auto detectorNumbers = getDetectorNumbers(settings);
   auto runStartTime = getTimeNowNanosecondsFromEpoch();

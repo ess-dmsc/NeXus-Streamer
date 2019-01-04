@@ -1,9 +1,10 @@
 [requires]
-h5cpp/0.0.9@ess-dmsc/testing
-librdkafka/0.11.4@ess-dmsc/stable
+h5cpp/0.1.0@ess-dmsc/testing
+librdkafka/0.11.5@ess-dmsc/stable
 gtest/3121b20-dm3@ess-dmsc/stable
 cli11/1.6.0@bincrafters/stable
 google-benchmark/4c2af07-dm3@ess-dmsc/stable
+spdlog/1.1.0@bincrafters/stable
 
 [generators]
 cmake
