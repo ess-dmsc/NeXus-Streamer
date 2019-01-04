@@ -1,7 +1,9 @@
 [![License (2-Clause BSD)](https://img.shields.io/badge/license-BSD%202--Clause-blue.svg)](https://github.com/ess-dmsc/NeXus-Streamer/blob/master/LICENSE) [![codecov](https://codecov.io/gh/ess-dmsc/NeXus-Streamer/branch/master/graph/badge.svg)](https://codecov.io/gh/ess-dmsc/NeXus-Streamer) [![Build Status](https://jenkins.esss.dk/dm/job/ess-dmsc/job/NeXus-Streamer/job/master/badge/icon)](https://jenkins.esss.dk/dm/job/ess-dmsc/job/NeXus-Streamer/job/master/)
 
 # NeXus Streamer
-Stream event data from a NeXus file to an Apache Kafka cluster. Each message sent over Kafka comprises the event data from a single neutron pulse. Using the `--slow` flag results in sending 10 messages per second, approximately a realistic rate. Sample environment data are also sent during streaming, resulting in a stream of real data which looks as if it were coming from a live instrument.
+Stream event data from a NeXus file to an Apache Kafka cluster. Each message sent over Kafka comprises the event data from a single neutron pulse. Sample environment data are also published.
+
+Using the `--slow` flag results in results in data being published to Kafka at approximately a realistic rate, as if the instrument were running live. The pulse timestamps in the file are used to achieve this.
 
 The client runs until the user terminates it, repeatedly sending data from the same file but with incrementing run numbers. However the `--single_run` flag can be used to produce only a single run.
 
