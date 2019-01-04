@@ -5,6 +5,6 @@ flatbuffers::Offset<LogData> SampleEnvironmentEventDouble::getSEEvent(
   auto nameOffset = builder.CreateString(m_name);
   auto valueOffset = CreateDouble(builder, m_value);
   auto timestamp = getTimestamp();
-  return CreateLogData(builder, nameOffset, Value_Double, valueOffset.Union(),
+  return CreateLogData(builder, nameOffset, Value::Double, valueOffset.Union(),
                        timestamp);
 }

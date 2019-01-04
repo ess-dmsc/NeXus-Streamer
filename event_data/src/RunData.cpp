@@ -38,7 +38,7 @@ uint64_t RunData::timeStringToUint64(const std::string &inputTime) {
 bool RunData::decodeMessage(const uint8_t *buf) {
   auto runData = GetRunInfo(buf);
 
-  if (runData->info_type_type() == InfoTypes_RunStart) {
+  if (runData->info_type_type() == InfoTypes::RunStart) {
     auto runStartData = static_cast<const RunStart *>(runData->info_type());
     setStartTimeInNanoseconds(runStartData->start_time());
     setInstrumentName(runStartData->instrument_name()->str());
@@ -47,7 +47,7 @@ bool RunData::decodeMessage(const uint8_t *buf) {
 
     return true;
   }
-  if (runData->info_type_type() == InfoTypes_RunStop) {
+  if (runData->info_type_type() == InfoTypes::RunStop) {
     auto runStopData = static_cast<const RunStop *>(runData->info_type());
     setStopTime(runStopData->stop_time());
 
@@ -57,7 +57,7 @@ bool RunData::decodeMessage(const uint8_t *buf) {
   return false; // this is not a RunData message
 }
 
-flatbuffers::unique_ptr_t
+flatbuffers::DetachedBuffer
 RunData::getRunStartBufferPointer(std::string &buffer) {
   flatbuffers::FlatBufferBuilder builder;
 
@@ -65,7 +65,7 @@ RunData::getRunStartBufferPointer(std::string &buffer) {
   auto messageRunStart = CreateRunStart(builder, m_startTime, m_runNumber,
                                         instrumentName, m_numberOfPeriods);
   auto messageRunInfo =
-      CreateRunInfo(builder, InfoTypes_RunStart, messageRunStart.Union());
+      CreateRunInfo(builder, InfoTypes::RunStart, messageRunStart.Union());
 
   FinishRunInfoBuffer(builder, messageRunInfo);
 
@@ -75,16 +75,16 @@ RunData::getRunStartBufferPointer(std::string &buffer) {
 
   m_bufferSize = builder.GetSize();
 
-  return builder.ReleaseBufferPointer();
+  return builder.Release();
 }
 
-flatbuffers::unique_ptr_t
+flatbuffers::DetachedBuffer
 RunData::getRunStopBufferPointer(std::string &buffer) {
   flatbuffers::FlatBufferBuilder builder;
 
   auto messageRunStop = CreateRunStop(builder, m_stopTime);
   auto messageRunInfo =
-      CreateRunInfo(builder, InfoTypes_RunStop, messageRunStop.Union());
+      CreateRunInfo(builder, InfoTypes::RunStop, messageRunStop.Union());
 
   FinishRunInfoBuffer(builder, messageRunInfo);
 
@@ -94,7 +94,7 @@ RunData::getRunStopBufferPointer(std::string &buffer) {
 
   m_bufferSize = builder.GetSize();
 
-  return builder.ReleaseBufferPointer();
+  return builder.Release();
 }
 
 std::string RunData::runInfo() {

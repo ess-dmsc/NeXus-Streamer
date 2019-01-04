@@ -25,7 +25,7 @@ void SerialiseData(benchmark::State &state) {
 
   // Benchmark just the serialisation process
   while (state.KeepRunning()) {
-    events.getBufferPointer(rawbuf, 0);
+    events.getBuffer(rawbuf, 0);
   }
 }
 

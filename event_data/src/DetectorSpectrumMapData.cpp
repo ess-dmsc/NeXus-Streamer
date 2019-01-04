@@ -1,6 +1,7 @@
 #include "DetectorSpectrumMapData.h"
 #include <fstream>
 #include <sstream>
+#include <flatbuffers/flatbuffers.h>
 
 bool file_exists(const std::string &name) {
   if (FILE *file = fopen(name.c_str(), "r")) {
@@ -54,8 +55,8 @@ void DetectorSpectrumMapData::decodeMessage(const uint8_t *buf) {
   std::copy(specFBVector->begin(), specFBVector->end(), m_spectra.begin());
 }
 
-flatbuffers::unique_ptr_t
-DetectorSpectrumMapData::getBufferPointer(std::string &buffer) {
+flatbuffers::DetachedBuffer
+DetectorSpectrumMapData::getBuffer(std::string &buffer) {
   flatbuffers::FlatBufferBuilder builder;
 
   auto messageFlatbuf = CreateSpectraDetectorMapping(
@@ -68,5 +69,5 @@ DetectorSpectrumMapData::getBufferPointer(std::string &buffer) {
   buffer.assign(bufferpointer, bufferpointer + builder.GetSize());
 
   m_bufferSize = builder.GetSize();
-  return builder.ReleaseBufferPointer();
+  return builder.Release();
 }

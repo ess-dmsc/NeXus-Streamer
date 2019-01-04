@@ -74,7 +74,7 @@ TEST_F(NexusPublisherTest, test_create_message_data) {
   auto eventData = streamer.createMessageData(static_cast<hsize_t>(0));
 
   std::string rawbuf;
-  eventData[0]->getBufferPointer(rawbuf, 0);
+  eventData[0]->getBuffer(rawbuf, 0);
 
   auto receivedEventData = EventData();
   EXPECT_TRUE(receivedEventData.decodeMessage(rawbuf));
@@ -168,7 +168,7 @@ TEST_F(NexusPublisherTest, test_create_det_spec_map_message_data) {
   auto detSpecMap = streamer.createDetSpecMessageData();
 
   std::string rawbuf;
-  detSpecMap->getBufferPointer(rawbuf);
+  detSpecMap->getBuffer(rawbuf);
 
   auto receivedData = DetectorSpectrumMapData();
   EXPECT_NO_THROW(receivedData.decodeMessage(

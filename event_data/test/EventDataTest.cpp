@@ -26,7 +26,7 @@ TEST(EventDataTest, get_buffer_pointer) {
   EXPECT_NO_THROW(events.setPeriod(period));
 
   std::string rawbuf;
-  EXPECT_NO_THROW(events.getBufferPointer(rawbuf, 0));
+  EXPECT_NO_THROW(events.getBuffer(rawbuf, 0));
 
   auto receivedEventData = EventData();
   EXPECT_TRUE(receivedEventData.decodeMessage(rawbuf));
@@ -48,7 +48,7 @@ TEST(EventDataTest, get_buffer_size) {
   events.setTof(tofs);
 
   std::string rawbuf;
-  EXPECT_NO_THROW(events.getBufferPointer(rawbuf, 0));
+  EXPECT_NO_THROW(events.getBuffer(rawbuf, 0));
   EXPECT_TRUE(events.getBufferSize() > 0);
 }
 
@@ -62,7 +62,7 @@ TEST(EventDataTest, check_buffer_includes_file_identifier) {
   events.setTof(tofs);
 
   std::string rawbuf;
-  EXPECT_NO_THROW(events.getBufferPointer(rawbuf, 0));
+  EXPECT_NO_THROW(events.getBuffer(rawbuf, 0));
 
   auto eventIdentifier = EventMessageIdentifier();
   EXPECT_TRUE(flatbuffers::BufferHasIdentifier(

@@ -1,9 +1,11 @@
 #pragma once
 
 #include <cstdint>
+#include <flatbuffers/flatbuffers.h>
 #include <vector>
 
 #include "ev42_events_generated.h"
+#include "is84_isis_events_generated.h"
 
 class EventData {
 
@@ -32,8 +34,8 @@ public:
   uint64_t getFrameTime() { return m_frameTime; }
   size_t getBufferSize() { return m_bufferSize; }
 
-  flatbuffers::unique_ptr_t getBufferPointer(std::string &buffer,
-                                             uint64_t messageID);
+  flatbuffers::DetachedBuffer getBuffer(std::string &buffer,
+                                        uint64_t messageID);
 
 private:
   // Default values here should match default values in the schema

@@ -15,13 +15,13 @@ public:
 
     EXPECT_EQ(inputName, name);
 
-    if (messageData->value_type() == Value_Int) {
+    if (messageData->value_type() == Value::Int) {
       auto value = static_cast<const Int *>(messageData->value());
       EXPECT_EQ(inputValue, value->value());
-    } else if (messageData->value_type() == Value_Long) {
+    } else if (messageData->value_type() == Value::Long) {
       auto value = static_cast<const Long *>(messageData->value());
       EXPECT_EQ(inputValue, value->value());
-    } else if (messageData->value_type() == Value_Double) {
+    } else if (messageData->value_type() == Value::Double) {
       auto value = static_cast<const Double *>(messageData->value());
       EXPECT_EQ(inputValue, value->value());
     } else {
@@ -47,7 +47,7 @@ TEST_F(SampleEnvironmentEventTest, get_int_event) {
 
   // Create message
   std::string messageBuffer;
-  auto flatbuf_ptr = intEvent.getBufferPointer(messageBuffer);
+  auto flatbuf_ptr = intEvent.getBuffer(messageBuffer);
 
   // Test decoded message
   decodeSampleEnvMessage(messageBuffer, name, value);
@@ -69,7 +69,7 @@ TEST_F(SampleEnvironmentEventTest, get_long_event) {
 
   // Create message
   std::string messageBuffer;
-  auto flatbuf_ptr = longEvent.getBufferPointer(messageBuffer);
+  auto flatbuf_ptr = longEvent.getBuffer(messageBuffer);
 
   // Test decoded message
   decodeSampleEnvMessage(messageBuffer, name, value);
@@ -92,7 +92,7 @@ TEST_F(SampleEnvironmentEventTest, get_double_event) {
 
   // Create message
   std::string messageBuffer;
-  auto flatbuf_ptr = doubleEvent.getBufferPointer(messageBuffer);
+  auto flatbuf_ptr = doubleEvent.getBuffer(messageBuffer);
 
   // Test decoded message
   decodeSampleEnvMessage(messageBuffer, name, value);

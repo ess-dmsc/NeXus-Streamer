@@ -1,5 +1,7 @@
 #pragma once
 
+#include <flatbuffers/stl_emulation.h>
+#include <flatbuffers/flatbuffers.h>
 #include "df12_det_spec_map_generated.h"
 
 class DetectorSpectrumMapData {
@@ -7,7 +9,7 @@ public:
   DetectorSpectrumMapData() = default;
   explicit DetectorSpectrumMapData(const std::string &filename);
 
-  flatbuffers::unique_ptr_t getBufferPointer(std::string &buffer);
+  flatbuffers::DetachedBuffer getBuffer(std::string &buffer);
   void decodeMessage(const uint8_t *buf);
 
   int32_t getNumberOfEntries() { return m_numberOfEntries; }

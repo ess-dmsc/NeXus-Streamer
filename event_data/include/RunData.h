@@ -6,8 +6,8 @@ class RunData {
 
 public:
   bool decodeMessage(const uint8_t *buf);
-  flatbuffers::unique_ptr_t getRunStartBufferPointer(std::string &buffer);
-  flatbuffers::unique_ptr_t getRunStopBufferPointer(std::string &buffer);
+  flatbuffers::DetachedBuffer getRunStartBufferPointer(std::string &buffer);
+  flatbuffers::DetachedBuffer getRunStopBufferPointer(std::string &buffer);
 
   void setRunNumber(int32_t runNumber) { m_runNumber = runNumber; }
   void setInstrumentName(const std::string &instrumentName) {

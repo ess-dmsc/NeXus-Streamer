@@ -146,8 +146,8 @@ size_t NexusPublisher::createAndSendMessage(std::string &rawbuf,
   size_t dataSize = 0;
   for (const auto &index : indexes) {
     auto buffer_uptr =
-        messageData[index]->getBufferPointer(rawbuf, m_messageID + index);
-    m_publisher->sendEventMessage(reinterpret_cast<char *>(buffer_uptr.get()),
+        messageData[index]->getBuffer(rawbuf, m_messageID + index);
+    m_publisher->sendEventMessage(reinterpret_cast<char *>(buffer_uptr.data()),
                                   messageData[index]->getBufferSize());
     dataSize += rawbuf.size();
   }
@@ -164,9 +164,9 @@ size_t NexusPublisher::createAndSendMessage(std::string &rawbuf,
 void NexusPublisher::createAndSendSampleEnvMessages(std::string &sampleEnvBuf,
                                                     size_t frameNumber) {
   for (const auto &sEEvent : m_sEEventMap[frameNumber]) {
-    auto buffer_uptr = sEEvent->getBufferPointer(sampleEnvBuf);
+    auto buffer_uptr = sEEvent->getBuffer(sampleEnvBuf);
     m_publisher->sendSampleEnvMessage(
-        reinterpret_cast<char *>(buffer_uptr.get()), sEEvent->getBufferSize());
+        reinterpret_cast<char *>(buffer_uptr.data()), sEEvent->getBufferSize());
   }
 }
 
@@ -181,7 +181,7 @@ size_t NexusPublisher::createAndSendRunMessage(std::string &rawbuf,
                                                int runNumber) {
   auto messageData = createRunMessageData(runNumber);
   auto buffer_uptr = messageData->getRunStartBufferPointer(rawbuf);
-  m_publisher->sendRunMessage(reinterpret_cast<char *>(buffer_uptr.get()),
+  m_publisher->sendRunMessage(reinterpret_cast<char *>(buffer_uptr.data()),
                               messageData->getBufferSize());
   m_logger->info("Publishing new run: {}", messageData->runInfo());
   return rawbuf.size();
@@ -204,7 +204,7 @@ size_t NexusPublisher::createAndSendRunStopMessage(std::string &rawbuf) {
   // (in the extremely unlikely event that it is possible to happen)
 
   auto buffer_uptr = runData->getRunStopBufferPointer(rawbuf);
-  m_publisher->sendRunMessage(reinterpret_cast<char *>(buffer_uptr.get()),
+  m_publisher->sendRunMessage(reinterpret_cast<char *>(buffer_uptr.data()),
                               runData->getBufferSize());
   return rawbuf.size();
 }
@@ -219,8 +219,8 @@ int64_t NexusPublisher::getTimeNowInNanoseconds() {
 
 size_t NexusPublisher::createAndSendDetSpecMessage(std::string &rawbuf) {
   auto messageData = createDetSpecMessageData();
-  auto buffer_uptr = messageData->getBufferPointer(rawbuf);
-  m_publisher->sendDetSpecMessage(reinterpret_cast<char *>(buffer_uptr.get()),
+  auto buffer_uptr = messageData->getBuffer(rawbuf);
+  m_publisher->sendDetSpecMessage(reinterpret_cast<char *>(buffer_uptr.data()),
                                   messageData->getBufferSize());
   return rawbuf.size();
 }

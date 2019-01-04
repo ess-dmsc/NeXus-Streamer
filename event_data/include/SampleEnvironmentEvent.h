@@ -2,6 +2,7 @@
 
 #include "f142_logdata_generated.h"
 #include <type_traits>
+#include <flatbuffers/flatbuffers.h>
 
 /*
  * To store SEEvent data in when reading the nexus file, and provide a method
@@ -20,7 +21,7 @@ public:
   std::string getName() { return m_name; }
   float getTime() { return m_time; }
   uint64_t getTimestamp();
-  flatbuffers::unique_ptr_t getBufferPointer(std::string &buffer);
+  flatbuffers::DetachedBuffer getBuffer(std::string &buffer);
   size_t getBufferSize() { return m_bufferSize; }
 
 protected:

@@ -6,8 +6,8 @@ uint64_t SampleEnvironmentEvent::getTimestamp() {
   return nanosecondsPastRunStart + m_runStartNanosecondsPastUnixEpoch;
 }
 
-flatbuffers::unique_ptr_t
-SampleEnvironmentEvent::getBufferPointer(std::string &buffer) {
+flatbuffers::DetachedBuffer
+SampleEnvironmentEvent::getBuffer(std::string &buffer) {
   flatbuffers::FlatBufferBuilder builder;
 
   auto sEEventMessage = getSEEvent(builder);
@@ -19,5 +19,5 @@ SampleEnvironmentEvent::getBufferPointer(std::string &buffer) {
 
   m_bufferSize = builder.GetSize();
 
-  return builder.ReleaseBufferPointer();
+  return builder.Release();
 }

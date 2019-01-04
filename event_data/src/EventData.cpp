@@ -1,5 +1,5 @@
+#include <is84_isis_events_generated.h>
 #include "EventData.h"
-#include <iostream>
 
 bool EventData::decodeMessage(const std::string &rawbuf) {
   auto buf = reinterpret_cast<const uint8_t *>(rawbuf.c_str());
@@ -15,7 +15,7 @@ bool EventData::decodeMessage(const std::string &rawbuf) {
   setTotalCounts(numberOfEvents);
   setFrameTime(messageData->pulse_time());
 
-  if (messageData->facility_specific_data_type() == FacilityData_ISISData) {
+  if (messageData->facility_specific_data_type() == FacilityData::ISISData) {
     auto isisData =
         static_cast<const ISISData *>(messageData->facility_specific_data());
     setPeriod(isisData->period_number());
@@ -26,12 +26,12 @@ bool EventData::decodeMessage(const std::string &rawbuf) {
   return false; // this is not an ISIS facility event message
 }
 
-flatbuffers::unique_ptr_t EventData::getBufferPointer(std::string &buffer,
-                                                      uint64_t messageID) {
+flatbuffers::DetachedBuffer EventData::getBuffer(std::string &buffer,
+                                                 uint64_t messageID) {
   flatbuffers::FlatBufferBuilder builder;
 
   auto isisDataMessage =
-      CreateISISData(builder, m_period, RunState_RUNNING, m_protonCharge);
+      CreateISISData(builder, m_period, RunState::RUNNING, m_protonCharge);
 
   auto detIDData = builder.CreateVector(m_detId);
   auto tofData = builder.CreateVector(m_tof);
@@ -46,10 +46,10 @@ flatbuffers::unique_ptr_t EventData::getBufferPointer(std::string &buffer,
   eventMessageBuilder.add_detector_id(detIDData);
 
   if (m_period < std::numeric_limits<uint32_t>::max() && m_protonCharge > 0) {
-    eventMessageBuilder.add_facility_specific_data_type(FacilityData_ISISData);
+    eventMessageBuilder.add_facility_specific_data_type(FacilityData::ISISData);
     eventMessageBuilder.add_facility_specific_data(isisDataMessage.Union());
   } else {
-    eventMessageBuilder.add_facility_specific_data_type(FacilityData_NONE);
+    eventMessageBuilder.add_facility_specific_data_type(FacilityData::NONE);
   }
 
   auto eventMessage = eventMessageBuilder.Finish();
@@ -61,5 +61,5 @@ flatbuffers::unique_ptr_t EventData::getBufferPointer(std::string &buffer,
 
   m_bufferSize = builder.GetSize();
 
-  return builder.ReleaseBufferPointer();
+  return builder.Release();
 }
