@@ -96,36 +96,36 @@ std::shared_ptr<RdKafka::Topic> KafkaEventPublisher::createTopicHandle(
  * @param buf - pointer to the message buffer
  * @param messageSize - the size of the message in bytes
  */
-void KafkaEventPublisher::sendEventMessage(char *buf, size_t messageSize) {
-  sendMessage(buf, messageSize, m_topic_ptr);
+void KafkaEventPublisher::sendEventMessage(Streamer::Message &message) {
+  sendMessage(message, m_topic_ptr);
 }
 
-void KafkaEventPublisher::sendRunMessage(char *buf, size_t messageSize) {
-  sendMessage(buf, messageSize, m_runTopic_ptr);
+void KafkaEventPublisher::sendRunMessage(Streamer::Message &message) {
+  sendMessage(message, m_runTopic_ptr);
 }
 
 void KafkaEventPublisher::sendDetSpecMessage(Streamer::Message &message) {
-  sendMessage(message.data(), message.size(), m_detSpecTopic_ptr);
+  sendMessage(message, m_detSpecTopic_ptr);
 }
 
-void KafkaEventPublisher::sendSampleEnvMessage(char *buf, size_t messageSize) {
-  sendMessage(buf, messageSize, m_sampleEnvTopic_ptr);
+void KafkaEventPublisher::sendSampleEnvMessage(Streamer::Message &message) {
+  sendMessage(message, m_sampleEnvTopic_ptr);
 }
 
-void KafkaEventPublisher::sendMessage(char *buf, size_t messageSize,
+void KafkaEventPublisher::sendMessage(Streamer::Message &message,
                                       std::shared_ptr<RdKafka::Topic> topic) {
   RdKafka::ErrorCode resp;
   do {
 
     resp = m_producer_ptr->produce(topic.get(), m_partitionNumber,
-                                   RdKafka::Producer::RK_MSG_COPY, buf,
-                                   messageSize, nullptr, nullptr);
+                                   RdKafka::Producer::RK_MSG_COPY, message.data(),
+                                   message.size(), nullptr, nullptr);
 
     if (resp != RdKafka::ERR_NO_ERROR) {
       if (resp != RdKafka::ERR__QUEUE_FULL) {
         m_logger->error("Produce failed: {}\n"
                         "Message size was: {}",
-                        RdKafka::err2str(resp), messageSize);
+                        RdKafka::err2str(resp), message.size());
       }
       // This blocking poll call should give Kafka some time for the problem to
       // be resolved

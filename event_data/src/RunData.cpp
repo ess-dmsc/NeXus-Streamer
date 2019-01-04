@@ -57,8 +57,7 @@ bool RunData::decodeMessage(const uint8_t *buf) {
   return false; // this is not a RunData message
 }
 
-flatbuffers::DetachedBuffer
-RunData::getRunStartBufferPointer(std::string &buffer) {
+Streamer::Message RunData::getRunStartBuffer() {
   flatbuffers::FlatBufferBuilder builder;
 
   auto instrumentName = builder.CreateString(m_instrumentName);
@@ -69,17 +68,10 @@ RunData::getRunStartBufferPointer(std::string &buffer) {
 
   FinishRunInfoBuffer(builder, messageRunInfo);
 
-  auto bufferpointer =
-      reinterpret_cast<const char *>(builder.GetBufferPointer());
-  buffer.assign(bufferpointer, bufferpointer + builder.GetSize());
-
-  m_bufferSize = builder.GetSize();
-
-  return builder.Release();
+  return Streamer::Message(builder.Release());
 }
 
-flatbuffers::DetachedBuffer
-RunData::getRunStopBufferPointer(std::string &buffer) {
+Streamer::Message RunData::getRunStopBuffer() {
   flatbuffers::FlatBufferBuilder builder;
 
   auto messageRunStop = CreateRunStop(builder, m_stopTime);
@@ -88,13 +80,7 @@ RunData::getRunStopBufferPointer(std::string &buffer) {
 
   FinishRunInfoBuffer(builder, messageRunInfo);
 
-  auto bufferpointer =
-      reinterpret_cast<const char *>(builder.GetBufferPointer());
-  buffer.assign(bufferpointer, bufferpointer + builder.GetSize());
-
-  m_bufferSize = builder.GetSize();
-
-  return builder.Release();
+  return Streamer::Message(builder.Release());
 }
 
 std::string RunData::runInfo() {

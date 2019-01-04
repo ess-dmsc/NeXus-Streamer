@@ -25,11 +25,11 @@ TEST(EventDataTest, get_buffer_pointer) {
   EXPECT_NO_THROW(events.setFrameTime(frameTime));
   EXPECT_NO_THROW(events.setPeriod(period));
 
-  std::string rawbuf;
-  EXPECT_NO_THROW(events.getBuffer(rawbuf, 0));
+  auto buffer = events.getBuffer(0);
 
   auto receivedEventData = EventData();
-  EXPECT_TRUE(receivedEventData.decodeMessage(rawbuf));
+  EXPECT_TRUE(receivedEventData.decodeMessage(
+      reinterpret_cast<const uint8_t *>(buffer.data())));
   EXPECT_EQ(4, receivedEventData.getNumberOfEvents());
   EXPECT_EQ(detIds, receivedEventData.getDetId());
   EXPECT_EQ(tofs, receivedEventData.getTof());
@@ -47,9 +47,8 @@ TEST(EventDataTest, get_buffer_size) {
   events.setDetId(detIds);
   events.setTof(tofs);
 
-  std::string rawbuf;
-  EXPECT_NO_THROW(events.getBuffer(rawbuf, 0));
-  EXPECT_TRUE(events.getBufferSize() > 0);
+  auto buffer = events.getBuffer(0);
+  EXPECT_TRUE(buffer.size() > 0);
 }
 
 TEST(EventDataTest, check_buffer_includes_file_identifier) {
@@ -61,10 +60,9 @@ TEST(EventDataTest, check_buffer_includes_file_identifier) {
   events.setDetId(detIds);
   events.setTof(tofs);
 
-  std::string rawbuf;
-  EXPECT_NO_THROW(events.getBuffer(rawbuf, 0));
+  auto buffer = events.getBuffer(0);
 
   auto eventIdentifier = EventMessageIdentifier();
   EXPECT_TRUE(flatbuffers::BufferHasIdentifier(
-      reinterpret_cast<const uint8_t *>(rawbuf.c_str()), eventIdentifier));
+      reinterpret_cast<const uint8_t *>(buffer.data()), eventIdentifier));
 }

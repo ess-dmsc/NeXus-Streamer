@@ -1,9 +1,7 @@
-#include <is84_isis_events_generated.h>
 #include "EventData.h"
+#include <is84_isis_events_generated.h>
 
-bool EventData::decodeMessage(const std::string &rawbuf) {
-  auto buf = reinterpret_cast<const uint8_t *>(rawbuf.c_str());
-
+bool EventData::decodeMessage(const uint8_t *buf) {
   auto messageData = GetEventMessage(buf);
   auto detIdFBVector = messageData->detector_id();
   auto tofFBVector = messageData->time_of_flight();
@@ -26,8 +24,7 @@ bool EventData::decodeMessage(const std::string &rawbuf) {
   return false; // this is not an ISIS facility event message
 }
 
-flatbuffers::DetachedBuffer EventData::getBuffer(std::string &buffer,
-                                                 uint64_t messageID) {
+Streamer::Message EventData::getBuffer(uint64_t messageID) {
   flatbuffers::FlatBufferBuilder builder;
 
   auto isisDataMessage =
@@ -55,11 +52,5 @@ flatbuffers::DetachedBuffer EventData::getBuffer(std::string &buffer,
   auto eventMessage = eventMessageBuilder.Finish();
   FinishEventMessageBuffer(builder, eventMessage);
 
-  auto bufferpointer =
-      reinterpret_cast<const char *>(builder.GetBufferPointer());
-  buffer.assign(bufferpointer, bufferpointer + builder.GetSize());
-
-  m_bufferSize = builder.GetSize();
-
-  return builder.Release();
+  return Streamer::Message(builder.Release());
 }

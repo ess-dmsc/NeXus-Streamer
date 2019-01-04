@@ -73,11 +73,11 @@ TEST_F(NexusPublisherTest, test_create_message_data) {
   auto streamer = createStreamer(true);
   auto eventData = streamer.createMessageData(static_cast<hsize_t>(0));
 
-  std::string rawbuf;
-  eventData[0]->getBuffer(rawbuf, 0);
+  auto buffer = eventData[0]->getBuffer(0);
 
   auto receivedEventData = EventData();
-  EXPECT_TRUE(receivedEventData.decodeMessage(rawbuf));
+  EXPECT_TRUE(receivedEventData.decodeMessage(
+      reinterpret_cast<uint8_t *>(buffer.data())));
   EXPECT_EQ(3, receivedEventData.getNumberOfEvents());
   EXPECT_FLOAT_EQ(0.002, receivedEventData.getProtonCharge());
   EXPECT_EQ(0, receivedEventData.getPeriod());
@@ -93,8 +93,8 @@ TEST_F(NexusPublisherTest, test_stream_data) {
 
   const int numberOfFrames = 1;
 
-  EXPECT_CALL(*publisher.get(), sendEventMessage(_, _)).Times(numberOfFrames);
-  EXPECT_CALL(*publisher.get(), sendRunMessage(_, _))
+  EXPECT_CALL(*publisher.get(), sendEventMessage(_)).Times(numberOfFrames);
+  EXPECT_CALL(*publisher.get(), sendRunMessage(_))
       .Times(2); // Start and stop messages
   EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_)).Times(1);
 
@@ -115,8 +115,8 @@ TEST_F(NexusPublisherTest, test_det_spec_not_sent_when_pair_is_empty) {
 
   const int numberOfFrames = 1;
 
-  EXPECT_CALL(*publisher.get(), sendEventMessage(_, _)).Times(numberOfFrames);
-  EXPECT_CALL(*publisher.get(), sendRunMessage(_, _))
+  EXPECT_CALL(*publisher.get(), sendEventMessage(_)).Times(numberOfFrames);
+  EXPECT_CALL(*publisher.get(), sendRunMessage(_))
       .Times(2); // Start and stop messages
   EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_)).Times(0);
 
@@ -137,8 +137,8 @@ TEST_F(NexusPublisherTest, test_data_is_streamed_in_slow_mode) {
 
   const int numberOfFrames = 1;
 
-  EXPECT_CALL(*publisher.get(), sendEventMessage(_, _)).Times(numberOfFrames);
-  EXPECT_CALL(*publisher.get(), sendRunMessage(_, _))
+  EXPECT_CALL(*publisher.get(), sendEventMessage(_)).Times(numberOfFrames);
+  EXPECT_CALL(*publisher.get(), sendRunMessage(_))
       .Times(2); // Start and stop messages
   EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_)).Times(1);
 
@@ -154,12 +154,11 @@ TEST_F(NexusPublisherTest, test_create_run_message_data) {
   int runNumber = 3;
   auto runData = streamer.createRunMessageData(runNumber);
 
-  std::string rawbuf;
-  runData->getRunStartBufferPointer(rawbuf);
+  auto buffer = runData->getRunStartBuffer();
 
   auto receivedRunData = RunData();
   EXPECT_TRUE(receivedRunData.decodeMessage(
-      reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
+      reinterpret_cast<const uint8_t *>(buffer.data())));
   EXPECT_EQ(runNumber, receivedRunData.getRunNumber());
 }
 

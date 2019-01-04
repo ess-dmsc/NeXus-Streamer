@@ -95,13 +95,11 @@ NexusPublisher::createDetSpecMessageData() {
  */
 void NexusPublisher::streamData(int runNumber, bool slow,
                                 std::pair<int32_t, int32_t> minMaxDetNums) {
-  std::string rawbuf;
-  std::string sampleEnvBuf;
   // frame numbers run from 0 to numberOfFrames-1
   int64_t totalBytesSent = 0;
   const auto numberOfFrames = m_fileReader->getNumberOfFrames();
 
-  totalBytesSent += createAndSendRunMessage(rawbuf, runNumber);
+  totalBytesSent += createAndSendRunMessage(runNumber);
   if (minMaxDetNums.first == 0 && minMaxDetNums.second == 0) {
     totalBytesSent += createAndSendDetSpecMessage();
   }
@@ -117,12 +115,12 @@ void NexusPublisher::streamData(int runNumber, bool slow,
       lastFrameTime = frameTime;
     }
 
-    totalBytesSent += createAndSendMessage(rawbuf, frameNumber);
-    createAndSendSampleEnvMessages(sampleEnvBuf, frameNumber);
+    totalBytesSent += createAndSendMessage(frameNumber);
+    createAndSendSampleEnvMessages(frameNumber);
     reportProgress(static_cast<float>(frameNumber) /
                    static_cast<float>(numberOfFrames));
   }
-  totalBytesSent += createAndSendRunStopMessage(rawbuf);
+  totalBytesSent += createAndSendRunStopMessage();
   reportProgress(1.0);
 
   m_logger->info("Frames sent: {}, Bytes sent: {}",
@@ -136,8 +134,7 @@ void NexusPublisher::streamData(int runNumber, bool slow,
  * @param frameNumber - the number of the frame for which data will be sent
  * @return - size of the buffer
  */
-size_t NexusPublisher::createAndSendMessage(std::string &rawbuf,
-                                            size_t frameNumber) {
+size_t NexusPublisher::createAndSendMessage(size_t frameNumber) {
   auto messageData = createMessageData(frameNumber);
   std::vector<int> indexes;
   indexes.reserve(messageData.size());
@@ -145,11 +142,10 @@ size_t NexusPublisher::createAndSendMessage(std::string &rawbuf,
     indexes.push_back(i);
   size_t dataSize = 0;
   for (const auto &index : indexes) {
-    auto buffer_uptr =
-        messageData[index]->getBuffer(rawbuf, m_messageID + index);
-    m_publisher->sendEventMessage(reinterpret_cast<char *>(buffer_uptr.data()),
-                                  messageData[index]->getBufferSize());
-    dataSize += rawbuf.size();
+    auto buffer =
+        messageData[index]->getBuffer(m_messageID + index);
+    m_publisher->sendEventMessage(buffer);
+    dataSize += buffer.size();
   }
   m_messageID += indexes.size();
   return dataSize;
@@ -161,12 +157,10 @@ size_t NexusPublisher::createAndSendMessage(std::string &rawbuf,
  * @param sampleEnvBuf - a buffer for the message
  * @param frameNumber - the number of the frame for which data will be sent
  */
-void NexusPublisher::createAndSendSampleEnvMessages(std::string &sampleEnvBuf,
-                                                    size_t frameNumber) {
+void NexusPublisher::createAndSendSampleEnvMessages(size_t frameNumber) {
   for (const auto &sEEvent : m_sEEventMap[frameNumber]) {
-    auto buffer_uptr = sEEvent->getBuffer(sampleEnvBuf);
-    m_publisher->sendSampleEnvMessage(
-        reinterpret_cast<char *>(buffer_uptr.data()), sEEvent->getBufferSize());
+    auto buffer = sEEvent->getBuffer();
+    m_publisher->sendSampleEnvMessage(buffer);
   }
 }
 
@@ -177,14 +171,12 @@ void NexusPublisher::createAndSendSampleEnvMessages(std::string &sampleEnvBuf,
  * @param runNumber - integer to identify the run
  * @return - size of the buffer
  */
-size_t NexusPublisher::createAndSendRunMessage(std::string &rawbuf,
-                                               int runNumber) {
+size_t NexusPublisher::createAndSendRunMessage(int runNumber) {
   auto messageData = createRunMessageData(runNumber);
-  auto buffer_uptr = messageData->getRunStartBufferPointer(rawbuf);
-  m_publisher->sendRunMessage(reinterpret_cast<char *>(buffer_uptr.data()),
-                              messageData->getBufferSize());
+  auto buffer = messageData->getRunStartBuffer();
+  m_publisher->sendRunMessage(buffer);
   m_logger->info("Publishing new run: {}", messageData->runInfo());
-  return rawbuf.size();
+  return buffer.size();
 }
 
 /**
@@ -193,7 +185,7 @@ size_t NexusPublisher::createAndSendRunMessage(std::string &rawbuf,
  * @param rawbuf - a buffer for the message
  * @return - size of the buffer
  */
-size_t NexusPublisher::createAndSendRunStopMessage(std::string &rawbuf) {
+size_t NexusPublisher::createAndSendRunStopMessage() {
   auto runData = std::make_shared<RunData>();
   // Flush producer queue to ensure the run stop is after all messages are
   // published
@@ -203,10 +195,9 @@ size_t NexusPublisher::createAndSendRunStopMessage(std::string &rawbuf) {
   // nanosecond
   // (in the extremely unlikely event that it is possible to happen)
 
-  auto buffer_uptr = runData->getRunStopBufferPointer(rawbuf);
-  m_publisher->sendRunMessage(reinterpret_cast<char *>(buffer_uptr.data()),
-                              runData->getBufferSize());
-  return rawbuf.size();
+  auto buffer = runData->getRunStopBuffer();
+  m_publisher->sendRunMessage(buffer);
+  return buffer.size();
 }
 
 int64_t NexusPublisher::getTimeNowInNanoseconds() {

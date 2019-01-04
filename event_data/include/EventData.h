@@ -4,6 +4,7 @@
 #include <flatbuffers/flatbuffers.h>
 #include <vector>
 
+#include "../../core/include/Message.h"
 #include "ev42_events_generated.h"
 #include "is84_isis_events_generated.h"
 
@@ -14,7 +15,7 @@ public:
   EventData() = default;
 
   // Decode message into existing EventData instance
-  bool decodeMessage(const std::string &rawbuf);
+  bool decodeMessage(const uint8_t *buf);
 
   // Setters
   void setDetId(std::vector<uint32_t> detIds) { m_detId = std::move(detIds); }
@@ -32,10 +33,8 @@ public:
   float getProtonCharge() { return m_protonCharge; }
   uint32_t getPeriod() { return m_period; }
   uint64_t getFrameTime() { return m_frameTime; }
-  size_t getBufferSize() { return m_bufferSize; }
 
-  flatbuffers::DetachedBuffer getBuffer(std::string &buffer,
-                                        uint64_t messageID);
+  Streamer::Message getBuffer(uint64_t messageID);
 
 private:
   // Default values here should match default values in the schema
@@ -44,7 +43,6 @@ private:
   std::vector<uint32_t> m_detId = {};
   std::vector<uint32_t> m_tof = {};
   uint64_t m_totalCounts = 0;
-  size_t m_bufferSize = 0;
   uint64_t m_frameTime = 0;
   float m_protonCharge = -1;
   uint32_t m_period = std::numeric_limits<uint32_t>::max();
