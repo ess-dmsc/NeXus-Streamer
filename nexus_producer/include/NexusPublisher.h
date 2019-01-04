@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <spdlog/spdlog.h>
 
 #include "../../event_data/include/DetectorSpectrumMapData.h"
 #include "../../event_data/include/EventData.h"
@@ -37,4 +38,5 @@ private:
   std::string m_detSpecMapFilename;
   std::unordered_map<hsize_t, sEEventVector> m_sEEventMap;
   uint64_t m_messageID = 0;
+  std::shared_ptr<spdlog::logger> m_logger = spdlog::get("LOG");
 };

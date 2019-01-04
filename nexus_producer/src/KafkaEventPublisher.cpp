@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "KafkaEventPublisher.h"
 
 KafkaEventPublisher::~KafkaEventPublisher() {
@@ -16,7 +14,7 @@ KafkaEventPublisher::~KafkaEventPublisher() {
 void KafkaEventPublisher::setUp(const std::string &broker,
                                 const std::string &instrumentName) {
 
-  std::cout << "Setting up Kafka producer" << std::endl;
+  m_logger->info("Setting up Kafka producer");
 
   std::string error_str;
 
@@ -35,18 +33,18 @@ void KafkaEventPublisher::setUp(const std::string &broker,
   if (!m_compression.empty()) {
     if (conf->set("compression.codec", m_compression, error_str) !=
         RdKafka::Conf::CONF_OK) {
-      std::cerr << error_str << std::endl;
+      m_logger->error(error_str);
       exit(1);
     }
-    std::cout << "Using " << m_compression << " compression codec" << std::endl;
+    m_logger->info("Using {} compression codec", m_compression);
   }
 
   // Create producer
   m_producer_ptr = std::shared_ptr<RdKafka::Producer>(
       RdKafka::Producer::create(conf.get(), error_str));
   if (m_producer_ptr == nullptr) {
-    std::cerr << "Failed to create producer: " << error_str << std::endl;
-    exit(1);
+    m_logger->error("Failed to create producer: {}", error_str);
+    throw std::runtime_error("Failed to create producer");
   }
 
   // Create topics
@@ -66,7 +64,7 @@ void KafkaEventPublisher::setUp(const std::string &broker,
 void KafkaEventPublisher::flushSendQueue() {
   auto error = m_producer_ptr->flush(2000);
   if (error != RdKafka::ERR_NO_ERROR) {
-    std::cerr << "Producer queue flush failed." << std::endl;
+    m_logger->error("Producer queue flush failed.");
   }
 }
 
@@ -85,8 +83,8 @@ std::shared_ptr<RdKafka::Topic> KafkaEventPublisher::createTopicHandle(
   auto topic_ptr = std::shared_ptr<RdKafka::Topic>(RdKafka::Topic::create(
       m_producer_ptr.get(), topic_str, topicConfig.get(), error_str));
   if (topic_ptr == nullptr) {
-    std::cerr << "Failed to create topic: " << error_str << std::endl;
-    exit(1);
+    m_logger->error("Failed to create topic: {}", error_str);
+    throw std::runtime_error("Failed to create topic");
   }
   return topic_ptr;
 }
@@ -124,9 +122,9 @@ void KafkaEventPublisher::sendMessage(char *buf, size_t messageSize,
 
     if (resp != RdKafka::ERR_NO_ERROR) {
       if (resp != RdKafka::ERR__QUEUE_FULL) {
-        std::cerr << "% Produce failed: " << RdKafka::err2str(resp)
-                  << std::endl;
-        std::cerr << "message size was " << messageSize << std::endl;
+        m_logger->error("Produce failed: {}\n"
+                        "Message size was: {}",
+                        RdKafka::err2str(resp), messageSize);
       }
       // This blocking poll call should give Kafka some time for the problem to
       // be resolved
@@ -145,8 +143,8 @@ int64_t KafkaEventPublisher::getCurrentOffset() {
   auto err = m_producer_ptr->query_watermark_offsets(
       m_topic_ptr->name(), m_partitionNumber, &lowOffset, &highOffset, -1);
   if (err != RdKafka::ERR_NO_ERROR) {
-    std::cerr << "%% Failed to acquire current offset, will use 0: "
-              << RdKafka::err2str(err) << std::endl;
+    m_logger->error("Failed to acquire current offset, will use 0: {}",
+                    RdKafka::err2str(err));
     return 0;
   }
   return highOffset;

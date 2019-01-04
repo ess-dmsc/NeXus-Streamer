@@ -2,6 +2,7 @@
 
 #include <librdkafka/rdkafkacpp.h>
 #include <memory>
+#include <spdlog/spdlog.h>
 
 #include "EventPublisher.h"
 
@@ -35,6 +36,7 @@ private:
   std::shared_ptr<RdKafka::Topic> m_detSpecTopic_ptr;
   std::shared_ptr<RdKafka::Topic> m_sampleEnvTopic_ptr;
   std::string m_compression = "";
+  std::shared_ptr<spdlog::logger> m_logger = spdlog::get("LOG");
 
   // Use default partition assignment for messages
   int m_partitionNumber = RdKafka::Topic::PARTITION_UA;
