@@ -124,9 +124,9 @@ void NexusPublisher::streamData(int runNumber, bool slow,
   }
   totalBytesSent += createAndSendRunStopMessage(rawbuf);
   reportProgress(1.0);
-  std::cout << std::endl
-            << "Frames sent: " << m_fileReader->getNumberOfFrames() << std::endl
-            << "Bytes sent: " << totalBytesSent << std::endl;
+
+  m_logger->info("Frames sent: {}, Bytes sent: {}",
+                 m_fileReader->getNumberOfFrames(), totalBytesSent);
 }
 
 /**
@@ -183,8 +183,7 @@ size_t NexusPublisher::createAndSendRunMessage(std::string &rawbuf,
   auto buffer_uptr = messageData->getRunStartBufferPointer(rawbuf);
   m_publisher->sendRunMessage(reinterpret_cast<char *>(buffer_uptr.get()),
                               messageData->getBufferSize());
-  std::cout << std::endl << "Publishing new run:" << std::endl;
-  std::cout << messageData->runInfo() << std::endl;
+  m_logger->info("Publishing new run: {}", messageData->runInfo());
   return rawbuf.size();
 }
 

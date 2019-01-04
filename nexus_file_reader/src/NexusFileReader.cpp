@@ -2,10 +2,6 @@
 #include "../../event_data/include/SampleEnvironmentEventDouble.h"
 #include "../../event_data/include/SampleEnvironmentEventInt.h"
 #include "../../event_data/include/SampleEnvironmentEventLong.h"
-#include <ctime>
-#include <iomanip>
-#include <iostream>
-#include <sstream>
 
 /**
  * Create a object to read the specified file
@@ -111,8 +107,8 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
   auto NXlogs = findNXLogs();
 
   if (NXlogs.empty()) {
-    std::cout << "Warning: no NXlog groups found, not publishing sample "
-                 "environment log data\n";
+    m_logger->warn(
+        "No NXlog groups found, not publishing sample environment log data");
     return sEEventMap;
   }
 
@@ -153,7 +149,7 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
       longValues.resize(dataSize);
       valueDataset.read(longValues);
     } else {
-      std::cout << "Unsupported datatype found in log dataset " << name << "\n";
+      m_logger->warn("Unsupported datatype found in log dataset {}", name);
       continue;
     }
 

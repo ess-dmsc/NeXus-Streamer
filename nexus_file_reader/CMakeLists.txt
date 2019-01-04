@@ -26,7 +26,8 @@ add_library(nexusFileReader_lib ${SRC_FILES} ${INC_FILES})
 target_link_libraries(nexusFileReader_lib
         eventdata_lib
         CONAN_PKG::hdf5
-        CONAN_PKG::h5cpp)
+        CONAN_PKG::h5cpp
+        CONAN_PKG::spdlog)
 
 #####################
 ## Unit Tests      ##
