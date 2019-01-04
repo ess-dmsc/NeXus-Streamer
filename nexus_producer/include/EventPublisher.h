@@ -2,6 +2,10 @@
 
 #include <string>
 
+namespace Streamer {
+class Message;
+}
+
 class EventPublisher {
 public:
   virtual ~EventPublisher() = default;
@@ -9,7 +13,7 @@ public:
                      const std::string &instrumentName) = 0;
   virtual void sendEventMessage(char *buf, size_t messageSize) = 0;
   virtual void sendRunMessage(char *buf, size_t messageSize) = 0;
-  virtual void sendDetSpecMessage(char *buf, size_t messageSize) = 0;
+  virtual void sendDetSpecMessage(Streamer::Message &message) = 0;
   virtual void sendSampleEnvMessage(char *buf, size_t messageSize) = 0;
   virtual void flushSendQueue() = 0;
   virtual int64_t getCurrentOffset() = 0;

@@ -21,7 +21,7 @@ public:
              const std::string &instrumentName) override;
   void sendEventMessage(char *buf, size_t messageSize) override;
   void sendRunMessage(char *buf, size_t messageSize) override;
-  void sendDetSpecMessage(char *buf, size_t messageSize) override;
+  void sendDetSpecMessage(Streamer::Message &message) override;
   void sendSampleEnvMessage(char *buf, size_t messageSize) override;
   int64_t getCurrentOffset() override;
   void flushSendQueue() override;

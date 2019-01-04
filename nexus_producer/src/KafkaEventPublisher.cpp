@@ -1,4 +1,5 @@
 #include "KafkaEventPublisher.h"
+#include "../../core/include/Message.h"
 
 KafkaEventPublisher::~KafkaEventPublisher() {
   flushSendQueue();
@@ -103,8 +104,8 @@ void KafkaEventPublisher::sendRunMessage(char *buf, size_t messageSize) {
   sendMessage(buf, messageSize, m_runTopic_ptr);
 }
 
-void KafkaEventPublisher::sendDetSpecMessage(char *buf, size_t messageSize) {
-  sendMessage(buf, messageSize, m_detSpecTopic_ptr);
+void KafkaEventPublisher::sendDetSpecMessage(Streamer::Message &message) {
+  sendMessage(message.data(), message.size(), m_detSpecTopic_ptr);
 }
 
 void KafkaEventPublisher::sendSampleEnvMessage(char *buf, size_t messageSize) {

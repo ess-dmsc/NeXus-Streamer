@@ -103,7 +103,7 @@ void NexusPublisher::streamData(int runNumber, bool slow,
 
   totalBytesSent += createAndSendRunMessage(rawbuf, runNumber);
   if (minMaxDetNums.first == 0 && minMaxDetNums.second == 0) {
-    totalBytesSent += createAndSendDetSpecMessage(rawbuf);
+    totalBytesSent += createAndSendDetSpecMessage();
   }
 
   uint64_t lastFrameTime = 0;
@@ -217,12 +217,11 @@ int64_t NexusPublisher::getTimeNowInNanoseconds() {
   return now_epoch_nanoseconds;
 }
 
-size_t NexusPublisher::createAndSendDetSpecMessage(std::string &rawbuf) {
+size_t NexusPublisher::createAndSendDetSpecMessage() {
   auto messageData = createDetSpecMessageData();
-  auto buffer_uptr = messageData->getBuffer(rawbuf);
-  m_publisher->sendDetSpecMessage(reinterpret_cast<char *>(buffer_uptr.data()),
-                                  messageData->getBufferSize());
-  return rawbuf.size();
+  auto messageBuffer = messageData->getBuffer();
+  m_publisher->sendDetSpecMessage(messageBuffer);
+  return messageBuffer.size();
 }
 
 /**

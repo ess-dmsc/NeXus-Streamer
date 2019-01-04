@@ -17,8 +17,6 @@ set( TEST_FILES
 #####################
 
 include_directories(
-        CONAN_PKG::hdf5
-        CONAN_PKG::h5cpp
         ${PROJECT_SOURCE_DIR}/include)
 
 add_library(nexusFileReader_lib ${SRC_FILES} ${INC_FILES})

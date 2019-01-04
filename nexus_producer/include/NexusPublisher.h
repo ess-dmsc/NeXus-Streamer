@@ -18,7 +18,7 @@ public:
   std::vector<std::shared_ptr<EventData>>
   createMessageData(hsize_t frameNumber);
   size_t createAndSendRunMessage(std::string &rawbuf, int runNumber);
-  size_t createAndSendDetSpecMessage(std::string &rawbuf);
+  size_t createAndSendDetSpecMessage();
   std::shared_ptr<RunData> createRunMessageData(int runNumber);
   std::shared_ptr<DetectorSpectrumMapData> createDetSpecMessageData();
   void streamData(int runNumber, bool slow,

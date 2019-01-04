@@ -35,6 +35,7 @@ include_directories(
 
 add_library(eventdata_lib ${SRC_FILES} ${INC_FILES})
 target_link_libraries(eventdata_lib
+        core_lib
         CONAN_PKG::FlatBuffers
         CONAN_PKG::streaming-data-types)
 

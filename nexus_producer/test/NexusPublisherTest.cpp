@@ -96,7 +96,7 @@ TEST_F(NexusPublisherTest, test_stream_data) {
   EXPECT_CALL(*publisher.get(), sendEventMessage(_, _)).Times(numberOfFrames);
   EXPECT_CALL(*publisher.get(), sendRunMessage(_, _))
       .Times(2); // Start and stop messages
-  EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_, _)).Times(1);
+  EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_)).Times(1);
 
   std::shared_ptr<FileReader> fakeFileReader =
       std::make_shared<FakeFileReader>();
@@ -118,7 +118,7 @@ TEST_F(NexusPublisherTest, test_det_spec_not_sent_when_pair_is_empty) {
   EXPECT_CALL(*publisher.get(), sendEventMessage(_, _)).Times(numberOfFrames);
   EXPECT_CALL(*publisher.get(), sendRunMessage(_, _))
       .Times(2); // Start and stop messages
-  EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_, _)).Times(0);
+  EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_)).Times(0);
 
   std::shared_ptr<FileReader> fakeFileReader =
       std::make_shared<FakeFileReader>();
@@ -140,7 +140,7 @@ TEST_F(NexusPublisherTest, test_data_is_streamed_in_slow_mode) {
   EXPECT_CALL(*publisher.get(), sendEventMessage(_, _)).Times(numberOfFrames);
   EXPECT_CALL(*publisher.get(), sendRunMessage(_, _))
       .Times(2); // Start and stop messages
-  EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_, _)).Times(1);
+  EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_)).Times(1);
 
   std::shared_ptr<FileReader> fakeFileReader =
       std::make_shared<FakeFileReader>();
@@ -167,11 +167,10 @@ TEST_F(NexusPublisherTest, test_create_det_spec_map_message_data) {
   auto streamer = createStreamer(true);
   auto detSpecMap = streamer.createDetSpecMessageData();
 
-  std::string rawbuf;
-  detSpecMap->getBuffer(rawbuf);
+  auto buffer = detSpecMap->getBuffer();
 
   auto receivedData = DetectorSpectrumMapData();
   EXPECT_NO_THROW(receivedData.decodeMessage(
-      reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
+      reinterpret_cast<const uint8_t *>(buffer.data())));
   EXPECT_EQ(122888, receivedData.getNumberOfEntries());
 }
