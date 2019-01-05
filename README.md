@@ -128,7 +128,16 @@ make
 ```
 
 ## Unit tests
-The unit test executable `UnitTests` needs to be passed the path of the test data directory as an argument.
+Build the CMake `UnitTests` target. Then use as follows:
+
+```
+UnitTests <OPTIONS>
+
+Options:
+  -h,--help                     Print this help message and exit
+  -d,--data-path TEXT REQUIRED  Path to data directory
+```
+
 Alternatively, run all units tests using ctest with
 ```
 ctest -VV
