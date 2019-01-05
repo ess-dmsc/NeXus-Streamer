@@ -21,11 +21,9 @@ void SerialiseData(benchmark::State &state) {
   events.setFrameTime(frameTime);
   events.setPeriod(period);
 
-  std::string rawbuf;
-
   // Benchmark just the serialisation process
   while (state.KeepRunning()) {
-    events.getBuffer(rawbuf, 0);
+    events.getBuffer(0);
   }
 }
 
