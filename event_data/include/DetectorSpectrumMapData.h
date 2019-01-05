@@ -1,7 +1,7 @@
 #pragma once
 
-#include "df12_det_spec_map_generated.h"
 #include "../../core/include/Message.h"
+#include "df12_det_spec_map_generated.h"
 
 class DetectorSpectrumMapData {
 public:
