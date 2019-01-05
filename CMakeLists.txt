@@ -10,7 +10,7 @@ set(CMAKE_MODULE_PATH
 if(CMAKE_COMPILER_IS_GNUCXX AND COV)
     include(CodeCoverage)
     set(path_to_test_data ${CMAKE_SOURCE_DIR}/data/)
-    setup_target_for_coverage(coverage UnitTests coverage "${path_to_test_data}")
+    setup_target_for_coverage(coverage UnitTests coverage "-d;${path_to_test_data}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_COVERAGE}")
 endif()
 

@@ -117,9 +117,9 @@ void KafkaEventPublisher::sendMessage(Streamer::Message &message,
   RdKafka::ErrorCode resp;
   do {
 
-    resp = m_producer_ptr->produce(topic.get(), m_partitionNumber,
-                                   RdKafka::Producer::RK_MSG_COPY, message.data(),
-                                   message.size(), nullptr, nullptr);
+    resp = m_producer_ptr->produce(
+        topic.get(), m_partitionNumber, RdKafka::Producer::RK_MSG_COPY,
+        message.data(), message.size(), nullptr, nullptr);
 
     if (resp != RdKafka::ERR_NO_ERROR) {
       if (resp != RdKafka::ERR__QUEUE_FULL) {

@@ -142,8 +142,7 @@ size_t NexusPublisher::createAndSendMessage(size_t frameNumber) {
     indexes.push_back(i);
   size_t dataSize = 0;
   for (const auto &index : indexes) {
-    auto buffer =
-        messageData[index]->getBuffer(m_messageID + index);
+    auto buffer = messageData[index]->getBuffer(m_messageID + index);
     m_publisher->sendEventMessage(buffer);
     dataSize += buffer.size();
   }

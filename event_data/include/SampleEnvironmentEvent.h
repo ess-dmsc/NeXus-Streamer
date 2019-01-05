@@ -1,9 +1,9 @@
 #pragma once
 
-#include <type_traits>
-#include <flatbuffers/flatbuffers.h>
-#include "f142_logdata_generated.h"
 #include "../../core/include/Message.h"
+#include "f142_logdata_generated.h"
+#include <flatbuffers/flatbuffers.h>
+#include <type_traits>
 
 /*
  * To store SEEvent data in when reading the nexus file, and provide a method
