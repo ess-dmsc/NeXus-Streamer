@@ -21,14 +21,16 @@ add_library(eventPublisher_lib
         src/KafkaEventPublisher.cpp include/KafkaEventPublisher.h)
 
 target_link_libraries(eventPublisher_lib
-        core_lib
         CONAN_PKG::librdkafka
-        CONAN_PKG::spdlog)
+        CONAN_PKG::spdlog
+        CONAN_PKG::FlatBuffers)
+target_include_directories(eventPublisher_lib PUBLIC ${PROJECT_SOURCE_DIR}/core/include)
 target_link_libraries(nexusPublisher_lib
         CONAN_PKG::spdlog
-        core_lib
+        CONAN_PKG::FlatBuffers
         nexusFileReader_lib
         eventdata_lib)
+target_include_directories(nexusPublisher_lib PUBLIC ${PROJECT_SOURCE_DIR}/core/include)
 
 set(core_libraries
         eventdata_lib

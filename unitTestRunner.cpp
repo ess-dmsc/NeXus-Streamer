@@ -10,7 +10,8 @@ int main(int argc, char *argv[]) {
 
   App.add_option("-d,--data-path", testDataPath,
                  "Full path to test data directory")
-      ->required()->check(CLI::ExistingDirectory);
+      ->required()
+      ->check(CLI::ExistingDirectory);
 
   ::testing::InitGoogleTest(&argc, argv);
 

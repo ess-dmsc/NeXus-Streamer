@@ -79,7 +79,6 @@ endif()
 ## Add subdirs    ##
 ####################
 
-add_subdirectory("${PROJECT_SOURCE_DIR}/core")
 add_subdirectory("${PROJECT_SOURCE_DIR}/event_data")
 add_subdirectory("${PROJECT_SOURCE_DIR}/nexus_producer")
 add_subdirectory("${PROJECT_SOURCE_DIR}/nexus_file_reader")
@@ -93,7 +92,8 @@ include_directories(
         CONAN_PKG::librdkafka
         ${PROJECT_SOURCE_DIR}/nexus_producer/include
         ${PROJECT_SOURCE_DIR}/event_data/include
-        ${PROJECT_SOURCE_DIR}/nexus_file_reader/include)
+        ${PROJECT_SOURCE_DIR}/nexus_file_reader/include
+        ${PROJECT_SOURCE_DIR}/core/include)
 
 file(GLOB TEST_SRC_FILES
         ${PROJECT_SOURCE_DIR}/nexus_producer/test/*Test.cpp
