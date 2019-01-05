@@ -33,9 +33,6 @@ else()
     message(FATAL_ERROR "Unrecognised option for CONAN, use AUTO or MANUAL")
 endif()
 
-include(CTest)
-enable_testing()
-
 find_package(Gperftools)
 
 #####################

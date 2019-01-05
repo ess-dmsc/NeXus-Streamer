@@ -138,12 +138,6 @@ Options:
   -d,--data-path TEXT REQUIRED  Path to data directory
 ```
 
-Alternatively, run all units tests using ctest with
-```
-ctest -VV
-```
-from the build directory.
-
 ## Schema
 The message schema files are located in https://github.com/ess-dmsc/streaming-data-types
 
