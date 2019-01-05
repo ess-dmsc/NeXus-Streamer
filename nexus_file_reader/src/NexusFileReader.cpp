@@ -247,7 +247,7 @@ uint64_t NexusFileReader::getFrameTime(hsize_t frameNumber) {
   auto frameTime =
       getSingleValueFromDataset<double>(m_eventGroup, datasetName, frameNumber);
   auto frameTimeFromOffsetNanoseconds =
-      static_cast<uint64_t>(round(frameTime * 1e9));
+      static_cast<uint64_t>(round(frameTime * 1000000000L));
   return m_frameStartOffset + frameTimeFromOffsetNanoseconds;
 }
 
@@ -264,7 +264,7 @@ NexusFileReader::getRelativeFrameTimeMilliseconds(const hsize_t frameNumber) {
   auto frameTime =
       getSingleValueFromDataset<double>(m_eventGroup, datasetName, frameNumber);
   return static_cast<uint64_t>(
-      round(frameTime * 1e3)); // seconds to milliseconds
+      round(frameTime * 1000L)); // seconds to milliseconds
 }
 
 template <typename T>

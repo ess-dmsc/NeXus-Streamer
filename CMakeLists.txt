@@ -105,6 +105,7 @@ add_executable(UnitTests ${TEST_SRC_FILES})
 
 target_link_libraries(UnitTests
         CONAN_PKG::gtest
+        CONAN_PKG::cli11
         producerUnitTests
         eventDataUnitTests
         fileReaderUnitTests)
