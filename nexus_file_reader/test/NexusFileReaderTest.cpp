@@ -220,3 +220,13 @@ TEST(NexusFileReaderTest, get_number_of_periods) {
       hdf5::file::open(testDataPath + "SANS_test_reduced.hdf5"), 0, 0, {0});
   EXPECT_EQ(1, fileReader.getNumberOfPeriods());
 }
+
+TEST(NexusFileReaderTest, file_is_detected_as_from_isis_by_groups_present) {
+  // Create a file which has an entry group called "raw_data_1" and contains a
+  // group called "isis_vms_compat"
+  auto file = createInMemoryTestFile("fileWithISISGroups");
+  HDF5FileTestHelpers::addNXentryToFile(file);
+  HDF5FileTestHelpers::addVMSCompatGroupToFile(file);
+  auto fileReader = NexusFileReader(file, 0, 0, {0});
+  EXPECT_TRUE(fileReader.isISISFile());
+}
