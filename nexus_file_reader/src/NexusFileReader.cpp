@@ -394,3 +394,17 @@ bool NexusFileReader::getEventTofs(std::vector<uint32_t> &tofs,
 
   return true;
 }
+
+/**
+ * If the entry group is called "raw_data_1" and it contains a group called
+ * "isis_vms_compat" then assume this file is from ISIS
+ * This is consistent with how Mantid tests for ISIS files.
+ *
+ * @return - true if input file is from ISIS
+ */
+bool NexusFileReader::isISISFile() {
+  if (m_file.root().has_group("raw_data_1")) {
+    return m_entryGroup.has_group("isis_vms_compat");
+  }
+  return false;
+}

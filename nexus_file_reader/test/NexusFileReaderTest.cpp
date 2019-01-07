@@ -222,11 +222,23 @@ TEST(NexusFileReaderTest, get_number_of_periods) {
 }
 
 TEST(NexusFileReaderTest, file_is_detected_as_from_isis_by_groups_present) {
-  // Create a file which has an entry group called "raw_data_1" and contains a
-  // group called "isis_vms_compat"
   auto file = createInMemoryTestFile("fileWithISISGroups");
-  HDF5FileTestHelpers::addNXentryToFile(file);
+  // "raw_data_1" is the expected entry group name for an ISIS file
+  HDF5FileTestHelpers::addNXentryToFile(file, "raw_data_1");
+  HDF5FileTestHelpers::addNXeventDataToFile(file, "raw_data_1");
   HDF5FileTestHelpers::addVMSCompatGroupToFile(file);
+  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(file, "raw_data_1");
   auto fileReader = NexusFileReader(file, 0, 0, {0});
   EXPECT_TRUE(fileReader.isISISFile());
+}
+
+TEST(NexusFileReaderTest, if_no_vmscompat_group_present_then_file_not_detected_as_from_isis) {
+  auto file = createInMemoryTestFile("fileWithISISEntryGroup");
+  // "raw_data_1" is the expected entry group name for an ISIS file
+  HDF5FileTestHelpers::addNXentryToFile(file, "raw_data_1");
+  HDF5FileTestHelpers::addNXeventDataToFile(file, "raw_data_1");
+  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(file, "raw_data_1");
+  auto fileReader = NexusFileReader(file, 0, 0, {0});
+  // No "isis_vms_compat" group in file, so should assume not an ISIS file
+  EXPECT_FALSE(fileReader.isISISFile());
 }

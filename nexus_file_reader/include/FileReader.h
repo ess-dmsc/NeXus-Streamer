@@ -26,4 +26,5 @@ public:
   virtual std::unordered_map<hsize_t, sEEventVector> getSEEventMap() = 0;
   virtual int32_t getNumberOfPeriods() = 0;
   virtual uint64_t getRelativeFrameTimeMilliseconds(hsize_t frameNumber) = 0;
+  virtual bool isISISFile() = 0;
 };

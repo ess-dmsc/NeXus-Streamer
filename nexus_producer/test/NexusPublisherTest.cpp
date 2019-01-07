@@ -37,6 +37,7 @@ class FakeFileReader : public FileReader {
   uint64_t getRelativeFrameTimeMilliseconds(hsize_t frameNumber) override {
     return 0;
   };
+  bool isISISFile() override { return true; };
 };
 
 class NexusPublisherTest : public ::testing::Test {

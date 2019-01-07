@@ -29,6 +29,7 @@ public:
   std::unordered_map<hsize_t, sEEventVector> getSEEventMap() override;
   int32_t getNumberOfPeriods() override;
   uint64_t getRelativeFrameTimeMilliseconds(hsize_t frameNumber) override;
+  bool isISISFile() override;
 
 private:
   void getEntryGroup(const hdf5::node::Group &rootGroup,
