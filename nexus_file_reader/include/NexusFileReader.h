@@ -44,6 +44,8 @@ private:
   hsize_t getFrameStart(hsize_t frameNumber);
   void
   checkEventGroupHasRequiredDatasets(const hdf5::node::Group &eventGroup) const;
+  bool testIfIsISISFile();
+
   size_t m_numberOfFrames;
   uint64_t m_frameStartOffset;
 
@@ -61,6 +63,8 @@ private:
   std::uniform_int_distribution<uint32_t> m_timeOfFlightDist;
   std::uniform_int_distribution<uint32_t> m_detectorIDDist;
   std::default_random_engine RandomEngine;
+
+  bool m_isisFile;
 
   std::shared_ptr<spdlog::logger> m_logger = spdlog::get("LOG");
 };
