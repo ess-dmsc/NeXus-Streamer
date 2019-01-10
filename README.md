@@ -87,7 +87,7 @@ TBD
 
 ## Authors
 
-* **Matthew D Jonesr** - *Initial work* - [matthew-d-jones](https://github.com/matthew-d-jones)
+* **Matthew D Jones** - *Initial work* - [matthew-d-jones](https://github.com/matthew-d-jones)
 
 See also the list of [contributors](https://github.com/ess-dmsc/NeXus-Streamer/graphs/contributors) who participated in this project.
 
