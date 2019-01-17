@@ -27,28 +27,31 @@ static void write_attribute(hdf5::node::Node &node, const std::string &name,
   node.attributes.create<T>(name, acpl).write(value);
 }
 
-void addNXentryToFile(hdf5::file::File &file) {
+void addNXentryToFile(hdf5::file::File &file, const std::string &entryName) {
   auto rootGroup = file.root();
-  auto entryGroup = rootGroup.create_group("entry");
+  auto entryGroup = rootGroup.create_group(entryName);
   write_attribute<std::string>(entryGroup, "NX_class", "NXentry");
 }
 
-void addNXeventDataToFile(hdf5::file::File &file) {
-  hdf5::node::Group entryGroup = file.root()["entry"];
+void addNXeventDataToFile(hdf5::file::File &file,
+                          const std::string &entryName) {
+  hdf5::node::Group entryGroup = file.root()[entryName];
   auto eventGroup = entryGroup.create_group("detector_1_events");
   write_attribute<std::string>(eventGroup, "NX_class", "NXevent_data");
 }
 
-void addNXeventDataDatasetsToFile(hdf5::file::File &file) {
-  addNXeventDataDatasetsToFile(file, {1}, {2}, {3}, {4});
+void addNXeventDataDatasetsToFile(hdf5::file::File &file,
+                                  const std::string &entryName) {
+  addNXeventDataDatasetsToFile(file, {1}, {2}, {3}, {4}, entryName);
 }
 
 void addNXeventDataDatasetsToFile(hdf5::file::File &file,
                                   const std::vector<int64_t> &eventTimeZero,
                                   const std::vector<int32_t> &eventTimeOffset,
                                   const std::vector<uint64_t> &eventIndex,
-                                  const std::vector<uint32_t> &eventId) {
-  hdf5::node::Group eventGroup = file.root()["entry/detector_1_events"];
+                                  const std::vector<uint32_t> &eventId,
+                                  const std::string &entryName) {
+  hdf5::node::Group eventGroup = file.root()[entryName + "/detector_1_events"];
   auto eventTimeZeroDataset = eventGroup.create_dataset(
       "event_time_zero", hdf5::datatype::create<int64_t>(),
       hdf5::dataspace::Simple({eventTimeZero.size()}, {eventTimeZero.size()}));
@@ -69,5 +72,10 @@ void addNXeventDataDatasetsToFile(hdf5::file::File &file,
       "event_id", hdf5::datatype::create<uint32_t>(),
       hdf5::dataspace::Simple({eventId.size()}, {eventId.size()}));
   eventIdDataset.write(eventId);
+}
+
+void addVMSCompatGroupToFile(hdf5::file::File &file) {
+  hdf5::node::Group entryGroup = file.root()["raw_data_1"];
+  auto eventGroup = entryGroup.create_group("isis_vms_compat");
 }
 }

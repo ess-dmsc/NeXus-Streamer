@@ -34,6 +34,10 @@ include_directories(
         ${PROJECT_SOURCE_DIR}/include)
 
 add_library(eventdata_lib ${SRC_FILES} ${INC_FILES})
+target_include_directories(eventdata_lib PUBLIC ${PROJECT_SOURCE_DIR}/core/include)
+target_link_libraries(eventdata_lib
+        CONAN_PKG::FlatBuffers
+        CONAN_PKG::streaming-data-types)
 
 #####################
 ## Unit Tests      ##

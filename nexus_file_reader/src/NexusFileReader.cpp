@@ -22,6 +22,8 @@ NexusFileReader::NexusFileReader(hdf5::file::File file, uint64_t runStartTime,
   getEntryGroup(m_file.root(), m_entryGroup);
   getEventGroup(m_entryGroup, m_eventGroup);
 
+  m_isisFile = testIfIsISISFile();
+
   auto dataset = m_eventGroup.get_dataset("event_time_zero");
   m_numberOfFrames = static_cast<size_t>(dataset.dataspace().size());
   // Use pulse times relative to start time rather than using the `offset`
@@ -131,7 +133,7 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
     std::string name = sampleEnvGroup.link().target().object_path().name();
 
     // For ISIS files as the name of the log is the name of the parent object
-    if (name == "value_log") {
+    if (isISISFile()) {
       name =
           sampleEnvGroup.link().parent().link().target().object_path().name();
     }
@@ -247,7 +249,7 @@ uint64_t NexusFileReader::getFrameTime(hsize_t frameNumber) {
   auto frameTime =
       getSingleValueFromDataset<double>(m_eventGroup, datasetName, frameNumber);
   auto frameTimeFromOffsetNanoseconds =
-      static_cast<uint64_t>(round(frameTime * 1e9));
+      static_cast<uint64_t>(round(frameTime * 1000000000L));
   return m_frameStartOffset + frameTimeFromOffsetNanoseconds;
 }
 
@@ -264,7 +266,7 @@ NexusFileReader::getRelativeFrameTimeMilliseconds(const hsize_t frameNumber) {
   auto frameTime =
       getSingleValueFromDataset<double>(m_eventGroup, datasetName, frameNumber);
   return static_cast<uint64_t>(
-      round(frameTime * 1e3)); // seconds to milliseconds
+      round(frameTime * 1000L)); // seconds to milliseconds
 }
 
 template <typename T>
@@ -393,4 +395,20 @@ bool NexusFileReader::getEventTofs(std::vector<uint32_t> &tofs,
                  });
 
   return true;
+}
+
+bool NexusFileReader::isISISFile() { return m_isisFile; }
+
+/**
+ * If the entry group is called "raw_data_1" and it contains a group called
+ * "isis_vms_compat" then assume this file is from ISIS
+ * This is consistent with how Mantid tests for ISIS files.
+ *
+ * @return - true if input file is from ISIS
+ */
+bool NexusFileReader::testIfIsISISFile() {
+  if (m_file.root().has_group("raw_data_1")) {
+    return m_entryGroup.has_group("isis_vms_compat");
+  }
+  return false;
 }

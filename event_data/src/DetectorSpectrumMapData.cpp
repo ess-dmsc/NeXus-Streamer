@@ -1,4 +1,5 @@
 #include "DetectorSpectrumMapData.h"
+#include <flatbuffers/flatbuffers.h>
 #include <fstream>
 #include <sstream>
 
@@ -54,8 +55,7 @@ void DetectorSpectrumMapData::decodeMessage(const uint8_t *buf) {
   std::copy(specFBVector->begin(), specFBVector->end(), m_spectra.begin());
 }
 
-flatbuffers::unique_ptr_t
-DetectorSpectrumMapData::getBufferPointer(std::string &buffer) {
+Streamer::Message DetectorSpectrumMapData::getBuffer() {
   flatbuffers::FlatBufferBuilder builder;
 
   auto messageFlatbuf = CreateSpectraDetectorMapping(
@@ -63,10 +63,5 @@ DetectorSpectrumMapData::getBufferPointer(std::string &buffer) {
       builder.CreateVector(m_detectors), m_numberOfEntries);
   FinishSpectraDetectorMappingBuffer(builder, messageFlatbuf);
 
-  auto bufferpointer =
-      reinterpret_cast<const char *>(builder.GetBufferPointer());
-  buffer.assign(bufferpointer, bufferpointer + builder.GetSize());
-
-  m_bufferSize = builder.GetSize();
-  return builder.ReleaseBufferPointer();
+  return Streamer::Message(builder.Release());
 }

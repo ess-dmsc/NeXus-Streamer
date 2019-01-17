@@ -19,15 +19,15 @@ public:
                     std::shared_ptr<RdKafka::Conf> tconf);
   void setUp(const std::string &broker,
              const std::string &instrumentName) override;
-  void sendEventMessage(char *buf, size_t messageSize) override;
-  void sendRunMessage(char *buf, size_t messageSize) override;
-  void sendDetSpecMessage(char *buf, size_t messageSize) override;
-  void sendSampleEnvMessage(char *buf, size_t messageSize) override;
+  void sendEventMessage(Streamer::Message &message) override;
+  void sendRunMessage(Streamer::Message &message) override;
+  void sendDetSpecMessage(Streamer::Message &message) override;
+  void sendSampleEnvMessage(Streamer::Message &message) override;
   int64_t getCurrentOffset() override;
   void flushSendQueue() override;
 
 private:
-  void sendMessage(char *buf, size_t messageSize,
+  void sendMessage(Streamer::Message &message,
                    std::shared_ptr<RdKafka::Topic> topic);
 
   std::shared_ptr<RdKafka::Producer> m_producer_ptr;

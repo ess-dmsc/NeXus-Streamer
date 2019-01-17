@@ -7,21 +7,21 @@
 class SampleEnvironmentEventTest : public ::testing::Test {
 public:
   template <typename T>
-  void decodeSampleEnvMessage(const std::string &messageBuffer,
+  void decodeSampleEnvMessage(Streamer::Message &messageBuffer,
                               const std::string &inputName, T inputValue) {
     auto messageData =
-        GetLogData(reinterpret_cast<const uint8_t *>(messageBuffer.c_str()));
+        GetLogData(reinterpret_cast<const uint8_t *>(messageBuffer.data()));
     std::string name = messageData->source_name()->str();
 
     EXPECT_EQ(inputName, name);
 
-    if (messageData->value_type() == Value_Int) {
+    if (messageData->value_type() == Value::Int) {
       auto value = static_cast<const Int *>(messageData->value());
       EXPECT_EQ(inputValue, value->value());
-    } else if (messageData->value_type() == Value_Long) {
+    } else if (messageData->value_type() == Value::Long) {
       auto value = static_cast<const Long *>(messageData->value());
       EXPECT_EQ(inputValue, value->value());
-    } else if (messageData->value_type() == Value_Double) {
+    } else if (messageData->value_type() == Value::Double) {
       auto value = static_cast<const Double *>(messageData->value());
       EXPECT_EQ(inputValue, value->value());
     } else {
@@ -46,11 +46,10 @@ TEST_F(SampleEnvironmentEventTest, get_int_event) {
   EXPECT_NO_THROW(intEvent.getSEEvent(builder));
 
   // Create message
-  std::string messageBuffer;
-  auto flatbuf_ptr = intEvent.getBufferPointer(messageBuffer);
+  auto buffer = intEvent.getBuffer();
 
   // Test decoded message
-  decodeSampleEnvMessage(messageBuffer, name, value);
+  decodeSampleEnvMessage(buffer, name, value);
 }
 
 TEST_F(SampleEnvironmentEventTest, create_long_event) {
@@ -68,11 +67,10 @@ TEST_F(SampleEnvironmentEventTest, get_long_event) {
   EXPECT_NO_THROW(longEvent.getSEEvent(builder));
 
   // Create message
-  std::string messageBuffer;
-  auto flatbuf_ptr = longEvent.getBufferPointer(messageBuffer);
+  auto buffer = longEvent.getBuffer();
 
   // Test decoded message
-  decodeSampleEnvMessage(messageBuffer, name, value);
+  decodeSampleEnvMessage(buffer, name, value);
 }
 
 TEST_F(SampleEnvironmentEventTest, create_double_event) {
@@ -91,9 +89,8 @@ TEST_F(SampleEnvironmentEventTest, get_double_event) {
   EXPECT_NO_THROW(doubleEvent.getSEEvent(builder));
 
   // Create message
-  std::string messageBuffer;
-  auto flatbuf_ptr = doubleEvent.getBufferPointer(messageBuffer);
+  auto buffer = doubleEvent.getBuffer();
 
   // Test decoded message
-  decodeSampleEnvMessage(messageBuffer, name, value);
+  decodeSampleEnvMessage(buffer, name, value);
 }

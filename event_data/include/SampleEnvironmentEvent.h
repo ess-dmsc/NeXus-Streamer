@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../../core/include/Message.h"
 #include "f142_logdata_generated.h"
 #include <type_traits>
 
@@ -20,11 +21,9 @@ public:
   std::string getName() { return m_name; }
   float getTime() { return m_time; }
   uint64_t getTimestamp();
-  flatbuffers::unique_ptr_t getBufferPointer(std::string &buffer);
-  size_t getBufferSize() { return m_bufferSize; }
+  Streamer::Message getBuffer();
 
 protected:
-  size_t m_bufferSize;
   uint64_t m_runStartNanosecondsPastUnixEpoch;
   float m_time;
   std::string m_name;

@@ -29,6 +29,7 @@ public:
   std::unordered_map<hsize_t, sEEventVector> getSEEventMap() override;
   int32_t getNumberOfPeriods() override;
   uint64_t getRelativeFrameTimeMilliseconds(hsize_t frameNumber) override;
+  bool isISISFile() override;
 
 private:
   void getEntryGroup(const hdf5::node::Group &rootGroup,
@@ -43,6 +44,8 @@ private:
   hsize_t getFrameStart(hsize_t frameNumber);
   void
   checkEventGroupHasRequiredDatasets(const hdf5::node::Group &eventGroup) const;
+  bool testIfIsISISFile();
+
   size_t m_numberOfFrames;
   uint64_t m_frameStartOffset;
 
@@ -60,6 +63,8 @@ private:
   std::uniform_int_distribution<uint32_t> m_timeOfFlightDist;
   std::uniform_int_distribution<uint32_t> m_detectorIDDist;
   std::default_random_engine RandomEngine;
+
+  bool m_isisFile;
 
   std::shared_ptr<spdlog::logger> m_logger = spdlog::get("LOG");
 };

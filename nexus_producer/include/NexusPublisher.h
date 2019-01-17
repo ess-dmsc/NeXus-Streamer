@@ -17,8 +17,8 @@ public:
                  const OptionalArgs &settings);
   std::vector<std::shared_ptr<EventData>>
   createMessageData(hsize_t frameNumber);
-  size_t createAndSendRunMessage(std::string &rawbuf, int runNumber);
-  size_t createAndSendDetSpecMessage(std::string &rawbuf);
+  size_t createAndSendRunMessage(int runNumber);
+  size_t createAndSendDetSpecMessage();
   std::shared_ptr<RunData> createRunMessageData(int runNumber);
   std::shared_ptr<DetectorSpectrumMapData> createDetSpecMessageData();
   void streamData(int runNumber, bool slow,
@@ -26,10 +26,9 @@ public:
 
 private:
   int64_t getTimeNowInNanoseconds();
-  size_t createAndSendMessage(std::string &rawbuf, size_t frameNumber);
-  void createAndSendSampleEnvMessages(std::string &sampleEnvBuf,
-                                      size_t frameNumber);
-  size_t createAndSendRunStopMessage(std::string &rawbuf);
+  size_t createAndSendMessage(size_t frameNumber);
+  void createAndSendSampleEnvMessages(size_t frameNumber);
+  size_t createAndSendRunStopMessage();
   void reportProgress(float progress);
 
   std::shared_ptr<EventPublisher> m_publisher;

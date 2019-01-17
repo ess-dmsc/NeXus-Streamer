@@ -51,12 +51,11 @@ TEST(RunDataTest, encode_and_decode_RunData) {
   EXPECT_NO_THROW(rundata.setStartTime("2016-08-11T08:50:18"));
   EXPECT_NO_THROW(rundata.setNumberOfPeriods(1));
 
-  std::string rawbuf;
-  EXPECT_NO_THROW(rundata.getRunStartBufferPointer(rawbuf));
+  auto buffer = rundata.getRunStartBuffer();
 
   auto receivedRunData = RunData();
   EXPECT_TRUE(receivedRunData.decodeMessage(
-      reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
+      reinterpret_cast<const uint8_t *>(buffer.data())));
   EXPECT_EQ(42, receivedRunData.getRunNumber());
   EXPECT_EQ("SANS2D", receivedRunData.getInstrumentName());
   EXPECT_EQ(1470905418000000000, receivedRunData.getStartTime());
@@ -67,12 +66,11 @@ TEST(RunDataTest, encode_and_decode_RunStop) {
   auto rundata = RunData();
   EXPECT_NO_THROW(rundata.setStopTime("2016-08-11T08:50:18"));
 
-  std::string rawbuf;
-  EXPECT_NO_THROW(rundata.getRunStopBufferPointer(rawbuf));
+  auto buffer = rundata.getRunStopBuffer();
 
   auto receivedRunData = RunData();
   EXPECT_TRUE(receivedRunData.decodeMessage(
-      reinterpret_cast<const uint8_t *>(rawbuf.c_str())));
+      reinterpret_cast<const uint8_t *>(buffer.data())));
   EXPECT_EQ(1470905418000000000, receivedRunData.getStopTime());
 }
 
@@ -80,10 +78,9 @@ TEST(RunDataTest, check_buffer_includes_file_identifier) {
   auto rundata = RunData();
   EXPECT_NO_THROW(rundata.setStopTime("2016-08-11T08:50:18"));
 
-  std::string rawbuf;
-  EXPECT_NO_THROW(rundata.getRunStopBufferPointer(rawbuf));
+  auto buffer = rundata.getRunStopBuffer();
 
   auto runIdentifier = RunInfoIdentifier();
   EXPECT_TRUE(flatbuffers::BufferHasIdentifier(
-      reinterpret_cast<const uint8_t *>(rawbuf.c_str()), runIdentifier));
+      reinterpret_cast<const uint8_t *>(buffer.data()), runIdentifier));
 }

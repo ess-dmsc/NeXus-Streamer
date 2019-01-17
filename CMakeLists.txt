@@ -10,7 +10,7 @@ set(CMAKE_MODULE_PATH
 if(CMAKE_COMPILER_IS_GNUCXX AND COV)
     include(CodeCoverage)
     set(path_to_test_data ${CMAKE_SOURCE_DIR}/data/)
-    setup_target_for_coverage(coverage UnitTests coverage "${path_to_test_data}")
+    setup_target_for_coverage(coverage UnitTests coverage "-d;${path_to_test_data}")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_COVERAGE}")
 endif()
 
@@ -32,9 +32,6 @@ elseif(${CONAN} MATCHES "MANUAL")
 else()
     message(FATAL_ERROR "Unrecognised option for CONAN, use AUTO or MANUAL")
 endif()
-
-include(CTest)
-enable_testing()
 
 find_package(Gperftools)
 
@@ -90,10 +87,10 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/nexus_file_reader")
 include_directories(
         CONAN_PKG::h5cpp
         CONAN_PKG::librdkafka
-        CONAN_PKG::h5cpp
         ${PROJECT_SOURCE_DIR}/nexus_producer/include
         ${PROJECT_SOURCE_DIR}/event_data/include
-        ${PROJECT_SOURCE_DIR}/nexus_file_reader/include)
+        ${PROJECT_SOURCE_DIR}/nexus_file_reader/include
+        ${PROJECT_SOURCE_DIR}/core/include)
 
 file(GLOB TEST_SRC_FILES
         ${PROJECT_SOURCE_DIR}/nexus_producer/test/*Test.cpp
@@ -105,6 +102,7 @@ add_executable(UnitTests ${TEST_SRC_FILES})
 
 target_link_libraries(UnitTests
         CONAN_PKG::gtest
+        CONAN_PKG::cli11
         producerUnitTests
         eventDataUnitTests
         fileReaderUnitTests)

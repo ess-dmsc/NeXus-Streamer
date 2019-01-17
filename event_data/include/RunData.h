@@ -1,13 +1,14 @@
 #pragma once
 
+#include "../../core/include/Message.h"
 #include "ba57_run_info_generated.h"
 
 class RunData {
 
 public:
   bool decodeMessage(const uint8_t *buf);
-  flatbuffers::unique_ptr_t getRunStartBufferPointer(std::string &buffer);
-  flatbuffers::unique_ptr_t getRunStopBufferPointer(std::string &buffer);
+  Streamer::Message getRunStartBuffer();
+  Streamer::Message getRunStopBuffer();
 
   void setRunNumber(int32_t runNumber) { m_runNumber = runNumber; }
   void setInstrumentName(const std::string &instrumentName) {
@@ -29,7 +30,6 @@ public:
   std::string getInstrumentName() { return m_instrumentName; }
   uint64_t getStartTime() { return m_startTime; }
   uint64_t getStopTime() { return m_stopTime; }
-  size_t getBufferSize() { return m_bufferSize; }
   int32_t getNumberOfPeriods() { return m_numberOfPeriods; }
 
   std::string runInfo();
@@ -42,6 +42,5 @@ private:
   uint64_t m_stopTime = 0;
   int32_t m_runNumber = 0;
   std::string m_instrumentName = "";
-  size_t m_bufferSize = 0;
   int32_t m_numberOfPeriods = 0;
 };

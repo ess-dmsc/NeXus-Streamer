@@ -13,9 +13,6 @@ set( TEST_FILES test/NexusPublisherTest.cpp)
 #####################
 
 include_directories(
-        CONAN_PKG::librdkafka
-        CONAN_PKG::hdf5
-        CONAN_PKG::cli11
         ${PROJECT_SOURCE_DIR}/include)
 
 add_library(nexusPublisher_lib ${SRC_FILES} ${INC_FILES})
@@ -25,11 +22,15 @@ add_library(eventPublisher_lib
 
 target_link_libraries(eventPublisher_lib
         CONAN_PKG::librdkafka
-        CONAN_PKG::spdlog)
+        CONAN_PKG::spdlog
+        CONAN_PKG::FlatBuffers)
+target_include_directories(eventPublisher_lib PUBLIC ${PROJECT_SOURCE_DIR}/core/include)
 target_link_libraries(nexusPublisher_lib
         CONAN_PKG::spdlog
+        CONAN_PKG::FlatBuffers
         nexusFileReader_lib
         eventdata_lib)
+target_include_directories(nexusPublisher_lib PUBLIC ${PROJECT_SOURCE_DIR}/core/include)
 
 set(core_libraries
         eventdata_lib
