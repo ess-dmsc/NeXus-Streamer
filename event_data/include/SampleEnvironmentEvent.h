@@ -2,7 +2,6 @@
 
 #include "../../core/include/Message.h"
 #include "f142_logdata_generated.h"
-#include <flatbuffers/flatbuffers.h>
 #include <type_traits>
 
 /*
