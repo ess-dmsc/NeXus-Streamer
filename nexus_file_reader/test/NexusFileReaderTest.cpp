@@ -232,7 +232,8 @@ TEST(NexusFileReaderTest, file_is_detected_as_from_isis_by_groups_present) {
   EXPECT_TRUE(fileReader.isISISFile());
 }
 
-TEST(NexusFileReaderTest, if_no_vmscompat_group_present_then_file_not_detected_as_from_isis) {
+TEST(NexusFileReaderTest,
+     if_no_vmscompat_group_present_then_file_not_detected_as_from_isis) {
   auto file = createInMemoryTestFile("fileWithISISEntryGroup");
   // "raw_data_1" is the expected entry group name for an ISIS file
   HDF5FileTestHelpers::addNXentryToFile(file, "raw_data_1");
