@@ -15,19 +15,23 @@ class FakeFileReader : public FileReader {
   uint32_t getPeriodNumber() override { return 0; };
   float getProtonCharge(hsize_t frameNumber) override { return 0.002; };
 
-  bool getEventDetIds(std::vector<uint32_t> &detIds,
-                      hsize_t frameNumber) override {
+  bool getEventDetIds(std::vector<uint32_t> &detIds, hsize_t frameNumber,
+                      size_t eventGroupNumber) override {
     detIds = {0, 1, 2};
     return true;
   };
 
-  bool getEventTofs(std::vector<uint32_t> &tofs, hsize_t frameNumber) override {
+  bool getEventTofs(std::vector<uint32_t> &tofs, hsize_t frameNumber,
+                    size_t eventGroupNumber) override {
     tofs = {0, 1, 2};
     return true;
   };
 
   size_t getNumberOfFrames() override { return 1; };
-  hsize_t getNumberOfEventsInFrame(hsize_t frameNumber) override { return 3; };
+  hsize_t getNumberOfEventsInFrame(hsize_t frameNumber,
+                                   size_t eventGroupNumber) override {
+    return 3;
+  };
   uint64_t getFrameTime(hsize_t frameNumber) override { return 0; };
   std::string getInstrumentName() override { return "FAKE"; };
   std::unordered_map<hsize_t, sEEventVector> getSEEventMap() override {

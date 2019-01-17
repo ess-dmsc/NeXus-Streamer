@@ -19,11 +19,13 @@ public:
   uint64_t getTotalEventCount() override;
   uint32_t getPeriodNumber() override;
   float getProtonCharge(hsize_t frameNumber) override;
-  bool getEventDetIds(std::vector<uint32_t> &detIds,
-                      hsize_t frameNumber) override;
-  bool getEventTofs(std::vector<uint32_t> &tofs, hsize_t frameNumber) override;
+  bool getEventDetIds(std::vector<uint32_t> &detIds, hsize_t frameNumber,
+                      size_t eventGroupNumber) override;
+  bool getEventTofs(std::vector<uint32_t> &tofs, hsize_t frameNumber,
+                    size_t eventGroupNumber) override;
   size_t getNumberOfFrames() override { return m_numberOfFrames; };
-  hsize_t getNumberOfEventsInFrame(hsize_t frameNumber) override;
+  hsize_t getNumberOfEventsInFrame(hsize_t frameNumber,
+                                   size_t eventGroupNumber) override;
   uint64_t getFrameTime(hsize_t frameNumber) override;
   std::string getInstrumentName() override;
   std::unordered_map<hsize_t, sEEventVector> getSEEventMap() override;
@@ -34,14 +36,14 @@ public:
 private:
   void getEntryGroup(const hdf5::node::Group &rootGroup,
                      hdf5::node::Group &entryGroupOutput);
-  void getEventGroup(const hdf5::node::Group &entryGroup,
-                     hdf5::node::Group &eventGroupOutput);
+  void getEventGroups(const hdf5::node::Group &entryGroup,
+                      std::vector<hdf5::node::Group> &eventGroupsOutput);
   size_t findFrameNumberOfTime(float time);
   std::vector<hdf5::node::Group> findNXLogs();
   template <typename T>
   T getSingleValueFromDataset(const hdf5::node::Group &group,
                               const std::string &dataset, hsize_t offset);
-  hsize_t getFrameStart(hsize_t frameNumber);
+  hsize_t getFrameStart(hsize_t frameNumber, size_t eventGroupNumber);
   void
   checkEventGroupHasRequiredDatasets(const hdf5::node::Group &eventGroup) const;
   bool testIfIsISISFile();
@@ -51,7 +53,7 @@ private:
 
   hdf5::file::File m_file;
   hdf5::node::Group m_entryGroup;
-  hdf5::node::Group m_eventGroup;
+  std::vector<hdf5::node::Group> m_eventGroups;
   hdf5::dataspace::Hyperslab m_slab{{0}, {1}};
 
   uint64_t m_runStart;

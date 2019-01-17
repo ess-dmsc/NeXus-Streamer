@@ -42,9 +42,9 @@ NexusPublisher::createMessageData(hsize_t frameNumber) {
   std::vector<std::shared_ptr<EventData>> eventDataVector;
 
   std::vector<uint32_t> detIds;
-  m_fileReader->getEventDetIds(detIds, frameNumber);
+  m_fileReader->getEventDetIds(detIds, frameNumber, 0);
   std::vector<uint32_t> tofs;
-  m_fileReader->getEventTofs(tofs, frameNumber);
+  m_fileReader->getEventTofs(tofs, frameNumber, 0);
 
   auto protonCharge = m_fileReader->getProtonCharge(frameNumber);
   auto period = m_fileReader->getPeriodNumber();
