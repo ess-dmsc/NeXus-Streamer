@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <flatbuffers/flatbuffers.h>
 #include <vector>
 
 #include "../../core/include/Message.h"
