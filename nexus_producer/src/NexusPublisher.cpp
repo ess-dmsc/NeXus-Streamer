@@ -37,28 +37,27 @@ NexusPublisher::NexusPublisher(std::shared_ptr<EventPublisher> publisher,
  * @param frameNumber - the number of the frame for which to construct a message
  * @return - an object containing the data from the specified frame
  */
-std::vector<std::shared_ptr<EventData>>
-NexusPublisher::createMessageData(hsize_t frameNumber) {
-  std::vector<std::shared_ptr<EventData>> eventDataVector;
-
-  std::vector<uint32_t> detIds;
-  m_fileReader->getEventDetIds(detIds, frameNumber, 0);
-  std::vector<uint32_t> tofs;
-  m_fileReader->getEventTofs(tofs, frameNumber, 0);
+std::vector<EventData> NexusPublisher::createMessageData(hsize_t frameNumber) {
+  std::vector<EventData> eventDataVector;
 
   auto protonCharge = m_fileReader->getProtonCharge(frameNumber);
   auto period = m_fileReader->getPeriodNumber();
   auto frameTime = m_fileReader->getFrameTime(frameNumber);
 
-  auto eventData = std::make_shared<EventData>();
-  eventData->setProtonCharge(protonCharge);
-  eventData->setPeriod(period);
-  eventData->setFrameTime(frameTime);
-  eventData->setDetId(detIds);
-  eventData->setTof(tofs);
-  eventData->setTotalCounts(m_fileReader->getTotalEventCount());
+  std::vector<EventDataFrame> eventDataFramesFromFile;
+  m_fileReader->getEventData(eventDataFramesFromFile, frameNumber);
 
-  eventDataVector.push_back(eventData);
+  for (auto const &eventDataFrame : eventDataFramesFromFile) {
+    auto eventData = EventData();
+    eventData.setProtonCharge(protonCharge);
+    eventData.setPeriod(period);
+    eventData.setFrameTime(frameTime);
+    eventData.setDetId(eventDataFrame.detectorIDs);
+    eventData.setTof(eventDataFrame.timeOfFlights);
+    eventData.setTotalCounts(m_fileReader->getTotalEventCount());
+
+    eventDataVector.push_back(eventData);
+  }
 
   return eventDataVector;
 }
@@ -128,7 +127,8 @@ void NexusPublisher::streamData(int runNumber, bool slow,
 }
 
 /**
- * Using Google Flatbuffers, create a message for the specifed frame and send it
+ * Using Google Flatbuffers, create a message for the specified frame and send
+ * it
  *
  * @param rawbuf - a buffer for the message
  * @param frameNumber - the number of the frame for which data will be sent
@@ -136,17 +136,13 @@ void NexusPublisher::streamData(int runNumber, bool slow,
  */
 size_t NexusPublisher::createAndSendMessage(size_t frameNumber) {
   auto messageData = createMessageData(frameNumber);
-  std::vector<int> indexes;
-  indexes.reserve(messageData.size());
-  for (int i = 0; i < static_cast<int>(messageData.size()); ++i)
-    indexes.push_back(i);
   size_t dataSize = 0;
-  for (const auto &index : indexes) {
-    auto buffer = messageData[index]->getBuffer(m_messageID + index);
+  for (auto &message : messageData) {
+    auto buffer = message.getBuffer(m_messageID);
     m_publisher->sendEventMessage(buffer);
+    ++m_messageID;
     dataSize += buffer.size();
   }
-  m_messageID += indexes.size();
   return dataSize;
 }
 

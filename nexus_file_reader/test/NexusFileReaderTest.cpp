@@ -94,19 +94,19 @@ TEST(NexusFileReaderTest, nexus_read_number_frames) {
 TEST(NexusFileReaderTest, get_detIds_first_frame) {
   auto fileReader = NexusFileReader(
       hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0});
-  std::vector<uint32_t> detIds;
-  EXPECT_TRUE(fileReader.getEventDetIds(detIds, 0, 0));
-  EXPECT_EQ(99406, detIds[0]);
-  EXPECT_EQ(87829, detIds[150]);
+  std::vector<EventDataFrame> eventData;
+  EXPECT_TRUE(fileReader.getEventData(eventData, 0));
+  EXPECT_EQ(99406, eventData[0].detectorIDs[0]);
+  EXPECT_EQ(87829, eventData[0].detectorIDs[150]);
 }
 
 TEST(NexusFileReaderTest, get_event_tofs) {
   auto fileReader = NexusFileReader(
       hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0});
-  std::vector<uint32_t> eventTofs;
-  EXPECT_TRUE(fileReader.getEventTofs(eventTofs, 0, 0));
-  EXPECT_EQ(11660506, eventTofs[0]);
-  EXPECT_EQ(46247304, eventTofs[150]);
+  std::vector<EventDataFrame> eventData;
+  EXPECT_TRUE(fileReader.getEventData(eventData, 0));
+  EXPECT_EQ(11660506, eventData[0].timeOfFlights[0]);
+  EXPECT_EQ(46247304, eventData[0].timeOfFlights[150]);
 }
 
 TEST(NexusFileReaderTest,
@@ -115,9 +115,9 @@ TEST(NexusFileReaderTest,
   auto fileReader =
       NexusFileReader(hdf5::file::open(testDataPath + "SANS_test.nxs"), 0,
                       numberOfFakeEventsPerPulse, {0});
-  std::vector<uint32_t> eventTofs;
-  EXPECT_TRUE(fileReader.getEventTofs(eventTofs, 0, 0));
-  EXPECT_EQ(numberOfFakeEventsPerPulse, eventTofs.size());
+  std::vector<EventDataFrame> eventData;
+  EXPECT_TRUE(fileReader.getEventData(eventData, 0));
+  EXPECT_EQ(numberOfFakeEventsPerPulse, eventData[0].timeOfFlights.size());
 }
 
 TEST(NexusFileReaderTest,
@@ -126,23 +126,16 @@ TEST(NexusFileReaderTest,
   auto fileReader =
       NexusFileReader(hdf5::file::open(testDataPath + "SANS_test.nxs"), 0,
                       numberOfFakeEventsPerPulse, {0});
-  std::vector<uint32_t> detIDs;
-  EXPECT_TRUE(fileReader.getEventDetIds(detIDs, 0, 0));
-  EXPECT_EQ(numberOfFakeEventsPerPulse, detIDs.size());
+  std::vector<EventDataFrame> eventData;
+  EXPECT_TRUE(fileReader.getEventData(eventData, 0));
+  EXPECT_EQ(numberOfFakeEventsPerPulse, eventData[0].detectorIDs.size());
 }
 
-TEST(NexusFileReaderTest, get_detIds_too_high_frame_number) {
+TEST(NexusFileReaderTest, get_eventData_too_high_frame_number) {
   auto fileReader = NexusFileReader(
       hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0});
-  std::vector<uint32_t> detIds;
-  EXPECT_FALSE(fileReader.getEventDetIds(detIds, 3000000, 0));
-}
-
-TEST(NexusFileReaderTest, get_event_tofs_too_high_frame_number) {
-  auto fileReader = NexusFileReader(
-      hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0});
-  std::vector<uint32_t> eventTofs;
-  EXPECT_FALSE(fileReader.getEventTofs(eventTofs, 3000000, 0));
+  std::vector<EventDataFrame> eventData;
+  EXPECT_FALSE(fileReader.getEventData(eventData, 3000000));
 }
 
 TEST(NexusFileReaderTest, get_period_number) {

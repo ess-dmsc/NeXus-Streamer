@@ -19,10 +19,8 @@ public:
   uint64_t getTotalEventCount() override;
   uint32_t getPeriodNumber() override;
   float getProtonCharge(hsize_t frameNumber) override;
-  bool getEventDetIds(std::vector<uint32_t> &detIds, hsize_t frameNumber,
-                      size_t eventGroupNumber) override;
-  bool getEventTofs(std::vector<uint32_t> &tofs, hsize_t frameNumber,
-                    size_t eventGroupNumber) override;
+  virtual bool getEventData(std::vector<EventDataFrame> &eventData,
+                            hsize_t frameNumber) override;
   size_t getNumberOfFrames() override { return m_numberOfFrames; };
   hsize_t getNumberOfEventsInFrame(hsize_t frameNumber,
                                    size_t eventGroupNumber) override;
@@ -34,6 +32,10 @@ public:
   bool isISISFile() override;
 
 private:
+  bool getEventDetIds(std::vector<uint32_t> &detIds, hsize_t frameNumber,
+                      size_t eventGroupNumber);
+  bool getEventTofs(std::vector<uint32_t> &tofs, hsize_t frameNumber,
+                    size_t eventGroupNumber);
   void getEntryGroup(const hdf5::node::Group &rootGroup,
                      hdf5::node::Group &entryGroupOutput);
   void getEventGroups(const hdf5::node::Group &entryGroup,

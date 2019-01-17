@@ -15,8 +15,7 @@ public:
   NexusPublisher(std::shared_ptr<EventPublisher> publisher,
                  std::shared_ptr<FileReader> fileReader,
                  const OptionalArgs &settings);
-  std::vector<std::shared_ptr<EventData>>
-  createMessageData(hsize_t frameNumber);
+  std::vector<EventData> createMessageData(hsize_t frameNumber);
   size_t createAndSendRunMessage(int runNumber);
   size_t createAndSendDetSpecMessage();
   std::shared_ptr<RunData> createRunMessageData(int runNumber);
