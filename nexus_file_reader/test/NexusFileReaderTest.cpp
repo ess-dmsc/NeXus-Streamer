@@ -235,8 +235,9 @@ TEST(NexusFileReaderTest,
   HDF5FileTestHelpers::addNXeventDataToFile(file, "raw_data_1");
   HDF5FileTestHelpers::addNXeventDataDatasetsToFile(file, "raw_data_1");
   auto fileReader = NexusFileReader(file, 0, 0, {0});
-  // No "isis_vms_compat" group in file, so should assume not an ISIS file
-  EXPECT_FALSE(fileReader.isISISFile());
+  EXPECT_FALSE(fileReader.isISISFile()) << "The is no \"isis_vms_compat\" "
+                                           "group in file, so expect to detect "
+                                           "that it is not an ISIS file";
 }
 
 TEST(NexusFileReaderTest,
