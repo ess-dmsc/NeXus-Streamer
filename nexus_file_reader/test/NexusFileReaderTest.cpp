@@ -238,3 +238,54 @@ TEST(NexusFileReaderTest,
   // No "isis_vms_compat" group in file, so should assume not an ISIS file
   EXPECT_FALSE(fileReader.isISISFile());
 }
+
+TEST(NexusFileReaderTest,
+     multiple_event_data_per_frame_if_multiple_event_data_groups_in_file) {
+  auto file = createInMemoryTestFile("fileWithMultipleEventDataGroups");
+  HDF5FileTestHelpers::addNXentryToFile(file, "entry");
+
+  // Add two event data groups
+  HDF5FileTestHelpers::addNXeventDataToFile(file, "entry", "detector_1_events");
+  const std::vector<int64_t> det_1_event_time_zero{0};
+  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(
+      file, {1}, {2}, {0}, {4}, "entry", "detector_1_events");
+  HDF5FileTestHelpers::addNXeventDataToFile(file, "entry", "detector_2_events");
+  const std::vector<int64_t> det_2_event_time_zero{1};
+  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(
+      file, {1}, {2}, {0}, {4}, "entry", "detector_2_events");
+
+  auto fileReader = NexusFileReader(file, 0, 0, {0});
+  std::vector<EventDataFrame> eventData;
+  fileReader.getEventData(eventData, 0);
+  ASSERT_EQ(eventData.size(), 2) << "Expected two event data structs as there "
+                                    "are two event groups in the input file";
+}
+
+TEST(NexusFileReaderTest,
+     only_one_event_group_published_if_groups_have_inconsistent_pulse_data) {
+  // Dealing with inconsistent pulse data between NXevent_data is complex and
+  // may not be required, so it is not implemented
+  // A warning log should be generated and the reader should proceed with
+  // publishing data from one of the groups
+
+  auto file = createInMemoryTestFile("fileWithInconsistentPulseData");
+  HDF5FileTestHelpers::addNXentryToFile(file, "entry");
+
+  // Add two event data groups with differing event_time_zero datasets
+  HDF5FileTestHelpers::addNXeventDataToFile(file, "entry", "detector_1_events");
+  const std::vector<int64_t> det_1_event_time_zero{0};
+  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(
+      file, det_1_event_time_zero, {2}, {0}, {4}, "entry", "detector_1_events");
+  HDF5FileTestHelpers::addNXeventDataToFile(file, "entry", "detector_2_events");
+  const std::vector<int64_t> det_2_event_time_zero{1};
+  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(
+      file, det_2_event_time_zero, {2}, {0}, {4}, "entry", "detector_2_events");
+
+  auto fileReader = NexusFileReader(file, 0, 0, {0});
+  std::vector<EventDataFrame> eventData;
+  fileReader.getEventData(eventData, 0);
+  ASSERT_EQ(eventData.size(), 1)
+      << "Expected an event message from only one event data group as the "
+         "multiple groups have inconsistent pulse times, which is not yet "
+         "supported";
+}

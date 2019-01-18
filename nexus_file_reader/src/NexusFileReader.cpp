@@ -430,11 +430,11 @@ bool NexusFileReader::getEventDetIds(std::vector<uint32_t> &detIds,
   auto numberOfEventsInFrame =
       getNumberOfEventsInFrame(frameNumber, eventGroupNumber);
 
-  hsize_t count = numberOfEventsInFrame;
   hsize_t offset = getFrameStart(frameNumber, eventGroupNumber);
-  detIds.resize(count);
+  detIds.resize(numberOfEventsInFrame);
 
-  auto slab = hdf5::dataspace::Hyperslab({offset}, {count}, {1});
+  auto slab =
+      hdf5::dataspace::Hyperslab({offset}, {numberOfEventsInFrame}, {1});
 
   dataset.read(detIds, slab);
 
