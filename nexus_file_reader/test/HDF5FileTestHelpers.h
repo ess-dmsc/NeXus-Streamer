@@ -17,18 +17,20 @@ void addNXentryToFile(hdf5::file::File &file,
 
 /// Adds an NXevent_data group called "detector_1_events" to the entry group
 void addNXeventDataToFile(hdf5::file::File &file,
-                          const std::string &entryName = "entry");
+                          const std::string &entryName = "entry",
+                          const std::string &groupName = "detector_1_events");
 
 /// Adds datasets to event data group in file
 void addNXeventDataDatasetsToFile(hdf5::file::File &file,
                                   const std::string &entryName = "entry");
 
-void addNXeventDataDatasetsToFile(hdf5::file::File &file,
-                                  const std::vector<int64_t> &eventTimeZero,
-                                  const std::vector<int32_t> &eventTimeOffset,
-                                  const std::vector<uint64_t> &eventIndex,
-                                  const std::vector<uint32_t> &eventId,
-                                  const std::string &entryName = "entry");
+void addNXeventDataDatasetsToFile(
+    hdf5::file::File &file, const std::vector<int64_t> &eventTimeZero,
+    const std::vector<int32_t> &eventTimeOffset,
+    const std::vector<uint64_t> &eventIndex,
+    const std::vector<uint32_t> &eventId,
+    const std::string &entryName = "entry",
+    const std::string &groupName = "detector_1_events");
 
 void addVMSCompatGroupToFile(hdf5::file::File &file);
 }

@@ -33,10 +33,10 @@ void addNXentryToFile(hdf5::file::File &file, const std::string &entryName) {
   write_attribute<std::string>(entryGroup, "NX_class", "NXentry");
 }
 
-void addNXeventDataToFile(hdf5::file::File &file,
-                          const std::string &entryName) {
+void addNXeventDataToFile(hdf5::file::File &file, const std::string &entryName,
+                          const std::string &groupName) {
   hdf5::node::Group entryGroup = file.root()[entryName];
-  auto eventGroup = entryGroup.create_group("detector_1_events");
+  auto eventGroup = entryGroup.create_group(groupName);
   write_attribute<std::string>(eventGroup, "NX_class", "NXevent_data");
 }
 
@@ -50,8 +50,9 @@ void addNXeventDataDatasetsToFile(hdf5::file::File &file,
                                   const std::vector<int32_t> &eventTimeOffset,
                                   const std::vector<uint64_t> &eventIndex,
                                   const std::vector<uint32_t> &eventId,
-                                  const std::string &entryName) {
-  hdf5::node::Group eventGroup = file.root()[entryName + "/detector_1_events"];
+                                  const std::string &entryName,
+                                  const std::string &groupName) {
+  hdf5::node::Group eventGroup = file.root()[entryName + "/" + groupName];
   auto eventTimeZeroDataset = eventGroup.create_dataset(
       "event_time_zero", hdf5::datatype::create<int64_t>(),
       hdf5::dataspace::Simple({eventTimeZero.size()}, {eventTimeZero.size()}));

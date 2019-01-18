@@ -15,17 +15,10 @@ class FakeFileReader : public FileReader {
   uint32_t getPeriodNumber() override { return 0; };
   float getProtonCharge(hsize_t frameNumber) override { return 0.002; };
 
-  bool getEventDetIds(std::vector<uint32_t> &detIds, hsize_t frameNumber,
-                      size_t eventGroupNumber) override {
-    detIds = {0, 1, 2};
-    return true;
-  };
-
-  bool getEventTofs(std::vector<uint32_t> &tofs, hsize_t frameNumber,
-                    size_t eventGroupNumber) override {
-    tofs = {0, 1, 2};
-    return true;
-  };
+  std::vector<EventDataFrame> getEventData(hsize_t frameNumber) override {
+    std::vector<EventDataFrame> eventData{EventDataFrame({0, 1, 2}, {0, 1, 2})};
+    return eventData;
+  }
 
   size_t getNumberOfFrames() override { return 1; };
   hsize_t getNumberOfEventsInFrame(hsize_t frameNumber,
@@ -42,6 +35,9 @@ class FakeFileReader : public FileReader {
     return 0;
   };
   bool isISISFile() override { return true; };
+  uint64_t getTotalEventsInGroup(size_t eventGroupNumber) override {
+    return 3;
+  };
 };
 
 class NexusPublisherTest : public ::testing::Test {
@@ -78,7 +74,7 @@ TEST_F(NexusPublisherTest, test_create_message_data) {
   auto streamer = createStreamer(true);
   auto eventData = streamer.createMessageData(static_cast<hsize_t>(0));
 
-  auto buffer = eventData[0]->getBuffer(0);
+  auto buffer = eventData[0].getBuffer(0);
 
   auto receivedEventData = EventData();
   EXPECT_TRUE(receivedEventData.decodeMessage(

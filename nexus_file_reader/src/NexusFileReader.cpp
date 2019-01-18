@@ -4,6 +4,52 @@
 #include "../../event_data/include/SampleEnvironmentEventLong.h"
 #include <fmt/format.h>
 
+namespace {
+uint64_t secondsToNanoseconds(double seconds) {
+  return static_cast<uint64_t>(round(seconds * 1000000000L));
+}
+
+std::vector<uint64_t> secondsToNanoseconds(std::vector<double> const &seconds) {
+  std::vector<uint64_t> nanoseconds;
+  std::transform(seconds.cbegin(), seconds.cend(),
+                 std::back_inserter(nanoseconds),
+                 [](double const secondsValue) {
+                   return secondsToNanoseconds(secondsValue);
+                 });
+  return nanoseconds;
+}
+
+/**
+ * We can only currently deal with multiple NXevent_data groups if they contain
+ * exactly the same frames
+ * If this is not the case then throw an error
+ *
+ * @param eventGroups - the NXevent_data groups found in the file
+ */
+void checkEventDataGroupsHaveConsistentFrames(
+    std::vector<hdf5::node::Group> const &eventGroups) {
+  if (eventGroups.size() > 1) {
+    auto firstGroupPulseDataset = eventGroups[0].get_dataset("event_time_zero");
+    std::vector<double> firstGroupPulseTimes(
+        static_cast<size_t>(firstGroupPulseDataset.dataspace().size()));
+    firstGroupPulseDataset.read(firstGroupPulseTimes);
+    auto firstPulseTimesNs = secondsToNanoseconds(firstGroupPulseTimes);
+    for (auto const &eventGroup : eventGroups) {
+      auto pulseTimesDataset = eventGroup.get_dataset("event_time_zero");
+      std::vector<double> pulseTimes(
+          static_cast<size_t>(pulseTimesDataset.dataspace().size()));
+      pulseTimesDataset.read(pulseTimes);
+      auto pulseTimesNs = secondsToNanoseconds(pulseTimes);
+      if (firstPulseTimesNs != pulseTimesNs) {
+        throw std::runtime_error("NXevent_data groups in the file do not "
+                                 "contain the same frames as each other, this "
+                                 "is not currently supported.");
+      }
+    }
+  }
+}
+}
+
 /**
  * Create a object to read the specified file
  *
@@ -25,8 +71,16 @@ NexusFileReader::NexusFileReader(hdf5::file::File file, uint64_t runStartTime,
 
   m_isisFile = testIfIsISISFile();
 
-  // Assuming all NXevent_data have the same event_time_zero dataset!!
-  // TODO should test for this assumption and log error if not the case
+  try {
+    checkEventDataGroupsHaveConsistentFrames(m_eventGroups);
+  } catch (const std::runtime_error &e) {
+    m_logger->warn(e.what());
+    m_logger->warn(
+        "Only data from one NXevent_data group will be published to Kafka: {}",
+        m_eventGroups[0].link().path().name());
+    m_eventGroups.resize(1);
+  }
+
   auto dataset = m_eventGroups[0].get_dataset("event_time_zero");
   m_numberOfFrames = static_cast<size_t>(dataset.dataspace().size());
   // Use pulse times relative to start time rather than using the `offset`
@@ -206,7 +260,7 @@ hsize_t NexusFileReader::getFileSize() { return m_file.size(); }
  */
 uint64_t NexusFileReader::getTotalEventCount() {
   if (m_fakeEventsPerPulse > 0) {
-    return getNumberOfFrames() * m_fakeEventsPerPulse;
+    return getNumberOfFrames() * m_fakeEventsPerPulse * m_eventGroups.size();
   }
 
   uint64_t totalEvents = 0;
@@ -215,6 +269,21 @@ uint64_t NexusFileReader::getTotalEventCount() {
     totalEvents += static_cast<uint64_t>(dataset.dataspace().size());
   }
   return totalEvents;
+}
+
+/**
+ * Get the total number of events in the event data group
+ *
+ * @return - total number of events
+ */
+uint64_t NexusFileReader::getTotalEventsInGroup(size_t eventGroupNumber) {
+  if (m_fakeEventsPerPulse > 0) {
+    return getNumberOfFrames() * m_fakeEventsPerPulse;
+  }
+
+  auto dataset =
+      m_eventGroups[eventGroupNumber].get_dataset("event_time_offset");
+  return static_cast<uint64_t>(dataset.dataspace().size());
 }
 
 uint32_t NexusFileReader::getPeriodNumber() { return 0; }
@@ -261,8 +330,7 @@ uint64_t NexusFileReader::getFrameTime(hsize_t frameNumber) {
 
   auto frameTime = getSingleValueFromDataset<double>(m_eventGroups[0],
                                                      datasetName, frameNumber);
-  auto frameTimeFromOffsetNanoseconds =
-      static_cast<uint64_t>(round(frameTime * 1000000000L));
+  auto frameTimeFromOffsetNanoseconds = secondsToNanoseconds(frameTime);
   return m_frameStartOffset + frameTimeFromOffsetNanoseconds;
 }
 
@@ -327,7 +395,8 @@ hsize_t NexusFileReader::getNumberOfEventsInFrame(hsize_t frameNumber,
   // if this is the last frame then we cannot get number of events by looking at
   // event index of next frame
   if (frameNumber == (m_numberOfFrames - 1)) {
-    return getTotalEventCount() - getFrameStart(frameNumber, eventGroupNumber);
+    return getTotalEventsInGroup(eventGroupNumber) -
+           getFrameStart(frameNumber, eventGroupNumber);
   }
   return getFrameStart(frameNumber + 1, eventGroupNumber) -
          getFrameStart(frameNumber, eventGroupNumber);
@@ -361,11 +430,11 @@ bool NexusFileReader::getEventDetIds(std::vector<uint32_t> &detIds,
   auto numberOfEventsInFrame =
       getNumberOfEventsInFrame(frameNumber, eventGroupNumber);
 
-  hsize_t count = numberOfEventsInFrame;
   hsize_t offset = getFrameStart(frameNumber, eventGroupNumber);
-  detIds.resize(count);
+  detIds.resize(numberOfEventsInFrame);
 
-  auto slab = hdf5::dataspace::Hyperslab({offset}, {count}, {1});
+  auto slab =
+      hdf5::dataspace::Hyperslab({offset}, {numberOfEventsInFrame}, {1});
 
   dataset.read(detIds, slab);
 
@@ -416,6 +485,20 @@ bool NexusFileReader::getEventTofs(std::vector<uint32_t> &tofs,
                  });
 
   return true;
+}
+
+std::vector<EventDataFrame> NexusFileReader::getEventData(hsize_t frameNumber) {
+  std::vector<EventDataFrame> eventData;
+  std::vector<uint32_t> detIDs;
+  std::vector<uint32_t> tofs;
+  for (size_t eventGroupNumber = 0; eventGroupNumber < m_eventGroups.size();
+       ++eventGroupNumber) {
+    if (getEventDetIds(detIDs, frameNumber, eventGroupNumber) &&
+        getEventTofs(tofs, frameNumber, eventGroupNumber)) {
+      eventData.emplace_back(detIDs, tofs);
+    }
+  }
+  return eventData;
 }
 
 bool NexusFileReader::isISISFile() { return m_isisFile; }
