@@ -272,7 +272,7 @@ uint64_t NexusFileReader::getTotalEventCount() {
 }
 
 /**
- * Get the total number of events in the file
+ * Get the total number of events in the event data group
  *
  * @return - total number of events
  */

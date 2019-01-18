@@ -1,5 +1,3 @@
-#include <utility>
-
 #pragma once
 
 #include "../../event_data/include/SampleEnvironmentEvent.h"
