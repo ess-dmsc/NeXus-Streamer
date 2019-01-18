@@ -4,6 +4,22 @@
 #include "../../event_data/include/SampleEnvironmentEventLong.h"
 #include <fmt/format.h>
 
+namespace {
+uint64_t secondsToNanoseconds(double seconds) {
+  return static_cast<uint64_t>(round(seconds * 1000000000L));
+}
+
+std::vector<uint64_t> secondsToNanoseconds(std::vector<double> const &seconds) {
+  std::vector<uint64_t> nanoseconds;
+  std::transform(seconds.cbegin(), seconds.cend(),
+                 std::back_inserter(nanoseconds),
+                 [](double const secondsValue) {
+                   return secondsToNanoseconds(secondsValue);
+                 });
+  return nanoseconds;
+}
+}
+
 /**
  * We can only currently deal with multiple NXevent_data groups if they contain
  * exactly the same frames
@@ -15,15 +31,17 @@ void checkEventDataGroupsHaveConsistentFrames(
     std::vector<hdf5::node::Group> const &eventGroups) {
   if (eventGroups.size() > 1) {
     auto firstGroupPulseDataset = eventGroups[0].get_dataset("event_time_zero");
-    std::vector<uint64_t> firstGroupPulseTimes(
+    std::vector<double> firstGroupPulseTimes(
         static_cast<size_t>(firstGroupPulseDataset.dataspace().size()));
     firstGroupPulseDataset.read(firstGroupPulseTimes);
+    auto firstPulseTimesNs = secondsToNanoseconds(firstGroupPulseTimes);
     for (auto const &eventGroup : eventGroups) {
       auto pulseTimesDataset = eventGroup.get_dataset("event_time_zero");
-      std::vector<uint64_t> pulseTimes(
+      std::vector<double> pulseTimes(
           static_cast<size_t>(pulseTimesDataset.dataspace().size()));
       pulseTimesDataset.read(pulseTimes);
-      if (firstGroupPulseTimes != pulseTimes) {
+      auto pulseTimesNs = secondsToNanoseconds(pulseTimes);
+      if (firstPulseTimesNs != pulseTimesNs) {
         throw std::runtime_error("NXevent_data groups in the file do not "
                                  "contain the same frames as each other, this "
                                  "is not currently supported.");
@@ -312,8 +330,7 @@ uint64_t NexusFileReader::getFrameTime(hsize_t frameNumber) {
 
   auto frameTime = getSingleValueFromDataset<double>(m_eventGroups[0],
                                                      datasetName, frameNumber);
-  auto frameTimeFromOffsetNanoseconds =
-      static_cast<uint64_t>(round(frameTime * 1000000000L));
+  auto frameTimeFromOffsetNanoseconds = secondsToNanoseconds(frameTime);
   return m_frameStartOffset + frameTimeFromOffsetNanoseconds;
 }
 
