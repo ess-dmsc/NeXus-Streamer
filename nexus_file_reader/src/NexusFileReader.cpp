@@ -18,7 +18,6 @@ std::vector<uint64_t> secondsToNanoseconds(std::vector<double> const &seconds) {
                  });
   return nanoseconds;
 }
-}
 
 /**
  * We can only currently deal with multiple NXevent_data groups if they contain
@@ -48,6 +47,7 @@ void checkEventDataGroupsHaveConsistentFrames(
       }
     }
   }
+}
 }
 
 /**

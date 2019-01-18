@@ -9,9 +9,6 @@
 #include <unordered_map>
 #include <vector>
 
-void checkEventDataGroupsHaveConsistentFrames(
-    std::vector<hdf5::node::Group> const &eventGroups);
-
 class NexusFileReader : public FileReader {
 public:
   NexusFileReader(hdf5::file::File file, uint64_t runStartTime,
