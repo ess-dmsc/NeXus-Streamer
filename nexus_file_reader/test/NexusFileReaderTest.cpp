@@ -94,8 +94,8 @@ TEST(NexusFileReaderTest, nexus_read_number_frames) {
 TEST(NexusFileReaderTest, get_detIds_first_frame) {
   auto fileReader = NexusFileReader(
       hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0});
-  std::vector<EventDataFrame> eventData;
-  EXPECT_TRUE(fileReader.getEventData(eventData, 0));
+  auto eventData = fileReader.getEventData(0);
+  EXPECT_FALSE(eventData.empty());
   EXPECT_EQ(99406, eventData[0].detectorIDs[0]);
   EXPECT_EQ(87829, eventData[0].detectorIDs[150]);
 }
@@ -103,8 +103,8 @@ TEST(NexusFileReaderTest, get_detIds_first_frame) {
 TEST(NexusFileReaderTest, get_event_tofs) {
   auto fileReader = NexusFileReader(
       hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0});
-  std::vector<EventDataFrame> eventData;
-  EXPECT_TRUE(fileReader.getEventData(eventData, 0));
+  auto eventData = fileReader.getEventData(0);
+  EXPECT_FALSE(eventData.empty());
   EXPECT_EQ(11660506, eventData[0].timeOfFlights[0]);
   EXPECT_EQ(46247304, eventData[0].timeOfFlights[150]);
 }
@@ -115,8 +115,8 @@ TEST(NexusFileReaderTest,
   auto fileReader =
       NexusFileReader(hdf5::file::open(testDataPath + "SANS_test.nxs"), 0,
                       numberOfFakeEventsPerPulse, {0});
-  std::vector<EventDataFrame> eventData;
-  EXPECT_TRUE(fileReader.getEventData(eventData, 0));
+  auto eventData = fileReader.getEventData(0);
+  EXPECT_FALSE(eventData.empty());
   EXPECT_EQ(numberOfFakeEventsPerPulse, eventData[0].timeOfFlights.size());
 }
 
@@ -126,16 +126,16 @@ TEST(NexusFileReaderTest,
   auto fileReader =
       NexusFileReader(hdf5::file::open(testDataPath + "SANS_test.nxs"), 0,
                       numberOfFakeEventsPerPulse, {0});
-  std::vector<EventDataFrame> eventData;
-  EXPECT_TRUE(fileReader.getEventData(eventData, 0));
+  auto eventData = fileReader.getEventData(0);
+  EXPECT_FALSE(eventData.empty());
   EXPECT_EQ(numberOfFakeEventsPerPulse, eventData[0].detectorIDs.size());
 }
 
 TEST(NexusFileReaderTest, get_eventData_too_high_frame_number) {
   auto fileReader = NexusFileReader(
       hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0});
-  std::vector<EventDataFrame> eventData;
-  EXPECT_FALSE(fileReader.getEventData(eventData, 3000000));
+  auto eventData = fileReader.getEventData(3000000);
+  EXPECT_TRUE(eventData.empty());
 }
 
 TEST(NexusFileReaderTest, get_period_number) {
@@ -256,8 +256,7 @@ TEST(NexusFileReaderTest,
       file, {1}, {2}, {0}, {4}, "entry", "detector_2_events");
 
   auto fileReader = NexusFileReader(file, 0, 0, {0});
-  std::vector<EventDataFrame> eventData;
-  fileReader.getEventData(eventData, 0);
+  auto eventData = fileReader.getEventData(0);
   ASSERT_EQ(eventData.size(), 2) << "Expected two event data structs as there "
                                     "are two event groups in the input file";
 }
@@ -283,8 +282,7 @@ TEST(NexusFileReaderTest,
       file, det_2_event_time_zero, {2}, {0}, {4}, "entry", "detector_2_events");
 
   auto fileReader = NexusFileReader(file, 0, 0, {0});
-  std::vector<EventDataFrame> eventData;
-  fileReader.getEventData(eventData, 0);
+  auto eventData = fileReader.getEventData(0);
   ASSERT_EQ(eventData.size(), 1)
       << "Expected an event message from only one event data group as the "
          "multiple groups have inconsistent pulse times, which is not yet "

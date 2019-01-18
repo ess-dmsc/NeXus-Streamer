@@ -15,10 +15,9 @@ class FakeFileReader : public FileReader {
   uint32_t getPeriodNumber() override { return 0; };
   float getProtonCharge(hsize_t frameNumber) override { return 0.002; };
 
-  bool getEventData(std::vector<EventDataFrame> &eventData,
-                    hsize_t frameNumber) override {
-    eventData.push_back(EventDataFrame({0, 1, 2}, {0, 1, 2}));
-    return true;
+  std::vector<EventDataFrame> getEventData(hsize_t frameNumber) override {
+    std::vector<EventDataFrame> eventData{EventDataFrame({0, 1, 2}, {0, 1, 2})};
+    return eventData;
   }
 
   size_t getNumberOfFrames() override { return 1; };

@@ -44,8 +44,7 @@ std::vector<EventData> NexusPublisher::createMessageData(hsize_t frameNumber) {
   auto period = m_fileReader->getPeriodNumber();
   auto frameTime = m_fileReader->getFrameTime(frameNumber);
 
-  std::vector<EventDataFrame> eventDataFramesFromFile;
-  m_fileReader->getEventData(eventDataFramesFromFile, frameNumber);
+  auto eventDataFramesFromFile = m_fileReader->getEventData(frameNumber);
 
   for (auto const &eventDataFrame : eventDataFramesFromFile) {
     auto eventData = EventData();

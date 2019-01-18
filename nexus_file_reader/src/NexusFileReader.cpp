@@ -487,22 +487,18 @@ bool NexusFileReader::getEventTofs(std::vector<uint32_t> &tofs,
   return true;
 }
 
-bool NexusFileReader::getEventData(std::vector<EventDataFrame> &eventData,
-                                   hsize_t frameNumber) {
+std::vector<EventDataFrame> NexusFileReader::getEventData(hsize_t frameNumber) {
+  std::vector<EventDataFrame> eventData;
   std::vector<uint32_t> detIDs;
   std::vector<uint32_t> tofs;
-  bool thereIsDataInRequestedFrame = false;
   for (size_t eventGroupNumber = 0; eventGroupNumber < m_eventGroups.size();
        ++eventGroupNumber) {
     if (getEventDetIds(detIDs, frameNumber, eventGroupNumber) &&
         getEventTofs(tofs, frameNumber, eventGroupNumber)) {
       eventData.emplace_back(detIDs, tofs);
-      thereIsDataInRequestedFrame = true;
-    } else {
-      thereIsDataInRequestedFrame = false;
     }
   }
-  return thereIsDataInRequestedFrame;
+  return eventData;
 }
 
 bool NexusFileReader::isISISFile() { return m_isisFile; }

@@ -19,8 +19,7 @@ public:
   uint64_t getTotalEventCount() override;
   uint32_t getPeriodNumber() override;
   float getProtonCharge(hsize_t frameNumber) override;
-  bool getEventData(std::vector<EventDataFrame> &eventData,
-                    hsize_t frameNumber) override;
+  std::vector<EventDataFrame> getEventData(hsize_t frameNumber) override;
   size_t getNumberOfFrames() override { return m_numberOfFrames; };
   hsize_t getNumberOfEventsInFrame(hsize_t frameNumber,
                                    size_t eventGroupNumber) override;

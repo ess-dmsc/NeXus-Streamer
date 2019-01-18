@@ -22,8 +22,7 @@ public:
   virtual uint64_t getTotalEventCount() = 0;
   virtual uint32_t getPeriodNumber() = 0;
   virtual float getProtonCharge(hsize_t frameNumber) = 0;
-  virtual bool getEventData(std::vector<EventDataFrame> &eventData,
-                            hsize_t frameNumber) = 0;
+  virtual std::vector<EventDataFrame> getEventData(hsize_t frameNumber) = 0;
   virtual size_t getNumberOfFrames() = 0;
   virtual hsize_t getNumberOfEventsInFrame(hsize_t frameNumber,
                                            size_t eventGroupNumber) = 0;
