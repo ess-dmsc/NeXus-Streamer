@@ -288,3 +288,31 @@ TEST(NexusFileReaderTest,
          "multiple groups have inconsistent pulse times, which is not yet "
          "supported";
 }
+
+TEST(NexusFileReaderTest, times_should_be_converted_to_nanoseconds) {
+  // ISIS files have event_time_zero in seconds and event_time_offset in
+  // microseconds
+  // These should be converted to nanoseconds to publish on Kafka
+  auto file = createInMemoryTestFile("fileWithISISConventionEventTimeUnits");
+  HDF5FileTestHelpers::addNXentryToFile(file, "entry");
+  HDF5FileTestHelpers::addNXeventDataToFile(file, "entry", "detector_1_events");
+  float tofInMicroseconds = 1.0;
+  HDF5FileTestHelpers::addISISNXeventDatasetsToFile();
+  auto fileReader = NexusFileReader(file, 0, 0, {0});
+  auto eventData = fileReader.getEventData(0);
+  EXPECT_EQ(eventData[0].timeOfFlights[0], );
+}
+
+TEST(NexusFileReaderTest,
+     times_already_in_nanoseconds_should_not_be_converted) {
+  // Files with event times already in nanoseconds remain in nanoseconds to
+  // publish on Kafka
+  auto file = createInMemoryTestFile("fileWithEventTimesInNanoseconds");
+  HDF5FileTestHelpers::addNXentryToFile(file, "entry");
+  HDF5FileTestHelpers::addNXeventDataToFile(file, "entry", "detector_1_events");
+  uint32_t tofInNanoseconds = 42000;
+  HDF5FileTestHelpers::addNanosecondNXeventDatasetsToFile();
+  auto fileReader = NexusFileReader(file, 0, 0, {0});
+  auto eventData = fileReader.getEventData(0);
+  EXPECT_EQ(eventData[0].timeOfFlights[0], tofInNanoseconds);
+}
