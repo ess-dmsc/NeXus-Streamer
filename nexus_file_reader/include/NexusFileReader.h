@@ -9,6 +9,9 @@
 #include <unordered_map>
 #include <vector>
 
+void checkEventDataGroupsHaveConsistentFrames(
+    std::vector<hdf5::node::Group> const &eventGroups);
+
 class NexusFileReader : public FileReader {
 public:
   NexusFileReader(hdf5::file::File file, uint64_t runStartTime,
@@ -19,8 +22,8 @@ public:
   uint64_t getTotalEventCount() override;
   uint32_t getPeriodNumber() override;
   float getProtonCharge(hsize_t frameNumber) override;
-  virtual bool getEventData(std::vector<EventDataFrame> &eventData,
-                            hsize_t frameNumber) override;
+  bool getEventData(std::vector<EventDataFrame> &eventData,
+                    hsize_t frameNumber) override;
   size_t getNumberOfFrames() override { return m_numberOfFrames; };
   hsize_t getNumberOfEventsInFrame(hsize_t frameNumber,
                                    size_t eventGroupNumber) override;
@@ -30,6 +33,7 @@ public:
   int32_t getNumberOfPeriods() override;
   uint64_t getRelativeFrameTimeMilliseconds(hsize_t frameNumber) override;
   bool isISISFile() override;
+  uint64_t getTotalEventsInGroup(size_t eventGroupNumber) override;
 
 private:
   bool getEventDetIds(std::vector<uint32_t> &detIds, hsize_t frameNumber,

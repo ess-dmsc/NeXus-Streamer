@@ -121,6 +121,7 @@ void NexusPublisher::streamData(int runNumber, bool slow,
   }
   totalBytesSent += createAndSendRunStopMessage();
   reportProgress(1.0);
+  std::cout << std::endl;
 
   m_logger->info("Frames sent: {}, Bytes sent: {}",
                  m_fileReader->getNumberOfFrames(), totalBytesSent);

@@ -35,4 +35,5 @@ public:
   virtual int32_t getNumberOfPeriods() = 0;
   virtual uint64_t getRelativeFrameTimeMilliseconds(hsize_t frameNumber) = 0;
   virtual bool isISISFile() = 0;
+  virtual uint64_t getTotalEventsInGroup(size_t eventGroupNumber) = 0;
 };

@@ -5,6 +5,34 @@
 #include <fmt/format.h>
 
 /**
+ * We can only currently deal with multiple NXevent_data groups if they contain
+ * exactly the same frames
+ * If this is not the case then throw an error
+ *
+ * @param eventGroups - the NXevent_data groups found in the file
+ */
+void checkEventDataGroupsHaveConsistentFrames(
+    std::vector<hdf5::node::Group> const &eventGroups) {
+  if (eventGroups.size() > 1) {
+    auto firstGroupPulseDataset = eventGroups[0].get_dataset("event_time_zero");
+    std::vector<uint64_t> firstGroupPulseTimes(
+        static_cast<size_t>(firstGroupPulseDataset.dataspace().size()));
+    firstGroupPulseDataset.read(firstGroupPulseTimes);
+    for (auto const &eventGroup : eventGroups) {
+      auto pulseTimesDataset = eventGroup.get_dataset("event_time_zero");
+      std::vector<uint64_t> pulseTimes(
+          static_cast<size_t>(pulseTimesDataset.dataspace().size()));
+      pulseTimesDataset.read(pulseTimes);
+      if (firstGroupPulseTimes != pulseTimes) {
+        throw std::runtime_error("NXevent_data groups in the file do not "
+                                 "contain the same frames as each other, this "
+                                 "is not currently supported.");
+      }
+    }
+  }
+}
+
+/**
  * Create a object to read the specified file
  *
  * @param filename - the full path of the NeXus file
@@ -25,8 +53,16 @@ NexusFileReader::NexusFileReader(hdf5::file::File file, uint64_t runStartTime,
 
   m_isisFile = testIfIsISISFile();
 
-  // Assuming all NXevent_data have the same event_time_zero dataset!!
-  // TODO should test for this assumption and log error if not the case
+  try {
+    checkEventDataGroupsHaveConsistentFrames(m_eventGroups);
+  } catch (const std::runtime_error &e) {
+    m_logger->warn(e.what());
+    m_logger->warn(
+        "Only data from one NXevent_data group will be published to Kafka: {}",
+        m_eventGroups[0].link().path().name());
+    m_eventGroups.resize(1);
+  }
+
   auto dataset = m_eventGroups[0].get_dataset("event_time_zero");
   m_numberOfFrames = static_cast<size_t>(dataset.dataspace().size());
   // Use pulse times relative to start time rather than using the `offset`
@@ -206,7 +242,7 @@ hsize_t NexusFileReader::getFileSize() { return m_file.size(); }
  */
 uint64_t NexusFileReader::getTotalEventCount() {
   if (m_fakeEventsPerPulse > 0) {
-    return getNumberOfFrames() * m_fakeEventsPerPulse;
+    return getNumberOfFrames() * m_fakeEventsPerPulse * m_eventGroups.size();
   }
 
   uint64_t totalEvents = 0;
@@ -215,6 +251,21 @@ uint64_t NexusFileReader::getTotalEventCount() {
     totalEvents += static_cast<uint64_t>(dataset.dataspace().size());
   }
   return totalEvents;
+}
+
+/**
+ * Get the total number of events in the file
+ *
+ * @return - total number of events
+ */
+uint64_t NexusFileReader::getTotalEventsInGroup(size_t eventGroupNumber) {
+  if (m_fakeEventsPerPulse > 0) {
+    return getNumberOfFrames() * m_fakeEventsPerPulse;
+  }
+
+  auto dataset =
+      m_eventGroups[eventGroupNumber].get_dataset("event_time_offset");
+  return static_cast<uint64_t>(dataset.dataspace().size());
 }
 
 uint32_t NexusFileReader::getPeriodNumber() { return 0; }
@@ -327,7 +378,8 @@ hsize_t NexusFileReader::getNumberOfEventsInFrame(hsize_t frameNumber,
   // if this is the last frame then we cannot get number of events by looking at
   // event index of next frame
   if (frameNumber == (m_numberOfFrames - 1)) {
-    return getTotalEventCount() - getFrameStart(frameNumber, eventGroupNumber);
+    return getTotalEventsInGroup(eventGroupNumber) -
+           getFrameStart(frameNumber, eventGroupNumber);
   }
   return getFrameStart(frameNumber + 1, eventGroupNumber) -
          getFrameStart(frameNumber, eventGroupNumber);

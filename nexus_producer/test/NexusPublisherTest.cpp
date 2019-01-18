@@ -36,6 +36,9 @@ class FakeFileReader : public FileReader {
     return 0;
   };
   bool isISISFile() override { return true; };
+  uint64_t getTotalEventsInGroup(size_t eventGroupNumber) override {
+    return 3;
+  };
 };
 
 class NexusPublisherTest : public ::testing::Test {
