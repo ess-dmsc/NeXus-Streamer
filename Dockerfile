@@ -27,6 +27,7 @@ COPY cmake nexus_streamer_src/cmake/
 COPY event_data nexus_streamer_src/event_data/
 COPY nexus_file_reader nexus_streamer_src/nexus_file_reader/
 COPY nexus_producer nexus_streamer_src/nexus_producer/
+COPY core nexus_streamer_src/core/
 COPY CMakeLists.txt nexus_streamer_src/CMakeLists.txt
 RUN cd nexus_streamer && \
     cmake ../nexus_streamer_src -DCONAN=MANUAL -DCMAKE_BUILD_TYPE=Release && \
