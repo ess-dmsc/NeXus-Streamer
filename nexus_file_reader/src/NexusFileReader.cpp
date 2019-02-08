@@ -405,16 +405,14 @@ hsize_t NexusFileReader::getNumberOfEventsInFrame(hsize_t frameNumber,
 /**
  * Get the list of detector IDs corresponding to events in the specified frame
  *
- * @param detIds - vector in which to store the detector IDs
  * @param frameNumber - the number of the frame in which to get the detector IDs
- * @return - false if the specified frame number is not the data range, true
- * otherwise
+ * @return - vector of detIds, empty if the specified frame number is not the data range
  */
-bool NexusFileReader::getEventDetIds(std::vector<uint32_t> &detIds,
-                                     hsize_t frameNumber,
-                                     size_t eventGroupNumber) {
+std::vector<uint32_t> NexusFileReader::getEventDetIds(hsize_t frameNumber, size_t eventGroupNumber) {
   if (frameNumber >= m_numberOfFrames)
-    return false;
+    return {};
+
+  std::vector<uint32_t> detIds;
 
   if (m_fakeEventsPerPulse > 0) {
     detIds.reserve(static_cast<size_t>(m_fakeEventsPerPulse));
@@ -422,7 +420,7 @@ bool NexusFileReader::getEventDetIds(std::vector<uint32_t> &detIds,
       detIds.push_back(static_cast<uint32_t>(
           m_detectorNumbers[m_detectorIDDist(RandomEngine)]));
     }
-    return true;
+    return detIds;
   }
 
   auto dataset = m_eventGroups[eventGroupNumber].get_dataset("event_id");
@@ -438,7 +436,7 @@ bool NexusFileReader::getEventDetIds(std::vector<uint32_t> &detIds,
 
   dataset.read(detIds, slab);
 
-  return true;
+  return detIds;
 }
 
 /**
@@ -450,18 +448,18 @@ bool NexusFileReader::getEventDetIds(std::vector<uint32_t> &detIds,
  * @return - false if the specified frame number is not the data range, true
  * otherwise
  */
-bool NexusFileReader::getEventTofs(std::vector<uint32_t> &tofs,
-                                   hsize_t frameNumber,
-                                   size_t eventGroupNumber) {
+std::vector<uint32_t> NexusFileReader::getEventTofs(hsize_t frameNumber, size_t eventGroupNumber) {
   if (frameNumber >= m_numberOfFrames)
-    return false;
+    return {};
+
+  std::vector<uint32_t> tofs;
 
   if (m_fakeEventsPerPulse > 0) {
     tofs.reserve(static_cast<size_t>(m_fakeEventsPerPulse));
     for (size_t i = 0; i < static_cast<size_t>(m_fakeEventsPerPulse); i++) {
       tofs.push_back(static_cast<uint32_t>(m_timeOfFlightDist(RandomEngine)));
     }
-    return true;
+    return tofs;
   }
 
   auto dataset =
@@ -484,17 +482,16 @@ bool NexusFileReader::getEventTofs(std::vector<uint32_t> &tofs,
                    return static_cast<uint32_t>(floor((tof * 1000) + 0.5));
                  });
 
-  return true;
+  return tofs;
 }
 
 std::vector<EventDataFrame> NexusFileReader::getEventData(hsize_t frameNumber) {
   std::vector<EventDataFrame> eventData;
-  std::vector<uint32_t> detIDs;
-  std::vector<uint32_t> tofs;
   for (size_t eventGroupNumber = 0; eventGroupNumber < m_eventGroups.size();
        ++eventGroupNumber) {
-    if (getEventDetIds(detIDs, frameNumber, eventGroupNumber) &&
-        getEventTofs(tofs, frameNumber, eventGroupNumber)) {
+    auto detIDs = getEventDetIds(frameNumber, eventGroupNumber);
+    auto tofs = getEventTofs(frameNumber, eventGroupNumber);
+    if (!detIDs.empty() && !tofs.empty()) {
       eventData.emplace_back(detIDs, tofs);
     }
   }
