@@ -32,8 +32,10 @@ public:
   uint64_t getTotalEventsInGroup(size_t eventGroupNumber) override;
 
 private:
-  std::vector<uint32_t> getEventDetIds(hsize_t frameNumber, size_t eventGroupNumber);
-  std::vector<uint32_t> getEventTofs(hsize_t frameNumber, size_t eventGroupNumber);
+  std::vector<uint32_t> getEventDetIds(hsize_t frameNumber,
+                                       size_t eventGroupNumber);
+  std::vector<uint32_t> getEventTofs(hsize_t frameNumber,
+                                     size_t eventGroupNumber);
   void getEntryGroup(const hdf5::node::Group &rootGroup,
                      hdf5::node::Group &entryGroupOutput);
   void getEventGroups(const hdf5::node::Group &entryGroup,
