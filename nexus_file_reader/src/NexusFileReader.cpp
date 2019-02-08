@@ -406,9 +406,11 @@ hsize_t NexusFileReader::getNumberOfEventsInFrame(hsize_t frameNumber,
  * Get the list of detector IDs corresponding to events in the specified frame
  *
  * @param frameNumber - the number of the frame in which to get the detector IDs
- * @return - vector of detIds, empty if the specified frame number is not the data range
+ * @return - vector of detIds, empty if the specified frame number is not the
+ * data range
  */
-std::vector<uint32_t> NexusFileReader::getEventDetIds(hsize_t frameNumber, size_t eventGroupNumber) {
+std::vector<uint32_t> NexusFileReader::getEventDetIds(hsize_t frameNumber,
+                                                      size_t eventGroupNumber) {
   if (frameNumber >= m_numberOfFrames)
     return {};
 
@@ -442,13 +444,13 @@ std::vector<uint32_t> NexusFileReader::getEventDetIds(hsize_t frameNumber, size_
 /**
  * Get the list of flight times corresponding to events in the specifed frame
  *
- * @param tofs - vector in which to store the time-of-flight
  * @param frameNumber - the number of the frame in which to get the
  * time-of-flights
- * @return - false if the specified frame number is not the data range, true
- * otherwise
+ * @return - vector of flight times, empty if the specified frame number is not
+ * the data range
  */
-std::vector<uint32_t> NexusFileReader::getEventTofs(hsize_t frameNumber, size_t eventGroupNumber) {
+std::vector<uint32_t> NexusFileReader::getEventTofs(hsize_t frameNumber,
+                                                    size_t eventGroupNumber) {
   if (frameNumber >= m_numberOfFrames)
     return {};
 
