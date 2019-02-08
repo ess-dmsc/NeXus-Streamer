@@ -261,6 +261,38 @@ TEST(NexusFileReaderTest,
                                     "are two event groups in the input file";
 }
 
+TEST(
+    NexusFileReaderTest,
+    fake_event_setting_gives_this_many_events_for_each_event_group_in_each_frame) {
+  // Regression test for bug where events from each group were concatenated
+  // within each frame
+  // which was leading to increasing message sizes
+
+  auto file = createInMemoryTestFile("fileWithMultipleEventDataGroups");
+  HDF5FileTestHelpers::addNXentryToFile(file, "entry");
+
+  // Add two event data groups
+  HDF5FileTestHelpers::addNXeventDataToFile(file, "entry", "detector_1_events");
+  const std::vector<int64_t> det_1_event_time_zero{0};
+  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(
+      file, {1}, {2}, {0}, {4}, "entry", "detector_1_events");
+  HDF5FileTestHelpers::addNXeventDataToFile(file, "entry", "detector_2_events");
+  const std::vector<int64_t> det_2_event_time_zero{1};
+  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(
+      file, {1}, {2}, {0}, {4}, "entry", "detector_2_events");
+
+  int32_t fakeEventsPerPulsePerEventGroup = 2;
+  auto fileReader =
+      NexusFileReader(file, 0, fakeEventsPerPulsePerEventGroup, {0});
+  auto eventData = fileReader.getEventData(0);
+  ASSERT_EQ(eventData.size(), 2) << "Expected two event data structs as there "
+                                    "are two event groups in the input file";
+  ASSERT_EQ(eventData[0].timeOfFlights.size(), fakeEventsPerPulsePerEventGroup)
+      << "Expected two events from first event group";
+  ASSERT_EQ(eventData[1].timeOfFlights.size(), fakeEventsPerPulsePerEventGroup)
+      << "Expected two events from second event group";
+}
+
 TEST(NexusFileReaderTest,
      only_one_event_group_published_if_groups_have_inconsistent_pulse_data) {
   // Dealing with inconsistent pulse data between NXevent_data is complex and

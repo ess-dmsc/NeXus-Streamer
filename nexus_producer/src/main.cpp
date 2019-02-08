@@ -58,7 +58,8 @@ int main(int argc, char **argv) {
   App.add_option("-m,--compression", settings.compression,
                  "Compression option for Kafka messages");
   App.add_option("-e,--fake-events-per-pulse", settings.fakeEventsPerPulse,
-                 "Generates this number of fake events per pulse instead of "
+                 "Generates this number of fake events per pulse per "
+                 "NXevent_data instead of "
                  "publishing real data from file");
   App.add_option(
          "-x,--disable-map",
