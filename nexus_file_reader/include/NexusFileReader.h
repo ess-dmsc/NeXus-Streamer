@@ -38,16 +38,20 @@ private:
                                      size_t eventGroupNumber);
   void getEntryGroup(const hdf5::node::Group &rootGroup,
                      hdf5::node::Group &entryGroupOutput);
-  void getEventGroups(const hdf5::node::Group &entryGroup,
-                      std::vector<hdf5::node::Group> &eventGroupsOutput);
+  void getGroups(const hdf5::node::Group &entryGroup,
+                 std::vector<hdf5::node::Group> &groupsOutput,
+                 const std::string &className,
+                 const std::vector<std::string> &requiredDatasets);
+  void checkGroupHasRequiredDatasets(
+      const hdf5::node::Group &group,
+      const std::vector<std::string> &requiredDatasets,
+      const std::string &className) const;
   size_t findFrameNumberOfTime(float time);
   std::vector<hdf5::node::Group> findNXLogs();
   template <typename T>
   T getSingleValueFromDataset(const hdf5::node::Group &group,
                               const std::string &dataset, hsize_t offset);
   hsize_t getFrameStart(hsize_t frameNumber, size_t eventGroupNumber);
-  void
-  checkEventGroupHasRequiredDatasets(const hdf5::node::Group &eventGroup) const;
   bool testIfIsISISFile();
 
   size_t m_numberOfFrames;
@@ -56,6 +60,7 @@ private:
   hdf5::file::File m_file;
   hdf5::node::Group m_entryGroup;
   std::vector<hdf5::node::Group> m_eventGroups;
+  std::vector<hdf5::node::Group> m_histoGroups;
   hdf5::dataspace::Hyperslab m_slab{{0}, {1}};
 
   uint64_t m_runStart;
