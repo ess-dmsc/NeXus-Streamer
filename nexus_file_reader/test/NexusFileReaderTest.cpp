@@ -338,8 +338,6 @@ TEST(NexusFileReaderTest, histogram_data) {
       tofBinEdges);
 
   auto fileReader = NexusFileReader(file, 0, 0, {0});
-  auto histoData = fileReader.getHistoData(0);
-  EXPECT_EQ(histoData.counts, counts) << "with initial implementation we "
-                                         "should get the whole histogram back "
-                                         "in the first frame";
+  auto histoData = fileReader.getHistoData();
+  ASSERT_EQ(histoData.counts, counts);
 }

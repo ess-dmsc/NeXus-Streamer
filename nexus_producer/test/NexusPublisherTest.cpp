@@ -20,6 +20,11 @@ class FakeFileReader : public FileReader {
     return eventData;
   }
 
+  HistogramData getHistoData() override {
+    HistogramData histoData{{1, 2, 3}, {1.0, 2.0, 3.0}};
+    return histoData;
+  }
+
   size_t getNumberOfFrames() override { return 1; };
   hsize_t getNumberOfEventsInFrame(hsize_t frameNumber,
                                    size_t eventGroupNumber) override {
