@@ -320,3 +320,26 @@ TEST(NexusFileReaderTest,
          "multiple groups have inconsistent pulse times, which is not yet "
          "supported";
 }
+
+TEST(NexusFileReaderTest, histogram_data) {
+  auto file = createInMemoryTestFile("histogramDataFile");
+
+  HDF5FileTestHelpers::addNXentryToFile(file, "entry");
+
+  const std::vector<int32_t> counts{1, 2, 3, 4};
+  const std::size_t periods = 1;
+  const std::size_t spectrumNumbers = 2;
+  const std::size_t tofBins = 2;
+  const std::vector<float> tofBinEdges{5.0,     4005.0,  8005.0,
+                                       12005.0, 16005.0, 19995.0};
+
+  HDF5FileTestHelpers::addHistogramDataGroupToFile(
+      file, "entry", "detector_1", counts, periods, spectrumNumbers, tofBins,
+      tofBinEdges);
+
+  auto fileReader = NexusFileReader(file, 0, 0, {0});
+  auto histoData = fileReader.getHistoData(0);
+  EXPECT_EQ(histoData.counts, counts) << "with initial implementation we "
+                                         "should get the whole histogram back "
+                                         "in the first frame";
+}

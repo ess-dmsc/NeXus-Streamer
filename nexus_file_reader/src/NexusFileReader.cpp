@@ -81,8 +81,8 @@ NexusFileReader::NexusFileReader(hdf5::file::File file, uint64_t runStartTime,
     m_eventGroups.resize(1);
   }
 
-  auto dataset = m_eventGroups[0].get_dataset("event_time_zero");
-  m_numberOfFrames = static_cast<size_t>(dataset.dataspace().size());
+  auto frameTimes = m_eventGroups[0].get_dataset("event_time_zero");
+  m_numberOfFrames = static_cast<size_t>(frameTimes.dataspace().size());
   // Use pulse times relative to start time rather than using the `offset`
   // attribute from the NeXus file, this makes the timestamps look as if this
   // data is coming from a live instrument
