@@ -36,7 +36,7 @@ TEST(
     error_thrown_for_file_with_NXentry_and_event_data_group_but_no_num_of_frames) {
   auto file = createInMemoryTestFile("fileWithNoGoodFrames.nxs");
   HDF5FileTestHelpers::addNXentryToFile(file);
-  HDF5FileTestHelpers::addNXeventDataToFile(file);
+  HDF5FileTestHelpers::addNXeventDataGroupToFile(file);
 
   EXPECT_THROW(NexusFileReader(file, 0, 0, {0}), std::runtime_error);
 }
@@ -183,8 +183,8 @@ TEST(NexusFileReaderTest,
 
   auto file = createInMemoryTestFile("fileWithEventData");
   HDF5FileTestHelpers::addNXentryToFile(file);
-  HDF5FileTestHelpers::addNXeventDataToFile(file);
-  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(
+  HDF5FileTestHelpers::addNXeventDataGroupToFile(file);
+  HDF5FileTestHelpers::addNanosecondNXeventDataDatasetsToFile(
       file, {relativeFrameTimeInSeconds}, {2}, {3}, {4});
 
   auto fileReader = NexusFileReader(file, 0, 0, {0});
@@ -220,7 +220,7 @@ TEST(NexusFileReaderTest, file_is_detected_as_from_isis_by_groups_present) {
   auto file = createInMemoryTestFile("fileWithISISGroups");
   // "raw_data_1" is the expected entry group name for an ISIS file
   HDF5FileTestHelpers::addNXentryToFile(file, "raw_data_1");
-  HDF5FileTestHelpers::addNXeventDataToFile(file, "raw_data_1");
+  HDF5FileTestHelpers::addNXeventDataGroupToFile(file, "raw_data_1");
   HDF5FileTestHelpers::addVMSCompatGroupToFile(file);
   HDF5FileTestHelpers::addNXeventDataDatasetsToFile(file, "raw_data_1");
   auto fileReader = NexusFileReader(file, 0, 0, {0});
@@ -232,7 +232,7 @@ TEST(NexusFileReaderTest,
   auto file = createInMemoryTestFile("fileWithISISEntryGroup");
   // "raw_data_1" is the expected entry group name for an ISIS file
   HDF5FileTestHelpers::addNXentryToFile(file, "raw_data_1");
-  HDF5FileTestHelpers::addNXeventDataToFile(file, "raw_data_1");
+  HDF5FileTestHelpers::addNXeventDataGroupToFile(file, "raw_data_1");
   HDF5FileTestHelpers::addNXeventDataDatasetsToFile(file, "raw_data_1");
   auto fileReader = NexusFileReader(file, 0, 0, {0});
   EXPECT_FALSE(fileReader.isISISFile()) << "The is no \"isis_vms_compat\" "
@@ -246,13 +246,15 @@ TEST(NexusFileReaderTest,
   HDF5FileTestHelpers::addNXentryToFile(file, "entry");
 
   // Add two event data groups
-  HDF5FileTestHelpers::addNXeventDataToFile(file, "entry", "detector_1_events");
+  HDF5FileTestHelpers::addNXeventDataGroupToFile(file, "entry",
+                                                 "detector_1_events");
   const std::vector<int64_t> det_1_event_time_zero{0};
-  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(
+  HDF5FileTestHelpers::addNanosecondNXeventDataDatasetsToFile(
       file, {1}, {2}, {0}, {4}, "entry", "detector_1_events");
-  HDF5FileTestHelpers::addNXeventDataToFile(file, "entry", "detector_2_events");
+  HDF5FileTestHelpers::addNXeventDataGroupToFile(file, "entry",
+                                                 "detector_2_events");
   const std::vector<int64_t> det_2_event_time_zero{1};
-  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(
+  HDF5FileTestHelpers::addNanosecondNXeventDataDatasetsToFile(
       file, {1}, {2}, {0}, {4}, "entry", "detector_2_events");
 
   auto fileReader = NexusFileReader(file, 0, 0, {0});
@@ -272,13 +274,15 @@ TEST(
   HDF5FileTestHelpers::addNXentryToFile(file, "entry");
 
   // Add two event data groups
-  HDF5FileTestHelpers::addNXeventDataToFile(file, "entry", "detector_1_events");
+  HDF5FileTestHelpers::addNXeventDataGroupToFile(file, "entry",
+                                                 "detector_1_events");
   const std::vector<int64_t> det_1_event_time_zero{0};
-  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(
+  HDF5FileTestHelpers::addNanosecondNXeventDataDatasetsToFile(
       file, {1}, {2}, {0}, {4}, "entry", "detector_1_events");
-  HDF5FileTestHelpers::addNXeventDataToFile(file, "entry", "detector_2_events");
+  HDF5FileTestHelpers::addNXeventDataGroupToFile(file, "entry",
+                                                 "detector_2_events");
   const std::vector<int64_t> det_2_event_time_zero{1};
-  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(
+  HDF5FileTestHelpers::addNanosecondNXeventDataDatasetsToFile(
       file, {1}, {2}, {0}, {4}, "entry", "detector_2_events");
 
   int32_t fakeEventsPerPulsePerEventGroup = 2;
@@ -304,13 +308,15 @@ TEST(NexusFileReaderTest,
   HDF5FileTestHelpers::addNXentryToFile(file, "entry");
 
   // Add two event data groups with differing event_time_zero datasets
-  HDF5FileTestHelpers::addNXeventDataToFile(file, "entry", "detector_1_events");
+  HDF5FileTestHelpers::addNXeventDataGroupToFile(file, "entry",
+                                                 "detector_1_events");
   const std::vector<int64_t> det_1_event_time_zero{0};
-  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(
+  HDF5FileTestHelpers::addNanosecondNXeventDataDatasetsToFile(
       file, det_1_event_time_zero, {2}, {0}, {4}, "entry", "detector_1_events");
-  HDF5FileTestHelpers::addNXeventDataToFile(file, "entry", "detector_2_events");
+  HDF5FileTestHelpers::addNXeventDataGroupToFile(file, "entry",
+                                                 "detector_2_events");
   const std::vector<int64_t> det_2_event_time_zero{1};
-  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(
+  HDF5FileTestHelpers::addNanosecondNXeventDataDatasetsToFile(
       file, det_2_event_time_zero, {2}, {0}, {4}, "entry", "detector_2_events");
 
   auto fileReader = NexusFileReader(file, 0, 0, {0});
@@ -327,12 +333,17 @@ TEST(NexusFileReaderTest, times_should_be_converted_to_nanoseconds) {
   // These should be converted to nanoseconds to publish on Kafka
   auto file = createInMemoryTestFile("fileWithISISConventionEventTimeUnits");
   HDF5FileTestHelpers::addNXentryToFile(file, "entry");
-  HDF5FileTestHelpers::addNXeventDataToFile(file, "entry", "detector_1_events");
+  HDF5FileTestHelpers::addNXeventDataGroupToFile(file, "entry",
+                                                 "detector_1_events");
+  double pulseTimeInSeconds = 20.0;
   float tofInMicroseconds = 1.0;
-  HDF5FileTestHelpers::addISISNXeventDatasetsToFile();
+
+  HDF5FileTestHelpers::addISISNXeventDataDatasetsToFile(
+      file, {pulseTimeInSeconds}, {tofInMicroseconds}, {0}, {4}, "entry");
   auto fileReader = NexusFileReader(file, 0, 0, {0});
   auto eventData = fileReader.getEventData(0);
-  EXPECT_EQ(eventData[0].timeOfFlights[0], );
+  EXPECT_NEAR(eventData[0].timeOfFlights[0], 100, 100);
+  EXPECT_NEAR(fileReader.getFrameTime(0), 100, 100);
 }
 
 TEST(NexusFileReaderTest,
@@ -341,9 +352,11 @@ TEST(NexusFileReaderTest,
   // publish on Kafka
   auto file = createInMemoryTestFile("fileWithEventTimesInNanoseconds");
   HDF5FileTestHelpers::addNXentryToFile(file, "entry");
-  HDF5FileTestHelpers::addNXeventDataToFile(file, "entry", "detector_1_events");
-  uint32_t tofInNanoseconds = 42000;
-  HDF5FileTestHelpers::addNanosecondNXeventDatasetsToFile();
+  HDF5FileTestHelpers::addNXeventDataGroupToFile(file, "entry",
+                                                 "detector_1_events");
+  int32_t tofInNanoseconds = 42000;
+  HDF5FileTestHelpers::addNanosecondNXeventDataDatasetsToFile(
+      file, {1}, {tofInNanoseconds}, {3}, {4}, "entry");
   auto fileReader = NexusFileReader(file, 0, 0, {0});
   auto eventData = fileReader.getEventData(0);
   EXPECT_EQ(eventData[0].timeOfFlights[0], tofInNanoseconds);

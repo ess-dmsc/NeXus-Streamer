@@ -14,7 +14,7 @@ hdf5::file::File
 createInMemoryTestFileWithEventData(const std::string &filename) {
   auto file = createInMemoryTestFile(filename);
   HDF5FileTestHelpers::addNXentryToFile(file);
-  HDF5FileTestHelpers::addNXeventDataToFile(file);
+  HDF5FileTestHelpers::addNXeventDataGroupToFile(file);
   HDF5FileTestHelpers::addNXeventDataDatasetsToFile(file);
   return file;
 }
@@ -33,8 +33,9 @@ void addNXentryToFile(hdf5::file::File &file, const std::string &entryName) {
   write_attribute<std::string>(entryGroup, "NX_class", "NXentry");
 }
 
-void addNXeventDataToFile(hdf5::file::File &file, const std::string &entryName,
-                          const std::string &groupName) {
+void addNXeventDataGroupToFile(hdf5::file::File &file,
+                               const std::string &entryName,
+                               const std::string &groupName) {
   hdf5::node::Group entryGroup = file.root()[entryName];
   auto eventGroup = entryGroup.create_group(groupName);
   write_attribute<std::string>(eventGroup, "NX_class", "NXevent_data");
@@ -42,27 +43,59 @@ void addNXeventDataToFile(hdf5::file::File &file, const std::string &entryName,
 
 void addNXeventDataDatasetsToFile(hdf5::file::File &file,
                                   const std::string &entryName) {
-  addNXeventDataDatasetsToFile(file, {1}, {2}, {3}, {4}, entryName);
+  addNanosecondNXeventDataDatasetsToFile(file, {1}, {2}, {3}, {4}, entryName);
 }
 
-void addNXeventDataDatasetsToFile(hdf5::file::File &file,
-                                  const std::vector<int64_t> &eventTimeZero,
-                                  const std::vector<int32_t> &eventTimeOffset,
-                                  const std::vector<uint64_t> &eventIndex,
-                                  const std::vector<uint32_t> &eventId,
-                                  const std::string &entryName,
-                                  const std::string &groupName) {
+void addNanosecondNXeventDataDatasetsToFile(
+    hdf5::file::File &file, const std::vector<int64_t> &eventTimeZero,
+    const std::vector<int32_t> &eventTimeOffset,
+    const std::vector<uint64_t> &eventIndex,
+    const std::vector<uint32_t> &eventId, const std::string &entryName,
+    const std::string &groupName) {
   hdf5::node::Group eventGroup = file.root()[entryName + "/" + groupName];
   auto eventTimeZeroDataset = eventGroup.create_dataset(
       "event_time_zero", hdf5::datatype::create<int64_t>(),
       hdf5::dataspace::Simple({eventTimeZero.size()}, {eventTimeZero.size()}));
   eventTimeZeroDataset.write(eventTimeZero);
+  eventTimeZeroDataset.attributes.create_from("units", "ns");
 
   auto eventTimeOffsetDataset = eventGroup.create_dataset(
       "event_time_offset", hdf5::datatype::create<int32_t>(),
       hdf5::dataspace::Simple({eventTimeOffset.size()},
                               {eventTimeOffset.size()}));
   eventTimeOffsetDataset.write(eventTimeOffset);
+  eventTimeOffsetDataset.attributes.create_from("units", "ns");
+
+  auto eventIndexDataset = eventGroup.create_dataset(
+      "event_index", hdf5::datatype::create<uint64_t>(),
+      hdf5::dataspace::Simple({eventIndex.size()}, {eventIndex.size()}));
+  eventIndexDataset.write(eventIndex);
+
+  auto eventIdDataset = eventGroup.create_dataset(
+      "event_id", hdf5::datatype::create<uint32_t>(),
+      hdf5::dataspace::Simple({eventId.size()}, {eventId.size()}));
+  eventIdDataset.write(eventId);
+}
+
+void addISISNXeventDataDatasetsToFile(
+    hdf5::file::File &file, const std::vector<double> &eventTimeZero,
+    const std::vector<float> &eventTimeOffset,
+    const std::vector<uint64_t> &eventIndex,
+    const std::vector<uint32_t> &eventId, const std::string &entryName,
+    const std::string &groupName) {
+  hdf5::node::Group eventGroup = file.root()[entryName + "/" + groupName];
+  auto eventTimeZeroDataset = eventGroup.create_dataset(
+      "event_time_zero", hdf5::datatype::create<double>(),
+      hdf5::dataspace::Simple({eventTimeZero.size()}, {eventTimeZero.size()}));
+  eventTimeZeroDataset.write(eventTimeZero);
+  eventTimeZeroDataset.attributes.create_from("units", "s");
+
+  auto eventTimeOffsetDataset = eventGroup.create_dataset(
+      "event_time_offset", hdf5::datatype::create<float>(),
+      hdf5::dataspace::Simple({eventTimeOffset.size()},
+                              {eventTimeOffset.size()}));
+  eventTimeOffsetDataset.write(eventTimeOffset);
+  eventTimeOffsetDataset.attributes.create_from("units", "us");
 
   auto eventIndexDataset = eventGroup.create_dataset(
       "event_index", hdf5::datatype::create<uint64_t>(),
