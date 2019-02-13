@@ -511,9 +511,9 @@ std::vector<EventDataFrame> NexusFileReader::getEventData(hsize_t frameNumber) {
   return eventData;
 }
 
-HistogramData NexusFileReader::getHistoData() {
+std::vector<HistogramData> NexusFileReader::getHistoData() {
   HistogramData histoData{{1, 2, 3}, {1.0, 2.0, 3.0}};
-  return histoData;
+  return {histoData};
 }
 
 bool NexusFileReader::isISISFile() { return m_isisFile; }

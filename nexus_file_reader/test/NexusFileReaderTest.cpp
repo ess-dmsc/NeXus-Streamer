@@ -15,7 +15,7 @@ AllElementsInVectorAreNear(const std::vector<float> &a,
                            const std::vector<float> &b, float delta) {
 
   if (a.size() != b.size()) {
-    return ::testing::AssertionFailure() << "The vectors are different lengths";
+    return ::testing::AssertionFailure() << "Vectors are different lengths";
   }
 
   for (size_t i = 0; i < a.size(); ++i) {
@@ -357,7 +357,9 @@ TEST(NexusFileReaderTest, successfully_read_isis_histogram_data) {
 
   auto fileReader = NexusFileReader(file, 0, 0, {0});
   auto histoData = fileReader.getHistoData();
-  EXPECT_EQ(histoData.counts, counts);
+  EXPECT_EQ(histoData.size(), 1) << "We expect 1 histogram data object from "
+                                    "the 1 NXdata group in the file";
+  EXPECT_EQ(histoData[0].counts, counts);
   EXPECT_TRUE(
-      AllElementsInVectorAreNear(histoData.timeOfFlight, tofBinEdges, 0.01));
+      AllElementsInVectorAreNear(histoData[0].timeOfFlight, tofBinEdges, 0.01));
 }

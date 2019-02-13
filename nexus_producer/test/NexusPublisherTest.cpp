@@ -20,9 +20,9 @@ class FakeFileReader : public FileReader {
     return eventData;
   }
 
-  HistogramData getHistoData() override {
+  std::vector<HistogramData> getHistoData() override {
     HistogramData histoData{{1, 2, 3}, {1.0, 2.0, 3.0}};
-    return histoData;
+    return {histoData};
   }
 
   size_t getNumberOfFrames() override { return 1; };
