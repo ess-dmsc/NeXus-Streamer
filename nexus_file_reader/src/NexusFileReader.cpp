@@ -512,8 +512,21 @@ std::vector<EventDataFrame> NexusFileReader::getEventData(hsize_t frameNumber) {
 }
 
 std::vector<HistogramData> NexusFileReader::getHistoData() {
-  HistogramData histoData{{1, 2, 3}, {1.0, 2.0, 3.0}};
-  return {histoData};
+  std::vector<HistogramData> histogramData;
+  for (const auto &histoGroup : m_histoGroups) {
+    auto countsDataset = histoGroup.get_dataset("counts");
+    std::vector<int32_t> counts(
+        static_cast<size_t>(countsDataset.dataspace().size()));
+    countsDataset.read(counts);
+
+    auto tofDataset = histoGroup.get_dataset("time_of_flight");
+    std::vector<float> timeOfFlight(
+        static_cast<size_t>(tofDataset.dataspace().size()));
+    tofDataset.read(timeOfFlight);
+
+    histogramData.emplace_back(counts, timeOfFlight);
+  }
+  return histogramData;
 }
 
 bool NexusFileReader::isISISFile() { return m_isisFile; }
