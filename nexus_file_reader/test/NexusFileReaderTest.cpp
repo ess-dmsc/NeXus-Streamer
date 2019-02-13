@@ -10,6 +10,24 @@ extern std::string testDataPath;
 using HDF5FileTestHelpers::createInMemoryTestFile;
 using HDF5FileTestHelpers::createInMemoryTestFileWithEventData;
 
+::testing::AssertionResult
+AllElementsInVectorAreNear(const std::vector<float> &a,
+                           const std::vector<float> &b, float delta) {
+
+  if (a.size() != b.size()) {
+    return ::testing::AssertionFailure() << "The vectors are different lengths";
+  }
+
+  for (size_t i = 0; i < a.size(); ++i) {
+    if (a[i] < (b[i] - delta) || a[i] > (b[i] + delta)) {
+      return ::testing::AssertionFailure() << "Vectors differ by more than "
+                                           << delta;
+    }
+  }
+
+  return ::testing::AssertionSuccess();
+}
+
 TEST(NexusFileReaderTest, error_thrown_for_non_existent_file) {
   EXPECT_THROW(
       NexusFileReader(hdf5::file::open(testDataPath + "not_exist_file.nxs"), 0,
@@ -321,7 +339,7 @@ TEST(NexusFileReaderTest,
          "supported";
 }
 
-TEST(NexusFileReaderTest, histogram_data) {
+TEST(NexusFileReaderTest, successfully_read_isis_histogram_data) {
   auto file = createInMemoryTestFile("histogramDataFile");
 
   HDF5FileTestHelpers::addNXentryToFile(file, "entry");
@@ -339,5 +357,7 @@ TEST(NexusFileReaderTest, histogram_data) {
 
   auto fileReader = NexusFileReader(file, 0, 0, {0});
   auto histoData = fileReader.getHistoData();
-  ASSERT_EQ(histoData.counts, counts);
+  EXPECT_EQ(histoData.counts, counts);
+  EXPECT_TRUE(
+      AllElementsInVectorAreNear(histoData.timeOfFlight, tofBinEdges, 0.01));
 }
