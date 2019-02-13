@@ -1,4 +1,6 @@
 #include "EventData.h"
+#include "../../core/include/Message.h"
+#include <ev42_events_generated.h>
 #include <gtest/gtest.h>
 
 class EventDataTest : public ::testing::Test {};

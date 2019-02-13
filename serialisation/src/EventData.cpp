@@ -1,4 +1,6 @@
 #include "EventData.h"
+#include "../../core/include/Message.h"
+#include <ev42_events_generated.h>
 #include <is84_isis_events_generated.h>
 
 bool EventData::decodeMessage(const uint8_t *buf) {

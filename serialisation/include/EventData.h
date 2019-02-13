@@ -2,10 +2,12 @@
 
 #include <cstdint>
 #include <vector>
+#include <limits>
 
-#include "../../core/include/Message.h"
-#include "ev42_events_generated.h"
-#include "is84_isis_events_generated.h"
+
+namespace Streamer {
+class Message;
+}
 
 class EventData {
 
