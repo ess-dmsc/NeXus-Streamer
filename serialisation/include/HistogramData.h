@@ -1,10 +1,13 @@
 #pragma once
 
-#include <vector>
 #include <cstdint>
+#include <vector>
 
 namespace Streamer {
 class Message;
 }
 
-Streamer::Message createHistogramMessage(const std::vector<int32_t> &counts, const std::vector<float> &timeOfFlight);
+Streamer::Message createHistogramMessage(const std::vector<int32_t> &counts,
+                                         const std::vector<size_t> &countsShape,
+                                         const std::vector<float> &timeOfFlight,
+                                         uint64_t timestampUnix);
