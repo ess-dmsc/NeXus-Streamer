@@ -2,6 +2,7 @@ project(isis_nexus_streamer)
 
 set( SRC_FILES
         src/EventData.cpp
+        src/HistogramData.cpp
         src/RunData.cpp
         src/DetectorSpectrumMapData.cpp
         src/SampleEnvironmentEvent.cpp
