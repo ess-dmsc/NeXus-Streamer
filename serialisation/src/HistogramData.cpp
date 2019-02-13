@@ -41,3 +41,18 @@ Streamer::Message createHistogramMessage(const std::vector<int32_t> &counts,
 
   return Streamer::Message(builder.Release());
 }
+
+/**
+ * @param message : input message to be deserialised
+ * @param counts : output by reference
+ * @param countsShape : output by reference
+ * @param timeOfFlight : output by reference
+ * @param timestampUnix : output by reference
+ */
+void deserialiseHistogramMessage(const Streamer::Message &message,
+                                 std::vector<int32_t> &counts,
+                                 std::vector<size_t> &countsShape,
+                                 std::vector<float> &timeOfFlight,
+                                 uint64_t &timestampUnix) {
+  
+}
