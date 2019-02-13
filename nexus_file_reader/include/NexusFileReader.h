@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../event_data/include/SampleEnvironmentEvent.h"
+#include "../../serialisation/include/SampleEnvironmentEvent.h"
 #include "FileReader.h"
 #include <h5cpp/hdf5.hpp>
 #include <memory>

@@ -1,7 +1,7 @@
 #include "../include/NexusFileReader.h"
-#include "../../event_data/include/SampleEnvironmentEventDouble.h"
-#include "../../event_data/include/SampleEnvironmentEventInt.h"
-#include "../../event_data/include/SampleEnvironmentEventLong.h"
+#include "../../serialisation/include/SampleEnvironmentEventDouble.h"
+#include "../../serialisation/include/SampleEnvironmentEventInt.h"
+#include "../../serialisation/include/SampleEnvironmentEventLong.h"
 #include <fmt/format.h>
 
 namespace {

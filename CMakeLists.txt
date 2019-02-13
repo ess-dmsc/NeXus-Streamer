@@ -76,7 +76,7 @@ endif()
 ## Add subdirs    ##
 ####################
 
-add_subdirectory("${PROJECT_SOURCE_DIR}/event_data")
+add_subdirectory("${PROJECT_SOURCE_DIR}/serialisation")
 add_subdirectory("${PROJECT_SOURCE_DIR}/nexus_producer")
 add_subdirectory("${PROJECT_SOURCE_DIR}/nexus_file_reader")
 
@@ -88,14 +88,14 @@ include_directories(
         CONAN_PKG::h5cpp
         CONAN_PKG::librdkafka
         ${PROJECT_SOURCE_DIR}/nexus_producer/include
-        ${PROJECT_SOURCE_DIR}/event_data/include
+        ${PROJECT_SOURCE_DIR}/serialisation/include
         ${PROJECT_SOURCE_DIR}/nexus_file_reader/include
         ${PROJECT_SOURCE_DIR}/core/include)
 
 file(GLOB TEST_SRC_FILES
         ${PROJECT_SOURCE_DIR}/nexus_producer/test/*Test.cpp
         ${PROJECT_SOURCE_DIR}/nexus_file_reader/test/*Test.cpp
-        ${PROJECT_SOURCE_DIR}/event_data/test/*Test.cpp
+        ${PROJECT_SOURCE_DIR}/serialisation/test/*Test.cpp
         unitTestRunner.cpp)
 
 add_executable(UnitTests ${TEST_SRC_FILES})

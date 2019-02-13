@@ -29,11 +29,11 @@ target_link_libraries(nexusPublisher_lib
         CONAN_PKG::spdlog
         CONAN_PKG::FlatBuffers
         nexusFileReader_lib
-        eventdata_lib)
+        serialisation_lib)
 target_include_directories(nexusPublisher_lib PUBLIC ${PROJECT_SOURCE_DIR}/core/include)
 
 set(core_libraries
-        eventdata_lib
+        serialisation_lib
         nexusFileReader_lib
         nexusPublisher_lib
         eventPublisher_lib)

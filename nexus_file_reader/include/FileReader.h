@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../event_data/include/SampleEnvironmentEvent.h"
+#include "../../serialisation/include/SampleEnvironmentEvent.h"
 #include <cmath>
 #include <h5cpp/hdf5.hpp>
 #include <unordered_map>

@@ -3,7 +3,7 @@
 #include <iostream>
 #include <thread>
 
-#include "../../event_data/include/DetectorSpectrumMapData.h"
+#include "../../serialisation/include/DetectorSpectrumMapData.h"
 #include "NexusPublisher.h"
 
 /**

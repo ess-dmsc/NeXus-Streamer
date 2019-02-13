@@ -3,9 +3,9 @@
 #include <memory>
 #include <spdlog/spdlog.h>
 
-#include "../../event_data/include/DetectorSpectrumMapData.h"
-#include "../../event_data/include/EventData.h"
-#include "../../event_data/include/RunData.h"
+#include "../../serialisation/include/DetectorSpectrumMapData.h"
+#include "../../serialisation/include/EventData.h"
+#include "../../serialisation/include/RunData.h"
 #include "../../nexus_file_reader/include/FileReader.h"
 #include "EventPublisher.h"
 #include "OptionalArgs.h"

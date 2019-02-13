@@ -1,7 +1,7 @@
 #include <gmock/gmock.h>
 #include <memory>
 
-#include "../../event_data/include/DetectorSpectrumMapData.h"
+#include "../../serialisation/include/DetectorSpectrumMapData.h"
 #include "MockEventPublisher.h"
 #include "NexusPublisher.h"
 #include "OptionalArgs.h"
