@@ -12,7 +12,7 @@ Streamer::Message createHistogramMessage(const std::vector<int32_t> &counts,
                                          const std::vector<float> &timeOfFlight,
                                          uint64_t timestampUnix);
 
-void deserialiseHistogramMessage(const Streamer::Message &message,
+void deserialiseHistogramMessage(Streamer::Message &message,
                                  std::vector<int32_t> &counts,
                                  std::vector<size_t> &countsShape,
                                  std::vector<float> &timeOfFlight,

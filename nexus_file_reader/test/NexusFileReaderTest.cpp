@@ -10,6 +10,7 @@ extern std::string testDataPath;
 using HDF5FileTestHelpers::createInMemoryTestFile;
 using HDF5FileTestHelpers::createInMemoryTestFileWithEventData;
 
+namespace {
 ::testing::AssertionResult
 AllElementsInVectorAreNear(const std::vector<float> &a,
                            const std::vector<float> &b, float delta) {
@@ -26,6 +27,7 @@ AllElementsInVectorAreNear(const std::vector<float> &a,
   }
 
   return ::testing::AssertionSuccess();
+}
 }
 
 TEST(NexusFileReaderTest, error_thrown_for_non_existent_file) {

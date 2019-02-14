@@ -3,6 +3,7 @@
 #include "hs00_event_histogram_generated.h"
 #include <gtest/gtest.h>
 
+namespace {
 ::testing::AssertionResult
 AllElementsInVectorAreNear(const std::vector<float> &a,
                            const std::vector<float> &b, float delta) {
@@ -19,6 +20,7 @@ AllElementsInVectorAreNear(const std::vector<float> &a,
   }
 
   return ::testing::AssertionSuccess();
+}
 }
 
 class HistogramDataTest : public ::testing::Test {};
