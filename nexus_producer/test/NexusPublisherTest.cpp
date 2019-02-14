@@ -103,6 +103,7 @@ TEST_F(NexusPublisherTest, test_stream_data) {
   EXPECT_CALL(*publisher.get(), sendRunMessage(_))
       .Times(2); // Start and stop messages
   EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_)).Times(1);
+  EXPECT_CALL(*publisher.get(), sendHistogramMessage(_)).Times(1);
 
   std::shared_ptr<FileReader> fakeFileReader =
       std::make_shared<FakeFileReader>();
