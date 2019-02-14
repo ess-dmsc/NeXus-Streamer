@@ -1,3 +1,4 @@
+#include "../../core/include/HistogramFrame.h"
 #include "../../core/include/Message.h"
 #include "HistogramData.h"
 #include "hs00_event_histogram_generated.h"
@@ -28,7 +29,8 @@ class HistogramDataTest : public ::testing::Test {};
 TEST(
     HistogramDataTest,
     createHistogramMessage_returns_a_message_with_histogram_schema_identifier) {
-  auto message = createHistogramMessage({1, 2, 3}, {1, 1, 3}, {1.0, 3.0}, 0);
+  auto histogram = HistogramFrame({1, 2, 3}, {1, 1, 3}, {1.0, 3.0});
+  auto message = createHistogramMessage(histogram, 0);
 
   EXPECT_GT(message.size(), 8) << "Expected message size to at least be large "
                                   "enough to contain the file identifier";
@@ -42,25 +44,17 @@ TEST(
     HistogramDataTest,
     deserialising_message_created_by_createHistogramMessage_yeilds_original_input) {
 
-  std::vector<int32_t> countsInput{1, 2, 3};
-  std::vector<size_t> countsShapeInput{1, 1, 3};
-  std::vector<float> timeOfFlightInput{1.0, 3.0};
   uint64_t timestampUnixInput = 0;
+  auto inputHistogram = HistogramFrame({1, 2, 3}, {1, 1, 3}, {1.0, 3.0});
+  auto message = createHistogramMessage(inputHistogram, timestampUnixInput);
 
-  auto message = createHistogramMessage(countsInput, countsShapeInput,
-                                        timeOfFlightInput, timestampUnixInput);
-
-  std::vector<int32_t> countsOutput;
-  std::vector<size_t> countsShapeOutput;
-  std::vector<float> timeOfFlightOutput;
   uint64_t timestampUnixOutput;
+  auto outputHistogram =
+      deserialiseHistogramMessage(message, timestampUnixOutput);
 
-  deserialiseHistogramMessage(message, countsOutput, countsShapeOutput,
-                              timeOfFlightOutput, timestampUnixOutput);
-
-  EXPECT_EQ(countsInput, countsOutput);
-  EXPECT_EQ(countsShapeInput, countsShapeOutput);
-  EXPECT_TRUE(
-      AllElementsInVectorAreNear(timeOfFlightInput, timeOfFlightOutput, 0.01));
+  EXPECT_EQ(inputHistogram.counts, outputHistogram.counts);
+  EXPECT_EQ(inputHistogram.countsShape, outputHistogram.countsShape);
+  EXPECT_TRUE(AllElementsInVectorAreNear(inputHistogram.timeOfFlight,
+                                         outputHistogram.timeOfFlight, 0.01));
   EXPECT_EQ(timestampUnixInput, timestampUnixOutput);
 }

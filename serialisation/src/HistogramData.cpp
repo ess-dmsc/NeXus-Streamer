@@ -1,38 +1,39 @@
 #include "HistogramData.h"
+#include "../../core/include/HistogramFrame.h"
 #include "../../core/include/Message.h"
 #include "hs00_event_histogram_generated.h"
 
-Streamer::Message createHistogramMessage(const std::vector<int32_t> &counts,
-                                         const std::vector<size_t> &countsShape,
-                                         const std::vector<float> &timeOfFlight,
+Streamer::Message createHistogramMessage(const HistogramFrame &histogram,
                                          uint64_t timestampUnix) {
   flatbuffers::FlatBufferBuilder builder;
 
-  auto periodsDimension =
-      CreateDimensionMetaData(builder, static_cast<uint32_t>(countsShape[0]), 0,
-                              builder.CreateString("Period"));
+  auto periodsDimension = CreateDimensionMetaData(
+      builder, static_cast<uint32_t>(histogram.countsShape[0]), 0,
+      builder.CreateString("Period"));
 
   auto timeOfFlightDimension = CreateDimensionMetaData(
-      builder, static_cast<uint32_t>(countsShape[1]),
+      builder, static_cast<uint32_t>(histogram.countsShape[1]),
       builder.CreateString("us"), builder.CreateString("Time Of Flight"),
       Array::ArrayFloat,
-      CreateArrayFloat(builder, builder.CreateVector(timeOfFlight)).Union());
+      CreateArrayFloat(builder, builder.CreateVector(histogram.timeOfFlight))
+          .Union());
 
-  auto detectorsDimension =
-      CreateDimensionMetaData(builder, static_cast<uint32_t>(countsShape[2]), 0,
-                              builder.CreateString("Detector Number"));
+  auto detectorsDimension = CreateDimensionMetaData(
+      builder, static_cast<uint32_t>(histogram.countsShape[2]), 0,
+      builder.CreateString("Detector Number"));
 
   std::vector<flatbuffers::Offset<DimensionMetaData>> dimensionsArray{
       periodsDimension, timeOfFlightDimension, detectorsDimension};
 
   const std::vector<uint32_t> countsShapeUInt{
-      static_cast<uint32_t>(countsShape[0]),
-      static_cast<uint32_t>(countsShape[1]),
-      static_cast<uint32_t>(countsShape[2])};
+      static_cast<uint32_t>(histogram.countsShape[0]),
+      static_cast<uint32_t>(histogram.countsShape[1]),
+      static_cast<uint32_t>(histogram.countsShape[2])};
 
   const std::vector<uint32_t> offsets{0, 0, 0};
 
-  std::vector<uint32_t> countsUInt(counts.cbegin(), counts.cend());
+  std::vector<uint32_t> countsUInt(histogram.counts.cbegin(),
+                                   histogram.counts.cend());
 
   auto histogramDataOffset = CreateEventHistogram(
       builder, builder.CreateString("NeXus-Streamer"), timestampUnix,
@@ -48,21 +49,15 @@ Streamer::Message createHistogramMessage(const std::vector<int32_t> &counts,
 
 /**
  * @param message : input message to be deserialised
- * @param counts : output by reference
- * @param countsShape : output by reference
- * @param timeOfFlight : output by reference
  * @param timestampUnix : output by reference
  */
-void deserialiseHistogramMessage(Streamer::Message &message,
-                                 std::vector<int32_t> &counts,
-                                 std::vector<size_t> &countsShape,
-                                 std::vector<float> &timeOfFlight,
-                                 uint64_t &timestampUnix) {
+HistogramFrame deserialiseHistogramMessage(Streamer::Message &message,
+                                           uint64_t &timestampUnix) {
   auto messageData = GetEventHistogram(message.data());
   timestampUnix = messageData->timestamp();
 
-  countsShape.resize(3);
-
+  std::vector<size_t> countsShape(3);
+  std::vector<float> timeOfFlight;
   auto dimMetadataArray = messageData->dim_metadata();
   for (auto dimMetadata : *dimMetadataArray) {
     if (dimMetadata->label()->str() == "Period") {
@@ -82,6 +77,8 @@ void deserialiseHistogramMessage(Streamer::Message &message,
   }
 
   auto countsArray = messageData->data_as_ArrayUInt()->value();
-  counts.resize(countsArray->size());
+  std::vector<int32_t> counts(countsArray->size());
   std::copy(countsArray->begin(), countsArray->end(), counts.begin());
+
+  return HistogramFrame(counts, countsShape, timeOfFlight);
 }

@@ -3,7 +3,13 @@
 #include <iostream>
 #include <thread>
 
+#include "../../core/include/EventDataFrame.h"
+#include "../../core/include/HistogramFrame.h"
 #include "../../serialisation/include/DetectorSpectrumMapData.h"
+#include "../../serialisation/include/DetectorSpectrumMapData.h"
+#include "../../serialisation/include/EventData.h"
+#include "../../serialisation/include/HistogramData.h"
+#include "../../serialisation/include/RunData.h"
 #include "NexusPublisher.h"
 
 /**
@@ -67,25 +73,13 @@ std::vector<EventData> NexusPublisher::createMessageData(hsize_t frameNumber) {
  * @param runNumber - number identifying the current run
  * @return runData
  */
-std::shared_ptr<RunData> NexusPublisher::createRunMessageData(int runNumber) {
-  auto runData = std::make_shared<RunData>();
-  runData->setNumberOfPeriods(m_fileReader->getNumberOfPeriods());
-  runData->setInstrumentName(m_fileReader->getInstrumentName());
-  runData->setRunNumber(runNumber);
-  runData->setStartTime(static_cast<uint64_t>(getTimeNowInNanoseconds()));
+RunData NexusPublisher::createRunMessageData(int runNumber) {
+  auto runData = RunData();
+  runData.setNumberOfPeriods(m_fileReader->getNumberOfPeriods());
+  runData.setInstrumentName(m_fileReader->getInstrumentName());
+  runData.setRunNumber(runNumber);
+  runData.setStartTime(static_cast<uint64_t>(getTimeNowInNanoseconds()));
   return runData;
-}
-
-/**
- * Create detector-spectrum map message data from file
- *
- * @return detector-spectrum map message data
- */
-std::shared_ptr<DetectorSpectrumMapData>
-NexusPublisher::createDetSpecMessageData() {
-  auto detSpecMap =
-      std::make_shared<DetectorSpectrumMapData>(m_detSpecMapFilename);
-  return detSpecMap;
 }
 
 /**
@@ -168,9 +162,9 @@ void NexusPublisher::createAndSendSampleEnvMessages(size_t frameNumber) {
  */
 size_t NexusPublisher::createAndSendRunMessage(int runNumber) {
   auto messageData = createRunMessageData(runNumber);
-  auto buffer = messageData->getRunStartBuffer();
+  auto buffer = messageData.getRunStartBuffer();
   m_publisher->sendRunMessage(buffer);
-  m_logger->info("Publishing new run: {}", messageData->runInfo());
+  m_logger->info("Publishing new run: {}", messageData.runInfo());
   return buffer.size();
 }
 
@@ -181,16 +175,16 @@ size_t NexusPublisher::createAndSendRunMessage(int runNumber) {
  * @return - size of the buffer
  */
 size_t NexusPublisher::createAndSendRunStopMessage() {
-  auto runData = std::make_shared<RunData>();
+  auto runData = RunData();
   // Flush producer queue to ensure the run stop is after all messages are
   // published
   m_publisher->flushSendQueue();
-  runData->setStopTime(static_cast<uint64_t>(getTimeNowInNanoseconds() + 1));
+  runData.setStopTime(static_cast<uint64_t>(getTimeNowInNanoseconds() + 1));
   // + 1 as we want to include any messages which were sent in the current
   // nanosecond
   // (in the extremely unlikely event that it is possible to happen)
 
-  auto buffer = runData->getRunStopBuffer();
+  auto buffer = runData.getRunStopBuffer();
   m_publisher->sendRunMessage(buffer);
   return buffer.size();
 }
@@ -204,10 +198,22 @@ int64_t NexusPublisher::getTimeNowInNanoseconds() {
 }
 
 size_t NexusPublisher::createAndSendDetSpecMessage() {
-  auto messageData = createDetSpecMessageData();
-  auto messageBuffer = messageData->getBuffer();
+  auto messageData = DetectorSpectrumMapData(m_detSpecMapFilename);
+  auto messageBuffer = messageData.getBuffer();
   m_publisher->sendDetSpecMessage(messageBuffer);
   return messageBuffer.size();
+}
+
+size_t NexusPublisher::createAndSendHistogramMessage() {
+  auto histograms = m_fileReader->getHistoData();
+  // One histogram per NXdata group in the file
+  size_t totalDataSize = 0;
+  for (auto const &histogram : histograms) {
+    auto message = createHistogramMessage(histogram, 0); // TODO timestamp!!
+    m_publisher->sendHistogramMessage(message);
+    totalDataSize += message.size();
+  }
+  return totalDataSize;
 }
 
 /**

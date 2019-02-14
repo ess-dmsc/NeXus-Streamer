@@ -20,7 +20,7 @@ public:
   uint32_t getPeriodNumber() override;
   float getProtonCharge(hsize_t frameNumber) override;
   std::vector<EventDataFrame> getEventData(hsize_t frameNumber) override;
-  std::vector<HistogramData> getHistoData() override;
+  std::vector<HistogramFrame> getHistoData() override;
   size_t getNumberOfFrames() override { return m_numberOfFrames; };
   hsize_t getNumberOfEventsInFrame(hsize_t frameNumber,
                                    size_t eventGroupNumber) override;

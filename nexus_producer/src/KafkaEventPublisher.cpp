@@ -53,6 +53,8 @@ void KafkaEventPublisher::setUp(const std::string &broker,
   m_runTopic_ptr = createTopicHandle(instrumentName, "_runInfo", tconf);
   m_detSpecTopic_ptr = createTopicHandle(instrumentName, "_detSpecMap", tconf);
   m_sampleEnvTopic_ptr = createTopicHandle(instrumentName, "_sampleEnv", tconf);
+  m_histogramTopic_ptr =
+      createTopicHandle(instrumentName, "_histograms", tconf);
 
   // This ensures everything is ready when we need to query offset information
   // later
@@ -110,6 +112,10 @@ void KafkaEventPublisher::sendDetSpecMessage(Streamer::Message &message) {
 
 void KafkaEventPublisher::sendSampleEnvMessage(Streamer::Message &message) {
   sendMessage(message, m_sampleEnvTopic_ptr);
+}
+
+void KafkaEventPublisher::sendHistogramMessage(Streamer::Message &message) {
+  sendMessage(message, m_histogramTopic_ptr);
 }
 
 void KafkaEventPublisher::sendMessage(Streamer::Message &message,

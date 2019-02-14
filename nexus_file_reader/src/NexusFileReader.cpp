@@ -1,4 +1,6 @@
 #include "../include/NexusFileReader.h"
+#include "../../core/include/EventDataFrame.h"
+#include "../../core/include/HistogramFrame.h"
 #include "../../serialisation/include/SampleEnvironmentEventDouble.h"
 #include "../../serialisation/include/SampleEnvironmentEventInt.h"
 #include "../../serialisation/include/SampleEnvironmentEventLong.h"
@@ -511,20 +513,23 @@ std::vector<EventDataFrame> NexusFileReader::getEventData(hsize_t frameNumber) {
   return eventData;
 }
 
-std::vector<HistogramData> NexusFileReader::getHistoData() {
-  std::vector<HistogramData> histogramData;
+std::vector<HistogramFrame> NexusFileReader::getHistoData() {
+  std::vector<HistogramFrame> histogramData;
   for (const auto &histoGroup : m_histoGroups) {
     auto countsDataset = histoGroup.get_dataset("counts");
     std::vector<int32_t> counts(
         static_cast<size_t>(countsDataset.dataspace().size()));
     countsDataset.read(counts);
+    hdf5::dataspace::Simple dataspace(countsDataset.dataspace());
+    auto dims = dataspace.current_dimensions();
+    std::vector<size_t> countsShape(dims.cbegin(), dims.cend());
 
     auto tofDataset = histoGroup.get_dataset("time_of_flight");
     std::vector<float> timeOfFlight(
         static_cast<size_t>(tofDataset.dataspace().size()));
     tofDataset.read(timeOfFlight);
 
-    histogramData.emplace_back(counts, timeOfFlight);
+    histogramData.emplace_back(counts, countsShape, timeOfFlight);
   }
   return histogramData;
 }

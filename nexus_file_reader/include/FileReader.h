@@ -7,21 +7,8 @@
 
 using sEEventVector = std::vector<std::shared_ptr<SampleEnvironmentEvent>>;
 
-struct EventDataFrame {
-  EventDataFrame(std::vector<uint32_t> detIDs, std::vector<uint32_t> tofs)
-      : detectorIDs(std::move(detIDs)), timeOfFlights(std::move(tofs)) {}
-  std::vector<uint32_t> detectorIDs;
-  std::vector<uint32_t> timeOfFlights;
-};
-
-struct HistogramData {
-  HistogramData(std::vector<int32_t> detectorCounts,
-                std::vector<float> tofBinEdges)
-      : counts(std::move(detectorCounts)),
-        timeOfFlight(std::move(tofBinEdges)) {}
-  std::vector<int32_t> counts;
-  std::vector<float> timeOfFlight;
-};
+struct EventDataFrame;
+struct HistogramFrame;
 
 class FileReader {
 public:
@@ -32,7 +19,7 @@ public:
   virtual uint32_t getPeriodNumber() = 0;
   virtual float getProtonCharge(hsize_t frameNumber) = 0;
   virtual std::vector<EventDataFrame> getEventData(hsize_t frameNumber) = 0;
-  virtual std::vector<HistogramData> getHistoData() = 0;
+  virtual std::vector<HistogramFrame> getHistoData() = 0;
   virtual size_t getNumberOfFrames() = 0;
   virtual hsize_t getNumberOfEventsInFrame(hsize_t frameNumber,
                                            size_t eventGroupNumber) = 0;

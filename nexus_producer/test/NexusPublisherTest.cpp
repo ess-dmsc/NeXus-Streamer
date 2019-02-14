@@ -1,7 +1,10 @@
 #include <gmock/gmock.h>
 #include <memory>
 
+#include "../../core/include/EventDataFrame.h"
+#include "../../core/include/HistogramFrame.h"
 #include "../../serialisation/include/DetectorSpectrumMapData.h"
+#include "../../serialisation/include/EventData.h"
 #include "MockEventPublisher.h"
 #include "NexusPublisher.h"
 #include "OptionalArgs.h"
@@ -20,8 +23,8 @@ class FakeFileReader : public FileReader {
     return eventData;
   }
 
-  std::vector<HistogramData> getHistoData() override {
-    HistogramData histoData{{1, 2, 3}, {1.0, 2.0, 3.0}};
+  std::vector<HistogramFrame> getHistoData() override {
+    HistogramFrame histoData{{1, 2, 3}, {1, 1, 3}, {1.0, 2.0, 3.0}};
     return {histoData};
   }
 
@@ -154,29 +157,4 @@ TEST_F(NexusPublisherTest, test_data_is_streamed_in_slow_mode) {
   NexusPublisher streamer(publisher, fakeFileReader, settings);
   EXPECT_NO_THROW(
       streamer.streamData(1, false, std::make_pair<int32_t, int32_t>(0, 0)));
-}
-
-TEST_F(NexusPublisherTest, test_create_run_message_data) {
-  auto streamer = createStreamer(true);
-  int runNumber = 3;
-  auto runData = streamer.createRunMessageData(runNumber);
-
-  auto buffer = runData->getRunStartBuffer();
-
-  auto receivedRunData = RunData();
-  EXPECT_TRUE(receivedRunData.decodeMessage(
-      reinterpret_cast<const uint8_t *>(buffer.data())));
-  EXPECT_EQ(runNumber, receivedRunData.getRunNumber());
-}
-
-TEST_F(NexusPublisherTest, test_create_det_spec_map_message_data) {
-  auto streamer = createStreamer(true);
-  auto detSpecMap = streamer.createDetSpecMessageData();
-
-  auto buffer = detSpecMap->getBuffer();
-
-  auto receivedData = DetectorSpectrumMapData();
-  EXPECT_NO_THROW(receivedData.decodeMessage(
-      reinterpret_cast<const uint8_t *>(buffer.data())));
-  EXPECT_EQ(122888, receivedData.getNumberOfEntries());
 }

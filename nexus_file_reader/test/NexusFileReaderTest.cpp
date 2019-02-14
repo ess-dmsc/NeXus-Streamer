@@ -1,6 +1,8 @@
 #include <gmock/gmock.h>
 
 #include "../include/NexusFileReader.h"
+#include "../../core/include/EventDataFrame.h"
+#include "../../core/include/HistogramFrame.h"
 #include "HDF5FileTestHelpers.h"
 
 class NexusFileReaderTest : public ::testing::Test {};

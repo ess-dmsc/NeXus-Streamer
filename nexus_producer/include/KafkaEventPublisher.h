@@ -23,6 +23,7 @@ public:
   void sendRunMessage(Streamer::Message &message) override;
   void sendDetSpecMessage(Streamer::Message &message) override;
   void sendSampleEnvMessage(Streamer::Message &message) override;
+  void sendHistogramMessage(Streamer::Message &message) override;
   int64_t getCurrentOffset() override;
   void flushSendQueue() override;
 
@@ -35,6 +36,7 @@ private:
   std::shared_ptr<RdKafka::Topic> m_runTopic_ptr;
   std::shared_ptr<RdKafka::Topic> m_detSpecTopic_ptr;
   std::shared_ptr<RdKafka::Topic> m_sampleEnvTopic_ptr;
+  std::shared_ptr<RdKafka::Topic> m_histogramTopic_ptr;
   std::string m_compression = "";
   std::shared_ptr<spdlog::logger> m_logger = spdlog::get("LOG");
 

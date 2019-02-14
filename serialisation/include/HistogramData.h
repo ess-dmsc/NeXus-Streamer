@@ -6,14 +6,10 @@
 namespace Streamer {
 class Message;
 }
+struct HistogramFrame;
 
-Streamer::Message createHistogramMessage(const std::vector<int32_t> &counts,
-                                         const std::vector<size_t> &countsShape,
-                                         const std::vector<float> &timeOfFlight,
+Streamer::Message createHistogramMessage(const HistogramFrame &histogram,
                                          uint64_t timestampUnix);
 
-void deserialiseHistogramMessage(Streamer::Message &message,
-                                 std::vector<int32_t> &counts,
-                                 std::vector<size_t> &countsShape,
-                                 std::vector<float> &timeOfFlight,
-                                 uint64_t &timestampUnix);
+HistogramFrame deserialiseHistogramMessage(Streamer::Message &message,
+                                           uint64_t &timestampUnix);
