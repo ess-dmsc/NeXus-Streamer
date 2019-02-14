@@ -96,6 +96,8 @@ void NexusPublisher::streamData(int runNumber, bool slow,
     totalBytesSent += createAndSendDetSpecMessage();
   }
 
+  totalBytesSent += createAndSendHistogramMessage();
+
   uint64_t lastFrameTime = 0;
   for (size_t frameNumber = 0; frameNumber < numberOfFrames; frameNumber++) {
     // Publish messages at approx real message rate
@@ -205,6 +207,7 @@ size_t NexusPublisher::createAndSendDetSpecMessage() {
 }
 
 size_t NexusPublisher::createAndSendHistogramMessage() {
+  m_logger->debug("Sending histogram data if there is any in file");
   auto histograms = m_fileReader->getHistoData();
   // One histogram per NXdata group in the file
   size_t totalDataSize = 0;
