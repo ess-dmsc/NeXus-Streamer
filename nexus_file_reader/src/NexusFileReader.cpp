@@ -93,7 +93,7 @@ NexusFileReader::NexusFileReader(hdf5::file::File file, uint64_t runStartTime,
   }
 
   if (m_eventGroups.empty()) {
-    m_numberOfFrames = 1;
+    m_numberOfFrames = 0;
   } else {
     auto frameTimes = m_eventGroups[0].get_dataset("event_time_zero");
     m_numberOfFrames = static_cast<size_t>(frameTimes.dataspace().size());
@@ -181,6 +181,14 @@ std::vector<hdf5::node::Group> NexusFileReader::findNXLogs() {
 }
 
 std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
+  if (m_eventGroups.empty()) {
+    m_logger->warn("NeXus-Streamer does not currently support streaming NXlog "
+                   "data in the case that there is no NXevent_data group in "
+                   "the file. Please create an issue on github if this feature "
+                   "would be useful to you.");
+    return {};
+  }
+
   std::unordered_map<hsize_t, sEEventVector> sEEventMap;
   auto NXlogs = findNXLogs();
 
