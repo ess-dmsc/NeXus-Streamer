@@ -1,12 +1,15 @@
 project(nexus-publisher)
 
-set( SRC_FILES  src/NexusPublisher.cpp)
+set( SRC_FILES  src/NexusPublisher.cpp
+        src/Timer.cpp)
 
 set( INC_FILES  include/EventPublisher.h
                 include/NexusPublisher.h
-                include/OptionalArgs.h)
+                include/OptionalArgs.h
+        include/Timer.h)
 
-set( TEST_FILES test/NexusPublisherTest.cpp)
+set( TEST_FILES test/NexusPublisherTest.cpp
+                test/TimerTest.cpp)
 
 #####################
 ## Libraries       ##
