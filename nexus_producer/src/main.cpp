@@ -1,4 +1,5 @@
 #include "../../nexus_file_reader/include/NexusFileReader.h"
+#include "../../serialisation/include/DetectorSpectrumMapData.h"
 #include "KafkaEventPublisher.h"
 #include "NexusPublisher.h"
 #include "OptionalArgs.h"
