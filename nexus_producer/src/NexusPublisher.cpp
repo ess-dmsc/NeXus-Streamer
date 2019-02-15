@@ -96,7 +96,8 @@ void NexusPublisher::streamData(int runNumber, bool slow,
     totalBytesSent += createAndSendDetSpecMessage();
   }
 
-  totalBytesSent += createAndSendHistogramMessage();
+  totalBytesSent += createAndSendHistogramMessage(
+      static_cast<uint64_t>(getTimeNowInNanoseconds()));
 
   uint64_t lastFrameTime = 0;
   for (size_t frameNumber = 0; frameNumber < numberOfFrames; frameNumber++) {
@@ -206,13 +207,13 @@ size_t NexusPublisher::createAndSendDetSpecMessage() {
   return messageBuffer.size();
 }
 
-size_t NexusPublisher::createAndSendHistogramMessage() {
+size_t NexusPublisher::createAndSendHistogramMessage(uint64_t timestamp) {
   m_logger->debug("Sending histogram data if there is any in file");
   auto histograms = m_fileReader->getHistoData();
   // One histogram per NXdata group in the file
   size_t totalDataSize = 0;
   for (auto const &histogram : histograms) {
-    auto message = createHistogramMessage(histogram, 0); // TODO timestamp!!
+    auto message = createHistogramMessage(histogram, timestamp);
     m_publisher->sendHistogramMessage(message);
     totalDataSize += message.size();
   }
