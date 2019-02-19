@@ -1,3 +1,4 @@
+#include <Timer.h>
 #include <chrono>
 #include <cmath>
 #include <iostream>
@@ -11,6 +12,28 @@
 #include "../../serialisation/include/HistogramData.h"
 #include "../../serialisation/include/RunData.h"
 #include "NexusPublisher.h"
+
+namespace {
+
+int64_t getTimeNowInNanoseconds() {
+  auto now = std::chrono::system_clock::now();
+  auto now_epoch = now.time_since_epoch();
+  auto now_epoch_nanoseconds =
+      std::chrono::duration_cast<std::chrono::nanoseconds>(now_epoch).count();
+  return now_epoch_nanoseconds;
+}
+
+void createAndSendHistogramMessage(
+    const std::vector<HistogramFrame> &histograms,
+    const std::shared_ptr<EventPublisher> &publisher) {
+  // One histogram per NXdata group in the file
+  for (auto const &histogram : histograms) {
+    auto message = createHistogramMessage(
+        histogram, static_cast<uint64_t>(getTimeNowInNanoseconds()));
+    publisher->sendHistogramMessage(message);
+  }
+}
+}
 
 /**
  * Create an object responsible for the main business logic of the software. It
@@ -82,6 +105,24 @@ RunData NexusPublisher::createRunMessageData(int runNumber) {
   return runData;
 }
 
+std::unique_ptr<Timer> NexusPublisher::streamHistogramData(
+    const std::vector<HistogramFrame> &histograms,
+    uint32_t histogramUpdatePeriodMs) {
+  std::unique_ptr<Timer> histogramPublishingTimer;
+  if (!histograms.empty()) {
+    auto Interval = std::chrono::milliseconds(histogramUpdatePeriodMs);
+    std::shared_ptr<Sleeper> IntervalSleeper = std::make_shared<RealSleeper>();
+    histogramPublishingTimer =
+        std::make_unique<Timer>(Interval, IntervalSleeper);
+    histogramPublishingTimer->addCallback(
+        [&histograms, &publisher = this->m_publisher ]() {
+          createAndSendHistogramMessage(histograms, publisher);
+        });
+    histogramPublishingTimer->start();
+  }
+  return histogramPublishingTimer;
+}
+
 /**
  * Start streaming all the data from the file
  */
@@ -96,8 +137,8 @@ void NexusPublisher::streamData(int runNumber, bool slow,
     totalBytesSent += createAndSendDetSpecMessage();
   }
 
-  totalBytesSent += createAndSendHistogramMessage(
-      static_cast<uint64_t>(getTimeNowInNanoseconds()));
+  auto histograms = m_fileReader->getHistoData();
+  auto histogramStreamer = streamHistogramData(histograms);
 
   uint64_t lastFrameTime = 0;
   for (size_t frameNumber = 0; frameNumber < numberOfFrames; frameNumber++) {
@@ -115,6 +156,12 @@ void NexusPublisher::streamData(int runNumber, bool slow,
     reportProgress(static_cast<float>(frameNumber) /
                    static_cast<float>(numberOfFrames));
   }
+
+  if (histogramStreamer != nullptr) {
+    histogramStreamer->triggerStop();
+    histogramStreamer->waitForStop();
+  }
+
   totalBytesSent += createAndSendRunStopMessage();
   reportProgress(1.0);
   std::cout << std::endl;
@@ -192,32 +239,11 @@ size_t NexusPublisher::createAndSendRunStopMessage() {
   return buffer.size();
 }
 
-int64_t NexusPublisher::getTimeNowInNanoseconds() {
-  auto now = std::chrono::system_clock::now();
-  auto now_epoch = now.time_since_epoch();
-  auto now_epoch_nanoseconds =
-      std::chrono::duration_cast<std::chrono::nanoseconds>(now_epoch).count();
-  return now_epoch_nanoseconds;
-}
-
 size_t NexusPublisher::createAndSendDetSpecMessage() {
   auto messageData = DetectorSpectrumMapData(m_detSpecMapFilename);
   auto messageBuffer = messageData.getBuffer();
   m_publisher->sendDetSpecMessage(messageBuffer);
   return messageBuffer.size();
-}
-
-size_t NexusPublisher::createAndSendHistogramMessage(uint64_t timestamp) {
-  m_logger->debug("Sending histogram data if there is any in file");
-  auto histograms = m_fileReader->getHistoData();
-  // One histogram per NXdata group in the file
-  size_t totalDataSize = 0;
-  for (auto const &histogram : histograms) {
-    auto message = createHistogramMessage(histogram, timestamp);
-    m_publisher->sendHistogramMessage(message);
-    totalDataSize += message.size();
-  }
-  return totalDataSize;
 }
 
 /**

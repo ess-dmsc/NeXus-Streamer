@@ -9,6 +9,7 @@
 
 class EventData;
 class RunData;
+class Timer;
 
 class NexusPublisher {
 public:
@@ -22,12 +23,13 @@ public:
                   std::pair<int32_t, int32_t> minMaxDetNums);
 
 private:
+  std::unique_ptr<Timer>
+  streamHistogramData(const std::vector<HistogramFrame> &histograms,
+                      uint32_t histogramUpdatePeriodMs = 5000);
   RunData createRunMessageData(int runNumber);
-  int64_t getTimeNowInNanoseconds();
   size_t createAndSendMessage(size_t frameNumber);
   void createAndSendSampleEnvMessages(size_t frameNumber);
   size_t createAndSendRunStopMessage();
-  size_t createAndSendHistogramMessage(uint64_t timestamp);
   void reportProgress(float progress);
 
   std::shared_ptr<EventPublisher> m_publisher;
