@@ -126,24 +126,25 @@ std::unique_ptr<Timer> NexusPublisher::streamHistogramData(
 /**
  * Start streaming all the data from the file
  */
-void NexusPublisher::streamData(int runNumber, bool slow,
-                                std::pair<int32_t, int32_t> minMaxDetNums) {
+void NexusPublisher::streamData(int runNumber, const OptionalArgs &settings) {
   // frame numbers run from 0 to numberOfFrames-1
   int64_t totalBytesSent = 0;
   const auto numberOfFrames = m_fileReader->getNumberOfFrames();
 
   totalBytesSent += createAndSendRunMessage(runNumber);
-  if (minMaxDetNums.first == 0 && minMaxDetNums.second == 0) {
+  if (settings.minMaxDetectorNums.first == 0 &&
+      settings.minMaxDetectorNums.second == 0) {
     totalBytesSent += createAndSendDetSpecMessage();
   }
 
   auto histograms = m_fileReader->getHistoData();
-  auto histogramStreamer = streamHistogramData(histograms);
+  auto histogramStreamer =
+      streamHistogramData(histograms, settings.histogramUpdatePeriodMs);
 
   uint64_t lastFrameTime = 0;
   for (size_t frameNumber = 0; frameNumber < numberOfFrames; frameNumber++) {
     // Publish messages at approx real message rate
-    if (slow) {
+    if (settings.slow) {
       auto frameTime =
           m_fileReader->getRelativeFrameTimeMilliseconds(frameNumber);
       auto frameDuration = frameTime - lastFrameTime;

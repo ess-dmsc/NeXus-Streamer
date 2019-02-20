@@ -19,13 +19,12 @@ public:
   size_t createAndSendRunMessage(int runNumber);
   size_t createAndSendDetSpecMessage();
   std::vector<EventData> createMessageData(hsize_t frameNumber);
-  void streamData(int runNumber, bool slow,
-                  std::pair<int32_t, int32_t> minMaxDetNums);
+  void streamData(int runNumber, const OptionalArgs &settings);
 
 private:
   std::unique_ptr<Timer>
   streamHistogramData(const std::vector<HistogramFrame> &histograms,
-                      uint32_t histogramUpdatePeriodMs = 5000);
+                      uint32_t histogramUpdatePeriodMs);
   RunData createRunMessageData(int runNumber);
   size_t createAndSendMessage(size_t frameNumber);
   void createAndSendSampleEnvMessages(size_t frameNumber);

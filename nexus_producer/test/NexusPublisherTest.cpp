@@ -50,7 +50,9 @@ class FakeFileReader : public FileReader {
 
 class NexusPublisherTest : public ::testing::Test {
 public:
-  OptionalArgs createSettings(bool quiet) {
+  OptionalArgs createSettings(bool quiet,
+                              std::pair<int32_t, int32_t> minMaxDetNum = {0,
+                                                                          0}) {
     extern std::string testDataPath;
 
     OptionalArgs settings;
@@ -59,6 +61,8 @@ public:
     settings.quietMode = quiet;
     settings.filename = testDataPath + "SANS_test_reduced.hdf5";
     settings.detSpecFilename = testDataPath + "spectrum_gastubes_01.dat";
+    settings.histogramUpdatePeriodMs = 100;
+    settings.minMaxDetectorNums = minMaxDetNum;
     return settings;
   }
 
@@ -111,14 +115,14 @@ TEST_F(NexusPublisherTest, test_stream_data) {
   std::shared_ptr<FileReader> fakeFileReader =
       std::make_shared<FakeFileReader>();
   NexusPublisher streamer(publisher, fakeFileReader, settings);
-  EXPECT_NO_THROW(
-      streamer.streamData(1, false, std::make_pair<int32_t, int32_t>(0, 0)));
+  EXPECT_NO_THROW(streamer.streamData(1, settings));
 }
 
-TEST_F(NexusPublisherTest, test_det_spec_not_sent_when_pair_is_empty) {
+TEST_F(NexusPublisherTest, test_det_spec_not_sent_when_pair_is_specified) {
   using ::testing::Sequence;
 
-  const auto settings = createSettings(true);
+  std::pair<int32_t, int32_t> minMaxDetectorNum = {0, 2};
+  const auto settings = createSettings(true, minMaxDetectorNum);
 
   auto publisher = std::make_shared<MockEventPublisher>();
   publisher->setUp(settings.broker, settings.instrumentName);
@@ -133,8 +137,7 @@ TEST_F(NexusPublisherTest, test_det_spec_not_sent_when_pair_is_empty) {
   std::shared_ptr<FileReader> fakeFileReader =
       std::make_shared<FakeFileReader>();
   NexusPublisher streamer(publisher, fakeFileReader, settings);
-  EXPECT_NO_THROW(
-      streamer.streamData(1, false, std::make_pair<int32_t, int32_t>(1, 2)));
+  EXPECT_NO_THROW(streamer.streamData(1, settings));
 }
 
 TEST_F(NexusPublisherTest, test_data_is_streamed_in_slow_mode) {
@@ -155,6 +158,5 @@ TEST_F(NexusPublisherTest, test_data_is_streamed_in_slow_mode) {
   std::shared_ptr<FileReader> fakeFileReader =
       std::make_shared<FakeFileReader>();
   NexusPublisher streamer(publisher, fakeFileReader, settings);
-  EXPECT_NO_THROW(
-      streamer.streamData(1, false, std::make_pair<int32_t, int32_t>(0, 0)));
+  EXPECT_NO_THROW(streamer.streamData(1, settings));
 }
