@@ -1,4 +1,5 @@
 #include <Timer.h>
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <iostream>
@@ -105,15 +106,15 @@ RunData NexusPublisher::createRunMessageData(int runNumber) {
   return runData;
 }
 
-std::unique_ptr<Timer> NexusPublisher::streamHistogramData(
+std::unique_ptr<Timer> NexusPublisher::publishHistogramBatch(
     const std::vector<HistogramFrame> &histograms,
-    uint32_t histogramUpdatePeriodMs) {
+    uint32_t histogramUpdatePeriodMs, int32_t numberOfTimerIterations) {
   std::unique_ptr<Timer> histogramPublishingTimer;
   if (!histograms.empty()) {
     auto Interval = std::chrono::milliseconds(histogramUpdatePeriodMs);
     std::shared_ptr<Sleeper> IntervalSleeper = std::make_shared<RealSleeper>();
-    histogramPublishingTimer =
-        std::make_unique<Timer>(Interval, IntervalSleeper);
+    histogramPublishingTimer = std::make_unique<Timer>(
+        Interval, IntervalSleeper, numberOfTimerIterations);
     histogramPublishingTimer->addCallback(
         [&histograms, &publisher = this->m_publisher ]() {
           createAndSendHistogramMessage(histograms, publisher);
@@ -136,10 +137,7 @@ void NexusPublisher::streamData(int runNumber, const OptionalArgs &settings) {
       settings.minMaxDetectorNums.second == 0) {
     totalBytesSent += createAndSendDetSpecMessage();
   }
-
-  auto histograms = m_fileReader->getHistoData();
-  auto histogramStreamer =
-      streamHistogramData(histograms, settings.histogramUpdatePeriodMs);
+  std::unique_ptr<Timer> histogramStreamer = streamHistogramData(settings);
 
   uint64_t lastFrameTime = 0;
   for (size_t frameNumber = 0; frameNumber < numberOfFrames; frameNumber++) {
@@ -169,6 +167,67 @@ void NexusPublisher::streamData(int runNumber, const OptionalArgs &settings) {
 
   m_logger->info("Frames sent: {}, Bytes sent: {}",
                  m_fileReader->getNumberOfFrames(), totalBytesSent);
+}
+
+std::unique_ptr<Timer>
+NexusPublisher::streamHistogramData(const OptionalArgs &settings) {
+  // TODO runDuration from file, run start+end??
+  uint32_t runDurationMs = 10000;
+
+  int32_t numberOfHistogramUpdates =
+      runDurationMs / settings.histogramUpdatePeriodMs;
+
+  // We want to send at least one batch of histogram messages
+  numberOfHistogramUpdates = std::max(1, numberOfHistogramUpdates);
+
+  auto histograms = m_fileReader->getHistoData();
+  std::unique_ptr<Timer> histogramStreamer;
+
+  // If the duration of the run is longer/similar to the specified update period
+  // for histogram data, or if slow mode was not selected then we are
+  // only going to send one batch of messages. So let's go ahead and do that.
+  if (numberOfHistogramUpdates == 1 || !settings.slow) {
+    createAndSendHistogramMessage(histograms, m_publisher);
+
+    // Otherwise we'll divide up the original histogram and to publish in
+    // batches
+    // over the duration of the run
+  } else {
+
+    // We'll populate this copy of the histograms with data to send in the first
+    // batch of messages
+    auto firstHistograms = histograms;
+
+    for (size_t histogramIndex = 0; histogramIndex < histograms.size();
+         ++histogramIndex) {
+
+      for (size_t countIndex = 0;
+           countIndex < histograms[histogramIndex].counts.size();
+           ++countIndex) {
+        // The first batch of messages is different from the others as it will
+        // include any remainders from dividing the counts amongst the messages
+        // Thus summing all messages will result in the original histogram from
+        // file
+        firstHistograms[histogramIndex].counts[countIndex] =
+            (histograms[histogramIndex].counts[countIndex] %
+             numberOfHistogramUpdates) +
+            (histograms[histogramIndex].counts[countIndex] /
+             numberOfHistogramUpdates);
+        histograms[histogramIndex].counts[countIndex] =
+            histograms[histogramIndex].counts[countIndex] /
+            numberOfHistogramUpdates;
+      }
+    }
+
+    // Send the first batch of histograms and start a timer in a separate thread
+    // which will periodically publish each future batch
+    createAndSendHistogramMessage(firstHistograms, m_publisher);
+    --numberOfHistogramUpdates; // -1 for the first batch that we've already
+                                // sent
+    histogramStreamer = publishHistogramBatch(
+        histograms, settings.histogramUpdatePeriodMs, numberOfHistogramUpdates);
+  }
+  return histogramStreamer;
 }
 
 /**

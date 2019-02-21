@@ -47,9 +47,10 @@ using CallbackFunction = std::function<void()>;
 class Timer {
 public:
   explicit Timer(std::chrono::milliseconds Interval,
-                 std::shared_ptr<Sleeper> Sleeper)
+                 std::shared_ptr<Sleeper> Sleeper, int32_t MaxNumIterations)
       : Running(false), IntervalMS(Interval), SleeperPtr(std::move(Sleeper)),
-        DoIteration(false), IterationComplete(true){};
+        MaxIterations(MaxNumIterations), DoIteration(false),
+        IterationComplete(true){};
 
   /// Executes all registered callbacks when notified to do iteration
   void executionLoop();
@@ -89,6 +90,10 @@ private:
   std::thread ExecutionThread;
   std::thread TimerThread;
   std::shared_ptr<Sleeper> SleeperPtr;
+
+  int32_t MaxIterations;
+  int32_t IterationsCompleted =
+      -1; // intentionally -1, set to zero before first iteration in timerLoop()
 
   /// For triggering execution of registered callbacks.
   std::atomic_bool DoIteration;

@@ -48,6 +48,11 @@ void Timer::timerLoop() {
   while (Running) {
     SleeperPtr->sleepFor(IntervalMS);
     waitForPreviousIterationToComplete();
+    ++IterationsCompleted;
+    if (IterationsCompleted == MaxIterations) {
+      Running = false;
+      break;
+    }
     triggerCallbackExecution();
   }
 }

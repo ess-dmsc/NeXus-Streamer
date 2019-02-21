@@ -23,8 +23,10 @@ public:
 
 private:
   std::unique_ptr<Timer>
-  streamHistogramData(const std::vector<HistogramFrame> &histograms,
-                      uint32_t histogramUpdatePeriodMs);
+  publishHistogramBatch(const std::vector<HistogramFrame> &histograms,
+                        uint32_t histogramUpdatePeriodMs,
+                        int32_t numberOfTimerIterations);
+  std::unique_ptr<Timer> streamHistogramData(const OptionalArgs &settings);
   RunData createRunMessageData(int runNumber);
   size_t createAndSendMessage(size_t frameNumber);
   void createAndSendSampleEnvMessages(size_t frameNumber);
