@@ -31,6 +31,7 @@ public:
   uint64_t getRelativeFrameTimeMilliseconds(hsize_t frameNumber) override;
   bool isISISFile() override;
   uint64_t getTotalEventsInGroup(size_t eventGroupNumber) override;
+  uint32_t getRunDurationMs() override;
 
 private:
   std::vector<uint32_t> getEventDetIds(hsize_t frameNumber,

@@ -557,3 +557,15 @@ bool NexusFileReader::testIfIsISISFile() {
   }
   return false;
 }
+
+uint32_t NexusFileReader::getRunDurationMs() {
+  if (m_entryGroup.has_dataset("duration")) {
+    auto durationDataset = m_entryGroup.get_dataset("duration");
+    float duration;
+    durationDataset.read(duration);
+    auto durationInMs = static_cast<uint32_t>(duration * 1000);
+    return durationInMs;
+  }
+  throw std::runtime_error("Unable to get run duration from file, no duration "
+                           "dataset or event data found in file.");
+}

@@ -371,17 +371,22 @@ TEST(NexusFileReaderTest, successfully_read_isis_histogram_data) {
 TEST(NexusFileReaderTest, return_run_duration_from_duration_dataset) {
   auto file = createInMemoryTestFile("dataFileWithDurationDataset");
   HDF5FileTestHelpers::addNXentryToFile(file, "entry");
-  HDF5FileTestHelpers::addNXeventDataToFile(file, "raw_data_1");
-  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(file, "raw_data_1");
+  HDF5FileTestHelpers::addNXeventDataToFile(file, "entry");
+  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(file, "entry");
 
   // Create duration dataset in test file
   float duration = 42.0;
   HDF5FileTestHelpers::addDurationDatasetToFile(file, "entry", duration);
 
   auto fileReader = NexusFileReader(file, 0, 0, {0});
-  auto outputDuration = fileReader.getRunDuration();
+  auto outputDurationMs = fileReader.getRunDurationMs();
+  auto outputDurationSeconds = static_cast<float>(outputDurationMs / 1000.0);
 
-  EXPECT_NEAR(duration, outputDuration, 0.1);
+  EXPECT_NEAR(duration, outputDurationSeconds, 0.1);
+}
+
+TEST(NexusFileReaderTest, run_duration_throws_if_not_units_of_seconds_in_file) {
+
 }
 
 TEST(NexusFileReaderTest,

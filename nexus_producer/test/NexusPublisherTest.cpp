@@ -46,6 +46,7 @@ class FakeFileReader : public FileReader {
   uint64_t getTotalEventsInGroup(size_t eventGroupNumber) override {
     return 3;
   };
+  uint32_t getRunDurationMs() override { return 10000; };
 };
 
 class NexusPublisherTest : public ::testing::Test {

@@ -18,7 +18,7 @@ TEST_F(TimerTest,
        test_can_start_and_stop_a_timer_with_no_registered_callbacks) {
   std::shared_ptr<Sleeper> TestSleeper = std::make_shared<FakeSleeper>();
   std::chrono::milliseconds Interval(1);
-  Timer TestTimer(Interval, TestSleeper);
+  Timer TestTimer(Interval, TestSleeper, 10);
   TestTimer.start();
   auto TestFakeSleeper = std::dynamic_pointer_cast<FakeSleeper>(TestSleeper);
   TestTimer.triggerStop();
@@ -30,14 +30,14 @@ TEST_F(TimerTest,
 TEST_F(TimerTest, test_can_register_a_callback) {
   std::shared_ptr<Sleeper> TestSleeper = std::make_shared<FakeSleeper>();
   std::chrono::milliseconds Interval(1);
-  Timer TestTimer(Interval, TestSleeper);
+  Timer TestTimer(Interval, TestSleeper, 10);
   TestTimer.addCallback([&]() { testCallbackA(); });
 }
 
 TEST_F(TimerTest, test_registered_callback_is_executed) {
   std::shared_ptr<Sleeper> TestSleeper = std::make_shared<FakeSleeper>();
   std::chrono::milliseconds Interval(1);
-  Timer TestTimer(Interval, TestSleeper);
+  Timer TestTimer(Interval, TestSleeper, 10);
   TestTimer.addCallback([&]() { testCallbackA(); });
   TestTimer.start();
   auto TestFakeSleeper = std::dynamic_pointer_cast<FakeSleeper>(TestSleeper);
@@ -51,7 +51,7 @@ TEST_F(TimerTest, test_registered_callback_is_executed) {
 TEST_F(TimerTest, test_multiple_registered_callbacks_are_executed) {
   std::shared_ptr<Sleeper> TestSleeper = std::make_shared<FakeSleeper>();
   std::chrono::milliseconds Interval(1);
-  Timer TestTimer(Interval, TestSleeper);
+  Timer TestTimer(Interval, TestSleeper, 10);
   TestTimer.addCallback([&]() { testCallbackA(); });
   TestTimer.addCallback([&]() { testCallbackB(); });
   TestTimer.start();
