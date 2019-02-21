@@ -401,13 +401,20 @@ TEST(NexusFileReaderTest, run_duration_throws_if_not_units_of_seconds_in_file) {
 }
 
 TEST(NexusFileReaderTest,
-     run_duration_based_on_event_datasets_if_duration_data_not_present) {
-  auto file = createInMemoryTestFile("dataFileWithNoDurationDataset");
+     run_duration_throws_if_no_duration_dataset_or_event_data_present) {
+  auto file = createInMemoryTestFile("dataFileWithNoDurationOrEventData");
   HDF5FileTestHelpers::addNXentryToFile(file, "entry");
+
+  HDF5FileTestHelpers::addHistogramDataGroupToFile(
+      file, "entry", "detector_1", {1, 2, 3, 4}, 1, 2, 2,
+      {5.0, 4005.0, 8005.0, 12005.0, 16005.0, 19995.0});
+
+  auto fileReader = NexusFileReader(file, 0, 0, {0});
+  EXPECT_THROW(fileReader.getRunDurationMs(), std::runtime_error);
 }
 
 TEST(NexusFileReaderTest,
-     run_duration_throws_if_no_duration_dataset_or_event_data_present) {
-  auto file = createInMemoryTestFile("dataFileWithNoDurationOrEventData");
+     run_duration_based_on_event_datasets_if_duration_data_not_present) {
+  auto file = createInMemoryTestFile("dataFileWithNoDurationDataset");
   HDF5FileTestHelpers::addNXentryToFile(file, "entry");
 }
