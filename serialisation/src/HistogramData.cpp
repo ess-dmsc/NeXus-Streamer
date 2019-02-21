@@ -18,9 +18,13 @@ Streamer::Message createHistogramMessage(const HistogramFrame &histogram,
       CreateArrayFloat(builder, builder.CreateVector(histogram.timeOfFlight))
           .Union());
 
+  std::vector<uint32_t> detIDs(histogram.detectorIDs.cbegin(),
+                               histogram.detectorIDs.cend());
+
   auto detectorsDimension = CreateDimensionMetaData(
-      builder, static_cast<uint32_t>(histogram.countsShape[2]), 0,
-      builder.CreateString("Detector Number"));
+      builder, static_cast<uint32_t>(detIDs.size()), 0,
+      builder.CreateString("Detector Number"), Array::ArrayUInt,
+      CreateArrayUInt(builder, builder.CreateVector(detIDs)).Union());
 
   std::vector<flatbuffers::Offset<DimensionMetaData>> dimensionsArray{
       periodsDimension, timeOfFlightDimension, detectorsDimension};
@@ -58,6 +62,7 @@ HistogramFrame deserialiseHistogramMessage(Streamer::Message &message,
 
   std::vector<size_t> countsShape(3);
   std::vector<float> timeOfFlight;
+  std::vector<int32_t> detIds;
   auto dimMetadataArray = messageData->dim_metadata();
   for (auto dimMetadata : *dimMetadataArray) {
     if (dimMetadata->label()->str() == "Period") {
@@ -70,6 +75,9 @@ HistogramFrame deserialiseHistogramMessage(Streamer::Message &message,
                 timeOfFlightArray->value()->end(), timeOfFlight.begin());
     } else if (dimMetadata->label()->str() == "Detector Number") {
       countsShape[2] = static_cast<size_t>(dimMetadata->length());
+      auto detIDsArray = messageData->data_as_ArrayUInt()->value();
+      detIds.resize(detIDsArray->size());
+      std::copy(detIDsArray->begin(), detIDsArray->end(), detIds.begin());
     } else {
       throw std::runtime_error("Unexpected dimension label in histogram "
                                "message. Aborting deserialisation.");
@@ -80,5 +88,5 @@ HistogramFrame deserialiseHistogramMessage(Streamer::Message &message,
   std::vector<int32_t> counts(countsArray->size());
   std::copy(countsArray->begin(), countsArray->end(), counts.begin());
 
-  return HistogramFrame(counts, countsShape, timeOfFlight);
+  return HistogramFrame(counts, countsShape, timeOfFlight, detIds);
 }

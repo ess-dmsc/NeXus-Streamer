@@ -537,7 +537,12 @@ std::vector<HistogramFrame> NexusFileReader::getHistoData() {
         static_cast<size_t>(tofDataset.dataspace().size()));
     tofDataset.read(timeOfFlight);
 
-    histogramData.emplace_back(counts, countsShape, timeOfFlight);
+    auto detIdsDataset = histoGroup.get_dataset("spectrum_index");
+    std::vector<int32_t> detIds(
+        static_cast<size_t>(detIdsDataset.dataspace().size()));
+    detIdsDataset.read(detIds);
+
+    histogramData.emplace_back(counts, countsShape, timeOfFlight, detIds);
   }
   return histogramData;
 }

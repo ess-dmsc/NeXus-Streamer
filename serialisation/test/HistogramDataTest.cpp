@@ -29,7 +29,7 @@ class HistogramDataTest : public ::testing::Test {};
 TEST(
     HistogramDataTest,
     createHistogramMessage_returns_a_message_with_histogram_schema_identifier) {
-  auto histogram = HistogramFrame({1, 2, 3}, {1, 1, 3}, {1.0, 3.0});
+  auto histogram = HistogramFrame({1, 2, 3}, {1, 1, 3}, {1.0, 3.0}, {1, 2, 3});
   auto message = createHistogramMessage(histogram, 0);
 
   EXPECT_GT(message.size(), 8) << "Expected message size to at least be large "
@@ -45,7 +45,8 @@ TEST(
     deserialising_message_created_by_createHistogramMessage_yeilds_original_input) {
 
   uint64_t timestampUnixInput = 0;
-  auto inputHistogram = HistogramFrame({1, 2, 3}, {1, 1, 3}, {1.0, 3.0});
+  auto inputHistogram =
+      HistogramFrame({1, 2, 3}, {1, 1, 3}, {1.0, 3.0}, {1, 2, 3});
   auto message = createHistogramMessage(inputHistogram, timestampUnixInput);
 
   uint64_t timestampUnixOutput;
@@ -53,6 +54,7 @@ TEST(
       deserialiseHistogramMessage(message, timestampUnixOutput);
 
   EXPECT_EQ(inputHistogram.counts, outputHistogram.counts);
+  EXPECT_EQ(inputHistogram.detectorIDs, outputHistogram.detectorIDs);
   EXPECT_EQ(inputHistogram.countsShape, outputHistogram.countsShape);
   EXPECT_TRUE(AllElementsInVectorAreNear(inputHistogram.timeOfFlight,
                                          outputHistogram.timeOfFlight, 0.01));

@@ -24,7 +24,7 @@ class FakeFileReader : public FileReader {
   }
 
   std::vector<HistogramFrame> getHistoData() override {
-    HistogramFrame histoData{{1, 2, 3}, {1, 1, 3}, {1.0, 2.0, 3.0}};
+    HistogramFrame histoData{{1, 2, 3}, {1, 1, 3}, {1.0, 2.0, 3.0}, {1, 2, 3}};
     return {histoData};
   }
 

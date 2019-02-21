@@ -84,17 +84,22 @@ void addHistogramDataGroupToFile(hdf5::file::File &file,
                                  const std::string &entryName,
                                  const std::string &groupName,
                                  const std::vector<int32_t> &counts,
-                                 size_t periods, size_t detectorIDS,
-                                 size_t tofBins,
+                                 const std::vector<int32_t> &detectorIDs,
+                                 size_t periods, size_t tofBins,
                                  const std::vector<float> &tofBinEdges) {
   hdf5::node::Group entryGroup = file.root()[entryName];
   auto eventGroup = entryGroup.create_group(groupName);
   write_attribute<std::string>(eventGroup, "NX_class", "NXdata");
 
+  auto spectrumIndexDataset = eventGroup.create_dataset(
+      "spectrum_index", hdf5::datatype::create<int32_t>(),
+      hdf5::dataspace::Simple({detectorIDs.size()}, {detectorIDs.size()}));
+  spectrumIndexDataset.write(detectorIDs);
+
   auto countsDataset = eventGroup.create_dataset(
       "counts", hdf5::datatype::create<int32_t>(),
-      hdf5::dataspace::Simple({periods, detectorIDS, tofBins},
-                              {periods, detectorIDS, tofBins}));
+      hdf5::dataspace::Simple({periods, detectorIDs.size(), tofBins},
+                              {periods, detectorIDs.size(), tofBins}));
   countsDataset.write(counts);
   countsDataset.attributes.create_from<std::string>("units", "counts");
 

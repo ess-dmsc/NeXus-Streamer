@@ -348,16 +348,16 @@ TEST(NexusFileReaderTest, successfully_read_isis_histogram_data) {
 
   HDF5FileTestHelpers::addNXentryToFile(file, "entry");
 
-  const std::vector<int32_t> counts{1, 2, 3, 4};
+  const std::vector<int32_t> counts{1, 2, 3, 4, 2, 3};
   const std::size_t periods = 1;
-  const std::size_t spectrumNumbers = 2;
   const std::size_t tofBins = 2;
   const std::vector<float> tofBinEdges{5.0,     4005.0,  8005.0,
                                        12005.0, 16005.0, 19995.0};
+  const std::vector<int32_t> detectorIDs = {1, 2, 3};
 
-  HDF5FileTestHelpers::addHistogramDataGroupToFile(
-      file, "entry", "detector_1", counts, periods, spectrumNumbers, tofBins,
-      tofBinEdges);
+  HDF5FileTestHelpers::addHistogramDataGroupToFile(file, "entry", "detector_1",
+                                                   counts, detectorIDs, periods,
+                                                   tofBins, tofBinEdges);
 
   auto fileReader = NexusFileReader(file, 0, 0, {0});
   auto histoData = fileReader.getHistoData();
@@ -366,6 +366,7 @@ TEST(NexusFileReaderTest, successfully_read_isis_histogram_data) {
   EXPECT_EQ(histoData[0].counts, counts);
   EXPECT_TRUE(
       AllElementsInVectorAreNear(histoData[0].timeOfFlight, tofBinEdges, 0.01));
+  EXPECT_EQ(histoData[0].detectorIDs, detectorIDs);
 }
 
 TEST(NexusFileReaderTest, return_run_duration_from_duration_dataset) {
@@ -400,13 +401,12 @@ TEST(NexusFileReaderTest, run_duration_throws_if_not_units_of_seconds_in_file) {
   EXPECT_THROW(fileReader.getRunDurationMs(), std::runtime_error);
 }
 
-TEST(NexusFileReaderTest,
-     run_duration_throws_if_no_duration_dataset_present) {
+TEST(NexusFileReaderTest, run_duration_throws_if_no_duration_dataset_present) {
   auto file = createInMemoryTestFile("dataFileWithNoDuration");
   HDF5FileTestHelpers::addNXentryToFile(file, "entry");
 
   HDF5FileTestHelpers::addHistogramDataGroupToFile(
-      file, "entry", "detector_1", {1, 2, 3, 4}, 1, 2, 2,
+      file, "entry", "detector_1", {1, 2, 3, 4}, {1}, 2, 2,
       {5.0, 4005.0, 8005.0, 12005.0, 16005.0, 19995.0});
 
   auto fileReader = NexusFileReader(file, 0, 0, {0});
