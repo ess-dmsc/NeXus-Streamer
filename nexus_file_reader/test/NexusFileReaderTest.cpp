@@ -386,7 +386,16 @@ TEST(NexusFileReaderTest, return_run_duration_from_duration_dataset) {
 }
 
 TEST(NexusFileReaderTest, run_duration_throws_if_not_units_of_seconds_in_file) {
+  auto file = createInMemoryTestFile("dataFileWithDurationDataset");
+  HDF5FileTestHelpers::addNXentryToFile(file, "entry");
+  HDF5FileTestHelpers::addNXeventDataToFile(file, "entry");
+  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(file, "entry");
 
+  HDF5FileTestHelpers::addDurationDatasetToFile(file, "entry", 42.0);
+
+  auto fileReader = NexusFileReader(file, 0, 0, {0});
+
+  EXPECT_THROW(fileReader.getRunDurationMs(), std::runtime_error);
 }
 
 TEST(NexusFileReaderTest,
