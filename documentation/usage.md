@@ -59,7 +59,13 @@ to publish event data:
 
 and/or to publish histogram data:
 - A scalar float dataset named `duration` in the `NXentry` with a `units` attribute of "s", "seconds" or "second". This is the duration of the run and is used if slow mode is specified.
-- An `NXdata` group in the `NXentry` containing a 
+- An `NXdata` group in the `NXentry` containing:
+  - `time_of_flight` dataset of floats in microseconds
+  - `spectrum_index` dataset of 32-bit integers
+  - `period_index` dataset of 32-bit integers
+  - 3D `counts` dataset of 32-bit integers, first dimension is periods, second is detector IDs (or spectrum indicies), third is time-of-flight bins edges.
+  
+  This supports histogram data files recorded at ISIS. See `data/minimal_histogram_example.nxs`.
 
 ## Broker Configuration
 Timestamped "run" start and stop messages are produced. With these Mantid can join the stream at the start of a run and has various options for behaviour at run stop. This makes use of the offset by timestamp lookup feature and thus requires Kafka version >0.10.2.0 on the brokers.
