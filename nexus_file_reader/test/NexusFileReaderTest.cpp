@@ -1,8 +1,8 @@
 #include <gmock/gmock.h>
 
-#include "../include/NexusFileReader.h"
 #include "../../core/include/EventDataFrame.h"
 #include "../../core/include/HistogramFrame.h"
+#include "../include/NexusFileReader.h"
 #include "HDF5FileTestHelpers.h"
 
 class NexusFileReaderTest : public ::testing::Test {};
@@ -366,4 +366,32 @@ TEST(NexusFileReaderTest, successfully_read_isis_histogram_data) {
   EXPECT_EQ(histoData[0].counts, counts);
   EXPECT_TRUE(
       AllElementsInVectorAreNear(histoData[0].timeOfFlight, tofBinEdges, 0.01));
+}
+
+TEST(NexusFileReaderTest, return_run_duration_from_duration_dataset) {
+  auto file = createInMemoryTestFile("dataFileWithDurationDataset");
+  HDF5FileTestHelpers::addNXentryToFile(file, "entry");
+  HDF5FileTestHelpers::addNXeventDataToFile(file, "raw_data_1");
+  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(file, "raw_data_1");
+
+  // Create duration dataset in test file
+  float duration = 42.0;
+  HDF5FileTestHelpers::addDurationDatasetToFile(file, "entry", duration);
+
+  auto fileReader = NexusFileReader(file, 0, 0, {0});
+  auto outputDuration = fileReader.getRunDuration();
+
+  EXPECT_NEAR(duration, outputDuration, 0.1);
+}
+
+TEST(NexusFileReaderTest,
+     run_duration_based_on_event_datasets_if_duration_data_not_present) {
+  auto file = createInMemoryTestFile("dataFileWithNoDurationDataset");
+  HDF5FileTestHelpers::addNXentryToFile(file, "entry");
+}
+
+TEST(NexusFileReaderTest,
+     run_duration_throws_if_no_duration_dataset_or_event_data_present) {
+  auto file = createInMemoryTestFile("dataFileWithNoDurationOrEventData");
+  HDF5FileTestHelpers::addNXentryToFile(file, "entry");
 }

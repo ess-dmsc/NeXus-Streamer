@@ -173,6 +173,7 @@ std::unique_ptr<Timer>
 NexusPublisher::streamHistogramData(const OptionalArgs &settings) {
   // TODO runDuration from file, run start+end??
   uint32_t runDurationMs = 10000;
+  auto runDuration = m_fileReader->getRunDuration();
 
   int32_t numberOfHistogramUpdates =
       runDurationMs / settings.histogramUpdatePeriodMs;

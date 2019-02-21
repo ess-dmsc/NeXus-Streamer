@@ -105,4 +105,12 @@ void addHistogramDataGroupToFile(hdf5::file::File &file,
   timeOfFlightDataset.attributes.create_from<std::string>("units",
                                                           "microseconds");
 }
+
+void addDurationDatasetToFile(hdf5::file::File &file,
+                              const std::string &entryName, float duration) {
+  hdf5::node::Group entryGroup = file.root()[entryName];
+  auto durationDataset = entryGroup.create_dataset(
+      "duration", hdf5::datatype::create<float>(), hdf5::dataspace::Scalar());
+  durationDataset.write(duration);
+}
 }
