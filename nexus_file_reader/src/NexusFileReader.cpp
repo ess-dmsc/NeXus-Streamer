@@ -564,6 +564,16 @@ uint32_t NexusFileReader::getRunDurationMs() {
     float duration;
     durationDataset.read(duration);
     auto durationInMs = static_cast<uint32_t>(duration * 1000);
+
+    std::string units;
+    if (durationDataset.attributes.exists("units")) {
+      durationDataset.attributes["units"].read(units);
+    }
+    if (units != "s" && units != "second" && units != "seconds") {
+      throw std::runtime_error(
+          "duration dataset found but does not have units of seconds");
+    }
+
     return durationInMs;
   }
   throw std::runtime_error("Unable to get run duration from file, no duration "

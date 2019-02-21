@@ -43,5 +43,6 @@ void addHistogramDataGroupToFile(hdf5::file::File &file,
                                  const std::vector<float> &tofBinEdges);
 
 void addDurationDatasetToFile(hdf5::file::File &file,
-                              const std::string &entryName, float duration);
+                              const std::string &entryName, float duration,
+                              const std::string &units);
 }

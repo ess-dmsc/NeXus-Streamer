@@ -376,7 +376,8 @@ TEST(NexusFileReaderTest, return_run_duration_from_duration_dataset) {
 
   // Create duration dataset in test file
   float duration = 42.0;
-  HDF5FileTestHelpers::addDurationDatasetToFile(file, "entry", duration);
+  std::string units = "second";
+  HDF5FileTestHelpers::addDurationDatasetToFile(file, "entry", duration, units);
 
   auto fileReader = NexusFileReader(file, 0, 0, {0});
   auto outputDurationMs = fileReader.getRunDurationMs();
@@ -391,7 +392,8 @@ TEST(NexusFileReaderTest, run_duration_throws_if_not_units_of_seconds_in_file) {
   HDF5FileTestHelpers::addNXeventDataToFile(file, "entry");
   HDF5FileTestHelpers::addNXeventDataDatasetsToFile(file, "entry");
 
-  HDF5FileTestHelpers::addDurationDatasetToFile(file, "entry", 42.0);
+  std::string units = "elephants";
+  HDF5FileTestHelpers::addDurationDatasetToFile(file, "entry", 42.0, units);
 
   auto fileReader = NexusFileReader(file, 0, 0, {0});
 

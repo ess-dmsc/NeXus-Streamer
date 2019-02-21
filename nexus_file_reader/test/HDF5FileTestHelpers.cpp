@@ -107,10 +107,12 @@ void addHistogramDataGroupToFile(hdf5::file::File &file,
 }
 
 void addDurationDatasetToFile(hdf5::file::File &file,
-                              const std::string &entryName, float duration) {
+                              const std::string &entryName, float duration,
+                              const std::string &units) {
   hdf5::node::Group entryGroup = file.root()[entryName];
   auto durationDataset = entryGroup.create_dataset(
       "duration", hdf5::datatype::create<float>(), hdf5::dataspace::Scalar());
   durationDataset.write(duration);
+  write_attribute(durationDataset, "units", units);
 }
 }
