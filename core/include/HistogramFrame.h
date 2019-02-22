@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <vector>
+#include <cstddef>
 
 struct HistogramFrame {
   HistogramFrame(std::vector<int32_t> detectorCounts,
