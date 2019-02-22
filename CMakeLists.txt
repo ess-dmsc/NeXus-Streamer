@@ -85,8 +85,6 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/nexus_file_reader")
 ####################
 
 include_directories(
-        CONAN_PKG::h5cpp
-        CONAN_PKG::librdkafka
         ${PROJECT_SOURCE_DIR}/nexus_producer/include
         ${PROJECT_SOURCE_DIR}/serialisation/include
         ${PROJECT_SOURCE_DIR}/nexus_file_reader/include
@@ -103,6 +101,7 @@ add_executable(UnitTests ${TEST_SRC_FILES})
 target_link_libraries(UnitTests
         CONAN_PKG::gtest
         CONAN_PKG::cli11
+        CONAN_PKG::h5cpp
         producerUnitTests
         eventDataUnitTests
         fileReaderUnitTests)
