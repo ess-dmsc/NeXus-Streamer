@@ -1,9 +1,8 @@
 #pragma once
 
 #include <cstdint>
-#include <vector>
 #include <limits>
-
+#include <vector>
 
 namespace Streamer {
 class Message;

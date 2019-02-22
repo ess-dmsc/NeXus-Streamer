@@ -1,5 +1,5 @@
-#include "EventData.h"
 #include "../../core/include/Message.h"
+#include "EventData.h"
 #include <ev42_events_generated.h>
 #include <gtest/gtest.h>
 
