@@ -28,7 +28,7 @@ void createAndSendHistogramMessage(
     const std::vector<HistogramFrame> &histograms,
     const std::shared_ptr<EventPublisher> &publisher) {
   // One histogram per NXdata group in the file
-  for (auto const &histogram : histograms) {
+  for (const auto &histogram : histograms) {
     auto message = createHistogramMessage(
         histogram, static_cast<uint64_t>(getTimeNowInNanoseconds()));
     publisher->sendHistogramMessage(message);
@@ -116,7 +116,7 @@ std::unique_ptr<Timer> NexusPublisher::publishHistogramBatch(
     histogramPublishingTimer = std::make_unique<Timer>(
         Interval, IntervalSleeper, numberOfTimerIterations);
     histogramPublishingTimer->addCallback(
-        [&histograms, &publisher = this->m_publisher ]() {
+        [histograms, &publisher = this->m_publisher ]() {
           createAndSendHistogramMessage(histograms, publisher);
         });
     histogramPublishingTimer->start();

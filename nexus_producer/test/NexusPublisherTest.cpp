@@ -24,8 +24,14 @@ class FakeFileReader : public FileReader {
   }
 
   std::vector<HistogramFrame> getHistoData() override {
-    HistogramFrame histoData{{1, 2, 3}, {1, 1, 3}, {1.0, 2.0, 3.0}, {1, 2, 3}};
-    return {histoData};
+    std::vector<int32_t> detectorCounts{1, 2, 3, 4, 5, 6, 7, 8, 9};
+    std::vector<size_t> countsShape{1, 3, 3};
+    std::vector<float> tofBinEdges{1.0, 2.0, 3.0};
+    std::vector<int32_t> detectorIds{1, 2, 3};
+    std::vector<HistogramFrame> histoData;
+    histoData.emplace_back(detectorCounts, countsShape, tofBinEdges,
+                           detectorIds);
+    return histoData;
   }
 
   size_t getNumberOfFrames() override { return 1; };
@@ -46,14 +52,14 @@ class FakeFileReader : public FileReader {
   uint64_t getTotalEventsInGroup(size_t eventGroupNumber) override {
     return 3;
   };
-  uint32_t getRunDurationMs() override { return 10000; };
+  uint32_t getRunDurationMs() override { return 100; };
 };
 
 class NexusPublisherTest : public ::testing::Test {
 public:
   OptionalArgs createSettings(bool quiet,
-                              std::pair<int32_t, int32_t> minMaxDetNum = {0,
-                                                                          0}) {
+                              std::pair<int32_t, int32_t> minMaxDetNum = {0, 0},
+                              bool slow = false) {
     extern std::string testDataPath;
 
     OptionalArgs settings;
@@ -62,8 +68,9 @@ public:
     settings.quietMode = quiet;
     settings.filename = testDataPath + "SANS_test_reduced.hdf5";
     settings.detSpecFilename = testDataPath + "spectrum_gastubes_01.dat";
-    settings.histogramUpdatePeriodMs = 100;
+    settings.histogramUpdatePeriodMs = 50;
     settings.minMaxDetectorNums = minMaxDetNum;
+    settings.slow = slow;
     return settings;
   }
 
@@ -144,7 +151,8 @@ TEST_F(NexusPublisherTest, test_det_spec_not_sent_when_pair_is_specified) {
 TEST_F(NexusPublisherTest, test_data_is_streamed_in_slow_mode) {
   using ::testing::Sequence;
 
-  const auto settings = createSettings(true);
+  bool slowMode = true;
+  const auto settings = createSettings(true, {0, 0}, slowMode);
 
   auto publisher = std::make_shared<MockEventPublisher>();
   publisher->setUp(settings.broker, settings.instrumentName);
@@ -154,6 +162,8 @@ TEST_F(NexusPublisherTest, test_data_is_streamed_in_slow_mode) {
   EXPECT_CALL(*publisher.get(), sendEventMessage(_)).Times(numberOfFrames);
   EXPECT_CALL(*publisher.get(), sendRunMessage(_))
       .Times(2); // Start and stop messages
+  EXPECT_CALL(*publisher.get(), sendHistogramMessage(_))
+      .Times(2);
   EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_)).Times(1);
 
   std::shared_ptr<FileReader> fakeFileReader =
