@@ -44,6 +44,12 @@ void Timer::callCallbacks() {
   }
 }
 
+/**
+ * Triggers executing registered callbacks at the specified interval.
+ *
+ * Logs an error and waits for callback execution to complete if it takes
+ * longer than the requested interval.
+ */
 void Timer::timerLoop() {
   while (Running) {
     SleeperPtr->sleepFor(IntervalMS);

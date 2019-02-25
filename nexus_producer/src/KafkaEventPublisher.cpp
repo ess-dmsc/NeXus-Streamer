@@ -74,8 +74,8 @@ void KafkaEventPublisher::flushSendQueue() {
 /**
  * Create a topic handle
  *
- * @param topic_str : name of the topic
- * @param topicConfig : configuration of the topic
+ * @param topic_str - name of the topic
+ * @param topicConfig - configuration of the topic
  * @return topic handle
  */
 std::shared_ptr<RdKafka::Topic> KafkaEventPublisher::createTopicHandle(

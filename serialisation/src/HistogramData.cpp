@@ -52,8 +52,8 @@ Streamer::Message createHistogramMessage(const HistogramFrame &histogram,
 }
 
 /**
- * @param message : input message to be deserialised
- * @param timestampUnix : output by reference
+ * @param message - input message to be deserialised
+ * @param timestampUnix - output by reference
  */
 HistogramFrame deserialiseHistogramMessage(Streamer::Message &message,
                                            uint64_t &timestampUnix) {

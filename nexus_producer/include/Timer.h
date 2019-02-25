@@ -41,9 +41,7 @@ private:
 
 using CallbackFunction = std::function<void()>;
 
-/// Timer for the periodic updates.
-///
-/// Calls the callback for pushing cached pv values.
+/// Timer calls registered callback functions at specified interval.
 class Timer {
 public:
   explicit Timer(std::chrono::milliseconds Interval,
@@ -56,9 +54,6 @@ public:
   void executionLoop();
 
   /// Triggers executing registered callbacks at the specified interval.
-  ///
-  /// Logs an error and waits for callback execution to complete if it takes
-  /// longer than the requested interval.
   void timerLoop();
 
   /// Starts the timer thread with a call to the callbacks.
@@ -72,8 +67,6 @@ public:
 
   /// Adds a callback to the vector of callbacks for the timer loop to
   /// call.
-  ///
-  /// \param Callback the Callback function to add to the Callbacks vector.
   void addCallback(CallbackFunction Callback);
 
 private:
