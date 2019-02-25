@@ -2,6 +2,7 @@ project(isis_nexus_streamer)
 
 set( SRC_FILES
         src/EventData.cpp
+        src/HistogramData.cpp
         src/RunData.cpp
         src/DetectorSpectrumMapData.cpp
         src/SampleEnvironmentEvent.cpp
@@ -12,6 +13,7 @@ set( SRC_FILES
 
 set( INC_FILES
         include/EventData.h
+        include/HistogramData.h
         include/RunData.h
         include/DetectorSpectrumMapData.h
         include/SampleEnvironmentEvent.h
@@ -22,6 +24,7 @@ set( INC_FILES
 
 set( TEST_FILES
         test/EventDataTest.cpp
+        test/HistogramDataTest.cpp
         test/RunDataTest.cpp
         test/DetectorSpectrumMapDataTest.cpp
         test/SampleEnvironmentEventTest.cpp)
@@ -33,9 +36,9 @@ set( TEST_FILES
 include_directories(
         ${PROJECT_SOURCE_DIR}/include)
 
-add_library(eventdata_lib ${SRC_FILES} ${INC_FILES})
-target_include_directories(eventdata_lib PUBLIC ${PROJECT_SOURCE_DIR}/core/include)
-target_link_libraries(eventdata_lib
+add_library(serialisation_lib ${SRC_FILES} ${INC_FILES})
+target_include_directories(serialisation_lib PUBLIC ${PROJECT_SOURCE_DIR}/core/include)
+target_link_libraries(serialisation_lib
         CONAN_PKG::FlatBuffers
         CONAN_PKG::streaming-data-types)
 
@@ -45,7 +48,7 @@ target_link_libraries(eventdata_lib
 
 set(eventData_tests_LINK_LIBRARIES
         CONAN_PKG::gtest
-        eventdata_lib)
+        serialisation_lib)
 if(UNIX)
     list(APPEND tests_LINK_LIBRARIES pthread)
 endif()
@@ -59,7 +62,7 @@ target_link_libraries(eventDataUnitTests ${eventData_tests_LINK_LIBRARIES})
 ######################
 
 add_executable(benchmark_serialisation test/BenchmarkSerialisation.cpp)
-target_link_libraries(benchmark_serialisation CONAN_PKG::google-benchmark eventdata_lib)
+target_link_libraries(benchmark_serialisation CONAN_PKG::google-benchmark serialisation_lib)
 if(WIN32)
     target_link_libraries(benchmark_serialisation shlwapi.lib)
 endif(WIN32)

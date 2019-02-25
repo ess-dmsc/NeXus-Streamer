@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.2)
 project(NeXus-Streamer)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic-errors -Werror")
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 
 set(CMAKE_MODULE_PATH
         ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -76,7 +76,7 @@ endif()
 ## Add subdirs    ##
 ####################
 
-add_subdirectory("${PROJECT_SOURCE_DIR}/event_data")
+add_subdirectory("${PROJECT_SOURCE_DIR}/serialisation")
 add_subdirectory("${PROJECT_SOURCE_DIR}/nexus_producer")
 add_subdirectory("${PROJECT_SOURCE_DIR}/nexus_file_reader")
 
@@ -85,17 +85,15 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/nexus_file_reader")
 ####################
 
 include_directories(
-        CONAN_PKG::h5cpp
-        CONAN_PKG::librdkafka
         ${PROJECT_SOURCE_DIR}/nexus_producer/include
-        ${PROJECT_SOURCE_DIR}/event_data/include
+        ${PROJECT_SOURCE_DIR}/serialisation/include
         ${PROJECT_SOURCE_DIR}/nexus_file_reader/include
         ${PROJECT_SOURCE_DIR}/core/include)
 
 file(GLOB TEST_SRC_FILES
         ${PROJECT_SOURCE_DIR}/nexus_producer/test/*Test.cpp
         ${PROJECT_SOURCE_DIR}/nexus_file_reader/test/*Test.cpp
-        ${PROJECT_SOURCE_DIR}/event_data/test/*Test.cpp
+        ${PROJECT_SOURCE_DIR}/serialisation/test/*Test.cpp
         unitTestRunner.cpp)
 
 add_executable(UnitTests ${TEST_SRC_FILES})
@@ -103,6 +101,7 @@ add_executable(UnitTests ${TEST_SRC_FILES})
 target_link_libraries(UnitTests
         CONAN_PKG::gtest
         CONAN_PKG::cli11
+        CONAN_PKG::h5cpp
         producerUnitTests
         eventDataUnitTests
         fileReaderUnitTests)

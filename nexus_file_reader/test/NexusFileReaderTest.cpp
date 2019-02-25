@@ -1,5 +1,7 @@
 #include <gmock/gmock.h>
 
+#include "../../core/include/EventDataFrame.h"
+#include "../../core/include/HistogramFrame.h"
 #include "../include/NexusFileReader.h"
 #include "HDF5FileTestHelpers.h"
 
@@ -9,6 +11,26 @@ extern std::string testDataPath;
 
 using HDF5FileTestHelpers::createInMemoryTestFile;
 using HDF5FileTestHelpers::createInMemoryTestFileWithEventData;
+
+namespace {
+::testing::AssertionResult
+AllElementsInVectorAreNear(const std::vector<float> &a,
+                           const std::vector<float> &b, float delta) {
+
+  if (a.size() != b.size()) {
+    return ::testing::AssertionFailure() << "Vectors are different lengths";
+  }
+
+  for (size_t i = 0; i < a.size(); ++i) {
+    if (a[i] < (b[i] - delta) || a[i] > (b[i] + delta)) {
+      return ::testing::AssertionFailure() << "Vectors differ by more than "
+                                           << delta;
+    }
+  }
+
+  return ::testing::AssertionSuccess();
+}
+}
 
 TEST(NexusFileReaderTest, error_thrown_for_non_existent_file) {
   EXPECT_THROW(
@@ -319,4 +341,74 @@ TEST(NexusFileReaderTest,
       << "Expected an event message from only one event data group as the "
          "multiple groups have inconsistent pulse times, which is not yet "
          "supported";
+}
+
+TEST(NexusFileReaderTest, successfully_read_isis_histogram_data) {
+  auto file = createInMemoryTestFile("histogramDataFile");
+
+  HDF5FileTestHelpers::addNXentryToFile(file, "entry");
+
+  const std::vector<int32_t> counts{1, 2, 3, 4, 2, 3};
+  const std::size_t periods = 1;
+  const std::size_t tofBins = 2;
+  const std::vector<float> tofBinEdges{5.0,     4005.0,  8005.0,
+                                       12005.0, 16005.0, 19995.0};
+  const std::vector<int32_t> detectorIDs = {1, 2, 3};
+
+  HDF5FileTestHelpers::addHistogramDataGroupToFile(file, "entry", "detector_1",
+                                                   counts, detectorIDs, periods,
+                                                   tofBins, tofBinEdges);
+
+  auto fileReader = NexusFileReader(file, 0, 0, {0});
+  auto histoData = fileReader.getHistoData();
+  EXPECT_EQ(histoData.size(), 1) << "We expect 1 histogram data object from "
+                                    "the 1 NXdata group in the file";
+  EXPECT_EQ(histoData[0].counts, counts);
+  EXPECT_TRUE(
+      AllElementsInVectorAreNear(histoData[0].timeOfFlight, tofBinEdges, 0.01));
+  EXPECT_EQ(histoData[0].detectorIDs, detectorIDs);
+}
+
+TEST(NexusFileReaderTest, return_run_duration_from_duration_dataset) {
+  auto file = createInMemoryTestFile("dataFileWithDurationDataset");
+  HDF5FileTestHelpers::addNXentryToFile(file, "entry");
+  HDF5FileTestHelpers::addNXeventDataToFile(file, "entry");
+  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(file, "entry");
+
+  // Create duration dataset in test file
+  float duration = 42.0;
+  std::string units = "second";
+  HDF5FileTestHelpers::addDurationDatasetToFile(file, "entry", duration, units);
+
+  auto fileReader = NexusFileReader(file, 0, 0, {0});
+  auto outputDurationMs = fileReader.getRunDurationMs();
+  auto outputDurationSeconds = static_cast<float>(outputDurationMs / 1000.0);
+
+  EXPECT_NEAR(duration, outputDurationSeconds, 0.1);
+}
+
+TEST(NexusFileReaderTest, run_duration_throws_if_not_units_of_seconds_in_file) {
+  auto file = createInMemoryTestFile("dataFileWithDurationDataset");
+  HDF5FileTestHelpers::addNXentryToFile(file, "entry");
+  HDF5FileTestHelpers::addNXeventDataToFile(file, "entry");
+  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(file, "entry");
+
+  std::string units = "elephants";
+  HDF5FileTestHelpers::addDurationDatasetToFile(file, "entry", 42.0, units);
+
+  auto fileReader = NexusFileReader(file, 0, 0, {0});
+
+  EXPECT_THROW(fileReader.getRunDurationMs(), std::runtime_error);
+}
+
+TEST(NexusFileReaderTest, run_duration_throws_if_no_duration_dataset_present) {
+  auto file = createInMemoryTestFile("dataFileWithNoDuration");
+  HDF5FileTestHelpers::addNXentryToFile(file, "entry");
+
+  HDF5FileTestHelpers::addHistogramDataGroupToFile(
+      file, "entry", "detector_1", {1, 2, 3, 4}, {1}, 2, 2,
+      {5.0, 4005.0, 8005.0, 12005.0, 16005.0, 19995.0});
+
+  auto fileReader = NexusFileReader(file, 0, 0, {0});
+  EXPECT_THROW(fileReader.getRunDurationMs(), std::runtime_error);
 }

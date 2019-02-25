@@ -1,10 +1,40 @@
+#include <Timer.h>
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <iostream>
 #include <thread>
 
-#include "../../event_data/include/DetectorSpectrumMapData.h"
+#include "../../core/include/EventDataFrame.h"
+#include "../../core/include/HistogramFrame.h"
+#include "../../serialisation/include/DetectorSpectrumMapData.h"
+#include "../../serialisation/include/DetectorSpectrumMapData.h"
+#include "../../serialisation/include/EventData.h"
+#include "../../serialisation/include/HistogramData.h"
+#include "../../serialisation/include/RunData.h"
 #include "NexusPublisher.h"
+
+namespace {
+
+int64_t getTimeNowInNanoseconds() {
+  auto now = std::chrono::system_clock::now();
+  auto now_epoch = now.time_since_epoch();
+  auto now_epoch_nanoseconds =
+      std::chrono::duration_cast<std::chrono::nanoseconds>(now_epoch).count();
+  return now_epoch_nanoseconds;
+}
+
+void createAndSendHistogramMessage(
+    const std::vector<HistogramFrame> &histograms,
+    const std::shared_ptr<EventPublisher> &publisher) {
+  // One histogram per NXdata group in the file
+  for (const auto &histogram : histograms) {
+    auto message = createHistogramMessage(
+        histogram, static_cast<uint64_t>(getTimeNowInNanoseconds()));
+    publisher->sendHistogramMessage(message);
+  }
+}
+}
 
 /**
  * Create an object responsible for the main business logic of the software. It
@@ -67,45 +97,52 @@ std::vector<EventData> NexusPublisher::createMessageData(hsize_t frameNumber) {
  * @param runNumber - number identifying the current run
  * @return runData
  */
-std::shared_ptr<RunData> NexusPublisher::createRunMessageData(int runNumber) {
-  auto runData = std::make_shared<RunData>();
-  runData->setNumberOfPeriods(m_fileReader->getNumberOfPeriods());
-  runData->setInstrumentName(m_fileReader->getInstrumentName());
-  runData->setRunNumber(runNumber);
-  runData->setStartTime(static_cast<uint64_t>(getTimeNowInNanoseconds()));
+RunData NexusPublisher::createRunMessageData(int runNumber) {
+  auto runData = RunData();
+  runData.setNumberOfPeriods(m_fileReader->getNumberOfPeriods());
+  runData.setInstrumentName(m_fileReader->getInstrumentName());
+  runData.setRunNumber(runNumber);
+  runData.setStartTime(static_cast<uint64_t>(getTimeNowInNanoseconds()));
   return runData;
 }
 
-/**
- * Create detector-spectrum map message data from file
- *
- * @return detector-spectrum map message data
- */
-std::shared_ptr<DetectorSpectrumMapData>
-NexusPublisher::createDetSpecMessageData() {
-  auto detSpecMap =
-      std::make_shared<DetectorSpectrumMapData>(m_detSpecMapFilename);
-  return detSpecMap;
+std::unique_ptr<Timer> NexusPublisher::publishHistogramBatch(
+    const std::vector<HistogramFrame> &histograms,
+    uint32_t histogramUpdatePeriodMs, int32_t numberOfTimerIterations) {
+  std::unique_ptr<Timer> histogramPublishingTimer;
+  if (!histograms.empty()) {
+    auto Interval = std::chrono::milliseconds(histogramUpdatePeriodMs);
+    std::shared_ptr<Sleeper> IntervalSleeper = std::make_shared<RealSleeper>();
+    histogramPublishingTimer = std::make_unique<Timer>(
+        Interval, IntervalSleeper, numberOfTimerIterations);
+    histogramPublishingTimer->addCallback(
+        [ histograms, &publisher = this->m_publisher ]() {
+          createAndSendHistogramMessage(histograms, publisher);
+        });
+    histogramPublishingTimer->start();
+  }
+  return histogramPublishingTimer;
 }
 
 /**
  * Start streaming all the data from the file
  */
-void NexusPublisher::streamData(int runNumber, bool slow,
-                                std::pair<int32_t, int32_t> minMaxDetNums) {
+void NexusPublisher::streamData(int runNumber, const OptionalArgs &settings) {
   // frame numbers run from 0 to numberOfFrames-1
   int64_t totalBytesSent = 0;
   const auto numberOfFrames = m_fileReader->getNumberOfFrames();
 
   totalBytesSent += createAndSendRunMessage(runNumber);
-  if (minMaxDetNums.first == 0 && minMaxDetNums.second == 0) {
+  if (settings.minMaxDetectorNums.first == 0 &&
+      settings.minMaxDetectorNums.second == 0) {
     totalBytesSent += createAndSendDetSpecMessage();
   }
+  std::unique_ptr<Timer> histogramStreamer = streamHistogramData(settings);
 
   uint64_t lastFrameTime = 0;
   for (size_t frameNumber = 0; frameNumber < numberOfFrames; frameNumber++) {
     // Publish messages at approx real message rate
-    if (slow) {
+    if (settings.slow) {
       auto frameTime =
           m_fileReader->getRelativeFrameTimeMilliseconds(frameNumber);
       auto frameDuration = frameTime - lastFrameTime;
@@ -118,12 +155,78 @@ void NexusPublisher::streamData(int runNumber, bool slow,
     reportProgress(static_cast<float>(frameNumber) /
                    static_cast<float>(numberOfFrames));
   }
+
+  if (histogramStreamer != nullptr) {
+    histogramStreamer->triggerStop();
+    histogramStreamer->waitForStop();
+  }
+
   totalBytesSent += createAndSendRunStopMessage();
   reportProgress(1.0);
   std::cout << std::endl;
 
   m_logger->info("Frames sent: {}, Bytes sent: {}",
                  m_fileReader->getNumberOfFrames(), totalBytesSent);
+}
+
+std::unique_ptr<Timer>
+NexusPublisher::streamHistogramData(const OptionalArgs &settings) {
+  auto runDurationMs = m_fileReader->getRunDurationMs();
+
+  int32_t numberOfHistogramUpdates =
+      runDurationMs / settings.histogramUpdatePeriodMs;
+
+  // We want to send at least one batch of histogram messages
+  numberOfHistogramUpdates = std::max(1, numberOfHistogramUpdates);
+
+  auto histograms = m_fileReader->getHistoData();
+  std::unique_ptr<Timer> histogramStreamer;
+
+  // If the duration of the run is longer/similar to the specified update period
+  // for histogram data, or if slow mode was not selected then we are
+  // only going to send one batch of messages. So let's go ahead and do that.
+  if (numberOfHistogramUpdates == 1 || !settings.slow) {
+    createAndSendHistogramMessage(histograms, m_publisher);
+
+    // Otherwise we'll divide up the original histogram and to publish in
+    // batches
+    // over the duration of the run
+  } else {
+
+    // We'll populate this copy of the histograms with data to send in the first
+    // batch of messages
+    auto firstHistograms = histograms;
+
+    for (size_t histogramIndex = 0; histogramIndex < histograms.size();
+         ++histogramIndex) {
+
+      for (size_t countIndex = 0;
+           countIndex < histograms[histogramIndex].counts.size();
+           ++countIndex) {
+        // The first batch of messages is different from the others as it will
+        // include any remainders from dividing the counts amongst the messages
+        // Thus summing all messages will result in the original histogram from
+        // file
+        firstHistograms[histogramIndex].counts[countIndex] =
+            (histograms[histogramIndex].counts[countIndex] %
+             numberOfHistogramUpdates) +
+            (histograms[histogramIndex].counts[countIndex] /
+             numberOfHistogramUpdates);
+        histograms[histogramIndex].counts[countIndex] =
+            histograms[histogramIndex].counts[countIndex] /
+            numberOfHistogramUpdates;
+      }
+    }
+
+    // Send the first batch of histograms and start a timer in a separate thread
+    // which will periodically publish each future batch
+    createAndSendHistogramMessage(firstHistograms, m_publisher);
+    --numberOfHistogramUpdates; // -1 for the first batch that we've already
+                                // sent
+    histogramStreamer = publishHistogramBatch(
+        histograms, settings.histogramUpdatePeriodMs, numberOfHistogramUpdates);
+  }
+  return histogramStreamer;
 }
 
 /**
@@ -168,9 +271,9 @@ void NexusPublisher::createAndSendSampleEnvMessages(size_t frameNumber) {
  */
 size_t NexusPublisher::createAndSendRunMessage(int runNumber) {
   auto messageData = createRunMessageData(runNumber);
-  auto buffer = messageData->getRunStartBuffer();
+  auto buffer = messageData.getRunStartBuffer();
   m_publisher->sendRunMessage(buffer);
-  m_logger->info("Publishing new run: {}", messageData->runInfo());
+  m_logger->info("Publishing new run: {}", messageData.runInfo());
   return buffer.size();
 }
 
@@ -181,31 +284,23 @@ size_t NexusPublisher::createAndSendRunMessage(int runNumber) {
  * @return - size of the buffer
  */
 size_t NexusPublisher::createAndSendRunStopMessage() {
-  auto runData = std::make_shared<RunData>();
+  auto runData = RunData();
   // Flush producer queue to ensure the run stop is after all messages are
   // published
   m_publisher->flushSendQueue();
-  runData->setStopTime(static_cast<uint64_t>(getTimeNowInNanoseconds() + 1));
+  runData.setStopTime(static_cast<uint64_t>(getTimeNowInNanoseconds() + 1));
   // + 1 as we want to include any messages which were sent in the current
   // nanosecond
   // (in the extremely unlikely event that it is possible to happen)
 
-  auto buffer = runData->getRunStopBuffer();
+  auto buffer = runData.getRunStopBuffer();
   m_publisher->sendRunMessage(buffer);
   return buffer.size();
 }
 
-int64_t NexusPublisher::getTimeNowInNanoseconds() {
-  auto now = std::chrono::system_clock::now();
-  auto now_epoch = now.time_since_epoch();
-  auto now_epoch_nanoseconds =
-      std::chrono::duration_cast<std::chrono::nanoseconds>(now_epoch).count();
-  return now_epoch_nanoseconds;
-}
-
 size_t NexusPublisher::createAndSendDetSpecMessage() {
-  auto messageData = createDetSpecMessageData();
-  auto messageBuffer = messageData->getBuffer();
+  auto messageData = DetectorSpectrumMapData(m_detSpecMapFilename);
+  auto messageBuffer = messageData.getBuffer();
   m_publisher->sendDetSpecMessage(messageBuffer);
   return messageBuffer.size();
 }

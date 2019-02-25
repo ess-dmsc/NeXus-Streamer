@@ -33,4 +33,16 @@ void addNXeventDataDatasetsToFile(
     const std::string &groupName = "detector_1_events");
 
 void addVMSCompatGroupToFile(hdf5::file::File &file);
+
+void addHistogramDataGroupToFile(hdf5::file::File &file,
+                                 const std::string &entryName,
+                                 const std::string &groupName,
+                                 const std::vector<int32_t> &counts,
+                                 const std::vector<int32_t> &detectorIDs,
+                                 size_t periods, size_t tofBins,
+                                 const std::vector<float> &tofBinEdges);
+
+void addDurationDatasetToFile(hdf5::file::File &file,
+                              const std::string &entryName, float duration,
+                              const std::string &units);
 }

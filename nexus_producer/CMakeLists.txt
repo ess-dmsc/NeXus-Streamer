@@ -1,12 +1,15 @@
 project(nexus-publisher)
 
-set( SRC_FILES  src/NexusPublisher.cpp)
+set( SRC_FILES  src/NexusPublisher.cpp
+        src/Timer.cpp)
 
 set( INC_FILES  include/EventPublisher.h
                 include/NexusPublisher.h
-                include/OptionalArgs.h)
+                include/OptionalArgs.h
+        include/Timer.h)
 
-set( TEST_FILES test/NexusPublisherTest.cpp)
+set( TEST_FILES test/NexusPublisherTest.cpp
+                test/TimerTest.cpp)
 
 #####################
 ## Libraries       ##
@@ -29,11 +32,11 @@ target_link_libraries(nexusPublisher_lib
         CONAN_PKG::spdlog
         CONAN_PKG::FlatBuffers
         nexusFileReader_lib
-        eventdata_lib)
+        serialisation_lib)
 target_include_directories(nexusPublisher_lib PUBLIC ${PROJECT_SOURCE_DIR}/core/include)
 
 set(core_libraries
-        eventdata_lib
+        serialisation_lib
         nexusFileReader_lib
         nexusPublisher_lib
         eventPublisher_lib)

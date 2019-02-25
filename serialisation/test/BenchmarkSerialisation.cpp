@@ -1,3 +1,4 @@
+#include "../../core/include/Message.h"
 #include "EventData.h"
 #include "benchmark/benchmark.h"
 

@@ -15,6 +15,7 @@ public:
   virtual void sendRunMessage(Streamer::Message &message) = 0;
   virtual void sendDetSpecMessage(Streamer::Message &message) = 0;
   virtual void sendSampleEnvMessage(Streamer::Message &message) = 0;
+  virtual void sendHistogramMessage(Streamer::Message &message) = 0;
   virtual void flushSendQueue() = 0;
   virtual int64_t getCurrentOffset() = 0;
 };

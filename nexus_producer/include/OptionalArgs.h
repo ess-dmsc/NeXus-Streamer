@@ -13,4 +13,5 @@ struct OptionalArgs {
   bool quietMode = false;
   bool singleRun = false;
   int32_t fakeEventsPerPulse = 0;
+  uint32_t histogramUpdatePeriodMs = 5000;
 };

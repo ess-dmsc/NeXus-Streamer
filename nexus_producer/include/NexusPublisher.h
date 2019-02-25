@@ -3,28 +3,31 @@
 #include <memory>
 #include <spdlog/spdlog.h>
 
-#include "../../event_data/include/DetectorSpectrumMapData.h"
-#include "../../event_data/include/EventData.h"
-#include "../../event_data/include/RunData.h"
 #include "../../nexus_file_reader/include/FileReader.h"
 #include "EventPublisher.h"
 #include "OptionalArgs.h"
+
+class EventData;
+class RunData;
+class Timer;
 
 class NexusPublisher {
 public:
   NexusPublisher(std::shared_ptr<EventPublisher> publisher,
                  std::shared_ptr<FileReader> fileReader,
                  const OptionalArgs &settings);
-  std::vector<EventData> createMessageData(hsize_t frameNumber);
   size_t createAndSendRunMessage(int runNumber);
   size_t createAndSendDetSpecMessage();
-  std::shared_ptr<RunData> createRunMessageData(int runNumber);
-  std::shared_ptr<DetectorSpectrumMapData> createDetSpecMessageData();
-  void streamData(int runNumber, bool slow,
-                  std::pair<int32_t, int32_t> minMaxDetNums);
+  std::vector<EventData> createMessageData(hsize_t frameNumber);
+  void streamData(int runNumber, const OptionalArgs &settings);
 
 private:
-  int64_t getTimeNowInNanoseconds();
+  std::unique_ptr<Timer>
+  publishHistogramBatch(const std::vector<HistogramFrame> &histograms,
+                        uint32_t histogramUpdatePeriodMs,
+                        int32_t numberOfTimerIterations);
+  std::unique_ptr<Timer> streamHistogramData(const OptionalArgs &settings);
+  RunData createRunMessageData(int runNumber);
   size_t createAndSendMessage(size_t frameNumber);
   void createAndSendSampleEnvMessages(size_t frameNumber);
   size_t createAndSendRunStopMessage();

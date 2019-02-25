@@ -2,6 +2,7 @@
 
 # NeXus Streamer
 Stream event data from a NeXus file to an Apache Kafka cluster. Each message sent over Kafka comprises the event data from a single neutron pulse. Sample environment data are also published.
+Histogram data are also published when NeXus files recorded at ISIS are used.
 
 Part of the ESS data streaming pipeline.
 

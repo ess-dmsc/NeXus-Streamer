@@ -1,4 +1,5 @@
 #include "../../nexus_file_reader/include/NexusFileReader.h"
+#include "../../serialisation/include/DetectorSpectrumMapData.h"
 #include "KafkaEventPublisher.h"
 #include "NexusPublisher.h"
 #include "OptionalArgs.h"
@@ -62,6 +63,9 @@ int main(int argc, char **argv) {
                  "NXevent_data instead of "
                  "publishing real data from file");
   App.add_option(
+      "--histogram-update-period", settings.histogramUpdatePeriodMs,
+      "A histogram data message with this period (in integer milliseconds)");
+  App.add_option(
          "-x,--disable-map",
          [&settings](CLI::results_t Results) {
            auto min = std::stoi(Results.at(0));
@@ -102,11 +106,10 @@ int main(int argc, char **argv) {
 
   // Publish the same data repeatedly, with incrementing run numbers
   if (settings.singleRun) {
-    streamer.streamData(runNumber, settings.slow, settings.minMaxDetectorNums);
+    streamer.streamData(runNumber, settings);
   } else {
     while (true) {
-      streamer.streamData(runNumber, settings.slow,
-                          settings.minMaxDetectorNums);
+      streamer.streamData(runNumber, settings);
       std::this_thread::sleep_for(std::chrono::seconds(2));
       runNumber++;
     }
