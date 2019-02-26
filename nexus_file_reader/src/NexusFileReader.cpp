@@ -216,8 +216,9 @@ std::unordered_map<hsize_t, sEEventVector> NexusFileReader::getSEEventMap() {
 
     std::string name = sampleEnvGroup.link().target().object_path().name();
 
-    // For ISIS files as the name of the log is the name of the parent object
-    if (isISISFile()) {
+    // For ISIS files if the log is called value_log then we should instead use
+    // the name of the parent object
+    if (isISISFile() && name == "value_log") {
       name =
           sampleEnvGroup.link().parent().link().target().object_path().name();
     }
