@@ -415,7 +415,9 @@ TEST(NexusFileReaderTest, run_duration_throws_if_no_duration_dataset_present) {
 
 TEST(NexusFileReaderTest,
      hasHistogramData_returns_false_if_no_histogram_data_in_file) {
-  auto file = createInMemoryTestFile("dataFileWithDurationDataset");
+  auto file = createInMemoryTestFile("dataFileWithNoHistogramData");
+
+  // Add event data but no histogram data
   HDF5FileTestHelpers::addNXentryToFile(file, "entry");
   HDF5FileTestHelpers::addNXeventDataToFile(file, "entry");
   HDF5FileTestHelpers::addNXeventDataDatasetsToFile(file, "entry");
@@ -426,7 +428,7 @@ TEST(NexusFileReaderTest,
 
 TEST(NexusFileReaderTest,
      hasHistogramData_returns_true_if_histogram_data_in_file) {
-  auto file = createInMemoryTestFile("dataFileWithNoDuration");
+  auto file = createInMemoryTestFile("dataFileWithHistogramData");
   HDF5FileTestHelpers::addNXentryToFile(file, "entry");
 
   HDF5FileTestHelpers::addHistogramDataGroupToFile(
