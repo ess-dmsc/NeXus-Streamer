@@ -32,6 +32,7 @@ public:
   bool isISISFile() override;
   uint64_t getTotalEventsInGroup(size_t eventGroupNumber) override;
   uint32_t getRunDurationMs() override;
+  bool hasHistogramData() override { return !m_histoGroups.empty(); };
 
 private:
   std::vector<uint32_t> getEventDetIds(hsize_t frameNumber,
