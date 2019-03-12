@@ -13,10 +13,14 @@ using ::testing::AtLeast;
 using ::testing::_;
 
 class FakeFileReader : public FileReader {
+public:
+  explicit FakeFileReader(bool hasHistogramData = true)
+      : m_histogramDataInFile(hasHistogramData){};
   hsize_t getFileSize() override { return 0; };
   uint64_t getTotalEventCount() override { return 3; };
   uint32_t getPeriodNumber() override { return 0; };
   float getProtonCharge(hsize_t frameNumber) override { return 0.002; };
+  bool hasHistogramData() override { return m_histogramDataInFile; };
 
   std::vector<EventDataFrame> getEventData(hsize_t frameNumber) override {
     std::vector<EventDataFrame> eventData{EventDataFrame({0, 1, 2}, {0, 1, 2})};
@@ -53,6 +57,8 @@ class FakeFileReader : public FileReader {
     return 3;
   };
   uint32_t getRunDurationMs() override { return 100; };
+
+  bool m_histogramDataInFile = true;
 };
 
 class NexusPublisherTest : public ::testing::Test {
@@ -167,6 +173,31 @@ TEST_F(NexusPublisherTest, test_data_is_streamed_in_slow_mode) {
 
   std::shared_ptr<FileReader> fakeFileReader =
       std::make_shared<FakeFileReader>();
+  NexusPublisher streamer(publisher, fakeFileReader, settings);
+  EXPECT_NO_THROW(streamer.streamData(1, settings));
+}
+
+TEST_F(NexusPublisherTest,
+       event_data_is_streamed_even_if_no_histogram_data_is_present_in_file) {
+  using ::testing::Sequence;
+
+  const auto settings = createSettings(true);
+
+  auto publisher = std::make_shared<MockEventPublisher>();
+  publisher->setUp(settings.broker, settings.instrumentName);
+
+  const int numberOfFrames = 1;
+
+  EXPECT_CALL(*publisher.get(), sendEventMessage(_)).Times(numberOfFrames);
+  EXPECT_CALL(*publisher.get(), sendRunMessage(_))
+      .Times(2); // Start and stop messages
+  EXPECT_CALL(*publisher.get(), sendDetSpecMessage(_)).Times(1);
+
+  bool histgramDataInFile = false;
+
+  std::shared_ptr<FileReader> fakeFileReader =
+      std::make_shared<FakeFileReader>(histgramDataInFile);
+
   NexusPublisher streamer(publisher, fakeFileReader, settings);
   EXPECT_NO_THROW(streamer.streamData(1, settings));
 }

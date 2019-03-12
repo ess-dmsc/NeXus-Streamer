@@ -31,4 +31,5 @@ public:
   virtual bool isISISFile() = 0;
   virtual uint64_t getTotalEventsInGroup(size_t eventGroupNumber) = 0;
   virtual uint32_t getRunDurationMs() = 0;
+  virtual bool hasHistogramData() = 0;
 };

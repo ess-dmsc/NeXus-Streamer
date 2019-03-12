@@ -171,6 +171,11 @@ void NexusPublisher::streamData(int runNumber, const OptionalArgs &settings) {
 
 std::unique_ptr<Timer>
 NexusPublisher::streamHistogramData(const OptionalArgs &settings) {
+  std::unique_ptr<Timer> histogramStreamer;
+  if (!m_fileReader->hasHistogramData()) {
+    return histogramStreamer;
+  }
+
   auto runDurationMs = m_fileReader->getRunDurationMs();
 
   int32_t numberOfHistogramUpdates =
@@ -180,7 +185,6 @@ NexusPublisher::streamHistogramData(const OptionalArgs &settings) {
   numberOfHistogramUpdates = std::max(1, numberOfHistogramUpdates);
 
   auto histograms = m_fileReader->getHistoData();
-  std::unique_ptr<Timer> histogramStreamer;
 
   // If the duration of the run is longer/similar to the specified update period
   // for histogram data, or if slow mode was not selected then we are
