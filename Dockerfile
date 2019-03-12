@@ -24,7 +24,7 @@ RUN cd nexus_streamer && conan install --build=outdated ../nexus_streamer_src/co
 
 # Build NeXus-Streamer
 COPY cmake nexus_streamer_src/cmake/
-COPY event_data nexus_streamer_src/event_data/
+COPY serialisation nexus_streamer_src/serialisation/
 COPY nexus_file_reader nexus_streamer_src/nexus_file_reader/
 COPY nexus_producer nexus_streamer_src/nexus_producer/
 COPY core nexus_streamer_src/core/
