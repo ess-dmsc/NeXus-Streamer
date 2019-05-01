@@ -214,8 +214,7 @@ TEST(NexusFileReaderTest, get_frame_time_respects_units_of_s_and_ns) {
   HDF5FileTestHelpers::addNXentryToFile(NoUnitsFile);
   HDF5FileTestHelpers::addNXeventDataToFile(NoUnitsFile);
   HDF5FileTestHelpers::addNXeventDataDatasetsToFile(
-      NoUnitsFile, {EventTimeZero}, {2}, {3}, {4}, "entry",
-      "detector_1_events");
+      NoUnitsFile, {EventTimeZero}, {2}, {3}, {4});
 
   auto NoUnitsFileReader = NexusFileReader(NoUnitsFile, 0, 0, {0});
   EXPECT_EQ(ExpectedReturnValueNanoseconds, NoUnitsFileReader.getFrameTime(0));
@@ -231,7 +230,7 @@ TEST(NexusFileReaderTest, get_frame_time_respects_units_of_s_and_ns) {
       "detector_1_events", "ns");
 
   auto NanosecondsFileReader = NexusFileReader(NanosecondsFile, 0, 0, {0});
-  EXPECT_EQ(EventTimeZero, FileReader.getFrameTime(0));
+  EXPECT_EQ(EventTimeZero, NanosecondsFileReader.getFrameTime(0));
 }
 
 TEST(NexusFileReaderTest,

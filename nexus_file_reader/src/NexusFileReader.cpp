@@ -350,9 +350,21 @@ float NexusFileReader::getProtonCharge(hsize_t frameNumber) {
 uint64_t NexusFileReader::getFrameTime(hsize_t frameNumber) {
   std::string datasetName = "event_time_zero";
 
+  auto dataset = m_eventGroups[0].get_dataset(datasetName);
+  std::string units;
+  uint64_t frameTimeFromOffsetNanoseconds;
+  if (dataset.attributes.exists("units")) {
+    dataset.attributes["units"].read(units);
+    if (units == "ns" || units == "nanoseconds") {
+      frameTimeFromOffsetNanoseconds = getSingleValueFromDataset<uint64_t>(
+          m_eventGroups[0], datasetName, frameNumber);
+      return m_frameStartOffset + frameTimeFromOffsetNanoseconds;
+    }
+    // else assume seconds
+  }
   auto frameTime = getSingleValueFromDataset<double>(m_eventGroups[0],
                                                      datasetName, frameNumber);
-  auto frameTimeFromOffsetNanoseconds = secondsToNanoseconds(frameTime);
+  frameTimeFromOffsetNanoseconds = secondsToNanoseconds(frameTime);
   return m_frameStartOffset + frameTimeFromOffsetNanoseconds;
 }
 
