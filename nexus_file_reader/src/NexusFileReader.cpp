@@ -8,7 +8,15 @@
 
 namespace {
 uint64_t secondsToNanoseconds(double seconds) {
-  return static_cast<uint64_t>(round(seconds * 1000000000L));
+  return static_cast<uint64_t>(round(seconds * 1000000000LL));
+}
+
+uint64_t secondsToMilliseconds(double seconds) {
+  return static_cast<uint64_t>(round(seconds * 1000LL));
+}
+
+uint64_t nanosecondsToMilliseconds(uint64_t nanoseconds) {
+  return nanoseconds / 1000000LL;
 }
 
 std::vector<uint64_t> secondsToNanoseconds(std::vector<double> const &seconds) {
@@ -378,10 +386,20 @@ uint64_t
 NexusFileReader::getRelativeFrameTimeMilliseconds(const hsize_t frameNumber) {
   std::string datasetName = "event_time_zero";
 
+  auto dataset = m_eventGroups[0].get_dataset(datasetName);
+  std::string units;
+  if (dataset.attributes.exists("units")) {
+    dataset.attributes["units"].read(units);
+    if (units == "ns" || units == "nanoseconds") {
+      auto frameTimeNanoseconds = getSingleValueFromDataset<uint64_t>(
+          m_eventGroups[0], datasetName, frameNumber);
+      return nanosecondsToMilliseconds(frameTimeNanoseconds);
+    }
+    // else assume seconds
+  }
   auto frameTime = getSingleValueFromDataset<double>(m_eventGroups[0],
                                                      datasetName, frameNumber);
-  return static_cast<uint64_t>(
-      round(frameTime * 1000L)); // seconds to milliseconds
+  return secondsToMilliseconds(frameTime);
 }
 
 template <typename T>
