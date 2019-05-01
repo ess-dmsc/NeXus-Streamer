@@ -8,15 +8,15 @@
 
 namespace {
 uint64_t secondsToNanoseconds(double seconds) {
-  return static_cast<uint64_t>(round(seconds * 1000000000LL));
+  return static_cast<uint64_t>(round(seconds * 1000000000ULL));
 }
 
 uint64_t secondsToMilliseconds(double seconds) {
-  return static_cast<uint64_t>(round(seconds * 1000LL));
+  return static_cast<uint64_t>(round(seconds * 1000ULL));
 }
 
 uint64_t nanosecondsToMilliseconds(uint64_t nanoseconds) {
-  return nanoseconds / 1000000LL;
+  return nanoseconds / 1000000ULL;
 }
 
 std::vector<uint64_t> secondsToNanoseconds(std::vector<double> const &seconds) {
