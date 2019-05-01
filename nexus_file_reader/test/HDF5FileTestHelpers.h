@@ -30,7 +30,8 @@ void addNXeventDataDatasetsToFile(
     const std::vector<uint64_t> &eventIndex,
     const std::vector<uint32_t> &eventId,
     const std::string &entryName = "entry",
-    const std::string &groupName = "detector_1_events");
+    const std::string &groupName = "detector_1_events",
+    const std::string &eventTimeZeroUnits = "s");
 
 void addVMSCompatGroupToFile(hdf5::file::File &file);
 

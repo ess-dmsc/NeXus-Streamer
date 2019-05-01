@@ -51,12 +51,15 @@ void addNXeventDataDatasetsToFile(hdf5::file::File &file,
                                   const std::vector<uint64_t> &eventIndex,
                                   const std::vector<uint32_t> &eventId,
                                   const std::string &entryName,
-                                  const std::string &groupName) {
+                                  const std::string &groupName,
+                                  const std::string &eventTimeZeroUnits) {
   hdf5::node::Group eventGroup = file.root()[entryName + "/" + groupName];
   auto eventTimeZeroDataset = eventGroup.create_dataset(
       "event_time_zero", hdf5::datatype::create<int64_t>(),
       hdf5::dataspace::Simple({eventTimeZero.size()}, {eventTimeZero.size()}));
   eventTimeZeroDataset.write(eventTimeZero);
+  eventTimeZeroDataset.attributes.create_from<std::string>("units",
+                                                           eventTimeZeroUnits);
 
   auto eventTimeOffsetDataset = eventGroup.create_dataset(
       "event_time_offset", hdf5::datatype::create<int32_t>(),
