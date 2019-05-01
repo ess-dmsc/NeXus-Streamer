@@ -8,11 +8,11 @@
 
 namespace {
 uint64_t secondsToNanoseconds(double seconds) {
-  return static_cast<uint64_t>(round(seconds * 1000000000ULL));
+  return static_cast<uint64_t>(round(seconds)) * 1000000000ULL;
 }
 
 uint64_t secondsToMilliseconds(double seconds) {
-  return static_cast<uint64_t>(round(seconds * 1000ULL));
+  return static_cast<uint64_t>(round(seconds)) * 1000ULL;
 }
 
 uint64_t nanosecondsToMilliseconds(uint64_t nanoseconds) {
