@@ -408,9 +408,7 @@ T NexusFileReader::getSingleValueFromDataset(const hdf5::node::Group &group,
                                              hsize_t offset) {
   auto dataset = group.get_dataset(datasetName);
   T value;
-
   m_slab.offset({offset});
-
   dataset.read(value, m_slab);
 
   return value;
@@ -425,7 +423,6 @@ T NexusFileReader::getSingleValueFromDataset(const hdf5::node::Group &group,
 hsize_t NexusFileReader::getFrameStart(hsize_t frameNumber,
                                        size_t eventGroupNumber) {
   std::string datasetName = "event_index";
-
   auto frameStart = getSingleValueFromDataset<hsize_t>(
       m_eventGroups[eventGroupNumber], datasetName, frameNumber);
 
