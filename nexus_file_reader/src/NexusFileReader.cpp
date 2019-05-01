@@ -8,7 +8,15 @@
 
 namespace {
 uint64_t secondsToNanoseconds(double seconds) {
-  return static_cast<uint64_t>(round(seconds * 1000000000L));
+  return static_cast<uint64_t>(round(seconds)) * 1000000000ULL;
+}
+
+uint64_t secondsToMilliseconds(double seconds) {
+  return static_cast<uint64_t>(round(seconds)) * 1000ULL;
+}
+
+uint64_t nanosecondsToMilliseconds(uint64_t nanoseconds) {
+  return nanoseconds / 1000000ULL;
 }
 
 std::vector<uint64_t> secondsToNanoseconds(std::vector<double> const &seconds) {
@@ -350,9 +358,21 @@ float NexusFileReader::getProtonCharge(hsize_t frameNumber) {
 uint64_t NexusFileReader::getFrameTime(hsize_t frameNumber) {
   std::string datasetName = "event_time_zero";
 
+  auto dataset = m_eventGroups[0].get_dataset(datasetName);
+  std::string units;
+  uint64_t frameTimeFromOffsetNanoseconds;
+  if (dataset.attributes.exists("units")) {
+    dataset.attributes["units"].read(units);
+    if (units == "ns" || units == "nanoseconds") {
+      frameTimeFromOffsetNanoseconds = getSingleValueFromDataset<uint64_t>(
+          m_eventGroups[0], datasetName, frameNumber);
+      return m_frameStartOffset + frameTimeFromOffsetNanoseconds;
+    }
+    // else assume seconds
+  }
   auto frameTime = getSingleValueFromDataset<double>(m_eventGroups[0],
                                                      datasetName, frameNumber);
-  auto frameTimeFromOffsetNanoseconds = secondsToNanoseconds(frameTime);
+  frameTimeFromOffsetNanoseconds = secondsToNanoseconds(frameTime);
   return m_frameStartOffset + frameTimeFromOffsetNanoseconds;
 }
 
@@ -366,10 +386,20 @@ uint64_t
 NexusFileReader::getRelativeFrameTimeMilliseconds(const hsize_t frameNumber) {
   std::string datasetName = "event_time_zero";
 
+  auto dataset = m_eventGroups[0].get_dataset(datasetName);
+  std::string units;
+  if (dataset.attributes.exists("units")) {
+    dataset.attributes["units"].read(units);
+    if (units == "ns" || units == "nanoseconds") {
+      auto frameTimeNanoseconds = getSingleValueFromDataset<uint64_t>(
+          m_eventGroups[0], datasetName, frameNumber);
+      return nanosecondsToMilliseconds(frameTimeNanoseconds);
+    }
+    // else assume seconds
+  }
   auto frameTime = getSingleValueFromDataset<double>(m_eventGroups[0],
                                                      datasetName, frameNumber);
-  return static_cast<uint64_t>(
-      round(frameTime * 1000L)); // seconds to milliseconds
+  return secondsToMilliseconds(frameTime);
 }
 
 template <typename T>
@@ -378,9 +408,7 @@ T NexusFileReader::getSingleValueFromDataset(const hdf5::node::Group &group,
                                              hsize_t offset) {
   auto dataset = group.get_dataset(datasetName);
   T value;
-
   m_slab.offset({offset});
-
   dataset.read(value, m_slab);
 
   return value;
@@ -395,7 +423,6 @@ T NexusFileReader::getSingleValueFromDataset(const hdf5::node::Group &group,
 hsize_t NexusFileReader::getFrameStart(hsize_t frameNumber,
                                        size_t eventGroupNumber) {
   std::string datasetName = "event_index";
-
   auto frameStart = getSingleValueFromDataset<hsize_t>(
       m_eventGroups[eventGroupNumber], datasetName, frameNumber);
 
