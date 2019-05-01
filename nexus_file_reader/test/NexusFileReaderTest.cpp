@@ -208,8 +208,20 @@ TEST(NexusFileReaderTest, get_frame_time_respects_units_of_s_and_ns) {
   int64_t ExpectedReturnValueNanoseconds = EventTimeZero * 1000000000LL;
   EXPECT_EQ(ExpectedReturnValueNanoseconds, FileReader.getFrameTime(0));
 
-  // event_time_zero dataset in seconds so frame time should be same as input
-  // value
+  // event_time_zero dataset units omitted so frame time should be assumed
+  // to be in seconds and converted to nanoseconds
+  auto NoUnitsFile = createInMemoryTestFile("fileWithEventDataNoUnits");
+  HDF5FileTestHelpers::addNXentryToFile(NoUnitsFile);
+  HDF5FileTestHelpers::addNXeventDataToFile(NoUnitsFile);
+  HDF5FileTestHelpers::addNXeventDataDatasetsToFile(
+      NoUnitsFile, {EventTimeZero}, {2}, {3}, {4}, "entry",
+      "detector_1_events");
+
+  auto NoUnitsFileReader = NexusFileReader(NoUnitsFile, 0, 0, {0});
+  EXPECT_EQ(ExpectedReturnValueNanoseconds, NoUnitsFileReader.getFrameTime(0));
+
+  // event_time_zero dataset in nanoseconds so frame time should be same as
+  // input value
   auto NanosecondsFile =
       createInMemoryTestFile("fileWithEventDataInNanoseconds");
   HDF5FileTestHelpers::addNXentryToFile(NanosecondsFile);

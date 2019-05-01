@@ -58,8 +58,10 @@ void addNXeventDataDatasetsToFile(hdf5::file::File &file,
       "event_time_zero", hdf5::datatype::create<int64_t>(),
       hdf5::dataspace::Simple({eventTimeZero.size()}, {eventTimeZero.size()}));
   eventTimeZeroDataset.write(eventTimeZero);
-  eventTimeZeroDataset.attributes.create_from<std::string>("units",
-                                                           eventTimeZeroUnits);
+  if (!eventTimeZeroUnits.empty()) {
+    eventTimeZeroDataset.attributes.create_from<std::string>(
+        "units", eventTimeZeroUnits);
+  }
 
   auto eventTimeOffsetDataset = eventGroup.create_dataset(
       "event_time_offset", hdf5::datatype::create<int32_t>(),
