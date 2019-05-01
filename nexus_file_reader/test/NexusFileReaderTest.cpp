@@ -201,12 +201,12 @@ TEST(NexusFileReaderTest, get_frame_time_respects_units_of_s_and_ns) {
   HDF5FileTestHelpers::addNXentryToFile(SecondsFile);
   HDF5FileTestHelpers::addNXeventDataToFile(SecondsFile);
   HDF5FileTestHelpers::addNXeventDataDatasetsToFile(
-      SecondsFile, {EventTimeZero}, {2}, {3}, {4}, "s");
+      SecondsFile, {EventTimeZero}, {2}, {3}, {4}, "entry", "detector_1_events",
+      "s");
 
   auto FileReader = NexusFileReader(SecondsFile, 0, 0, {0});
-  int64_t ExpectedValueInNanoseconds = EventTimeZero * 1000000000L;
-  EXPECT_EQ(ExpectedValueInNanoseconds * 1000000000L,
-            FileReader.getFrameTime(0));
+  int64_t ExpectedReturnValueNanoseconds = EventTimeZero * 1000000000LL;
+  EXPECT_EQ(ExpectedReturnValueNanoseconds, FileReader.getFrameTime(0));
 
   // event_time_zero dataset in seconds so frame time should be same as input
   // value
@@ -215,7 +215,8 @@ TEST(NexusFileReaderTest, get_frame_time_respects_units_of_s_and_ns) {
   HDF5FileTestHelpers::addNXentryToFile(NanosecondsFile);
   HDF5FileTestHelpers::addNXeventDataToFile(NanosecondsFile);
   HDF5FileTestHelpers::addNXeventDataDatasetsToFile(
-      NanosecondsFile, {EventTimeZero}, {2}, {3}, {4}, "ns");
+      NanosecondsFile, {EventTimeZero}, {2}, {3}, {4}, "entry",
+      "detector_1_events", "ns");
 
   auto NanosecondsFileReader = NexusFileReader(NanosecondsFile, 0, 0, {0});
   EXPECT_EQ(EventTimeZero, FileReader.getFrameTime(0));
