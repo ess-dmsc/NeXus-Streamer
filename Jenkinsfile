@@ -22,10 +22,10 @@ archive_os = "centos7"
 release_os = "centos7-release"
 
 container_build_nodes = [
-    'centos7': new ContainerBuildNode('essdmscdm/centos7-build-node:3.7.0', '/usr/bin/scl enable rh-python35 devtoolset-6 -- /bin/bash -e'),
-    'centos7-release': new ContainerBuildNode('essdmscdm/centos7-build-node:3.7.0', '/usr/bin/scl enable rh-python35 devtoolset-6 -- /bin/bash -e'),
-    'debian9': new ContainerBuildNode('essdmscdm/debian9-build-node:2.6.0', 'bash -e'),
-    'ubuntu1804': new ContainerBuildNode('essdmscdm/ubuntu18.04-build-node:1.4.0', 'bash -e')
+    'centos7': ContainerBuildNode.getDefaultContainerBuildNode('centos7'),
+    'centos7-release': ContainerBuildNode.getDefaultContainerBuildNode('centos7'),
+    'debian9': ContainerBuildNode.getDefaultContainerBuildNode('debian9'),
+    'ubuntu1804': ContainerBuildNode.getDefaultContainerBuildNode('ubuntu1804')
 ]
 
 pipeline_builder = new PipelineBuilder(this, container_build_nodes)
@@ -157,6 +157,7 @@ node('docker') {
     }
 
     builders['macOS'] = get_macos_pipeline()
+    builders['windows'] = get_win10_pipeline()
 
     try {
         parallel builders
@@ -206,3 +207,47 @@ def get_macos_pipeline()
         }
     }
 }
+
+def get_win10_pipeline() {
+    return {
+        node('windows10') {
+            // Use custom location to avoid Win32 path length issues
+            ws('c:\\jenkins\\') {
+                cleanWs()
+                dir("${project}") {
+                    stage("win10: Checkout") {
+                        checkout scm
+                    } // stage
+
+                    stage("win10: Setup") {
+                        bat """if exist _build rd /q /s _build
+                        mkdir _build
+                        xcopy /y conan\\conanfile_win32.txt conan\\conanfile.txt
+                        """
+                    } // stage
+                    stage("win10: Install") {
+                        bat """cd _build
+                        conan.exe \
+                        install ..\\conan\\conanfile.txt  \
+                        --settings build_type=Release \
+                        --build=outdated"""
+                    } // stage
+
+                    stage("win10: Build") {
+                        bat """cd _build
+                        cmake .. -G \"Visual Studio 15 2017 Win64\" -DCMAKE_BUILD_TYPE=Release -DCONAN=MANUAL
+                        cmake --build . --config Release
+                        """
+                    } // stage
+
+                    stage("win10: Test") {
+                        bat """cd _build
+                        .\\activate_run.bat
+                        .\\bin\\UnitTests -d ..\\code\\data\\
+                        """
+                    } // stage
+                } // dir
+            } // ws
+        } // node
+    } // return
+} // def
