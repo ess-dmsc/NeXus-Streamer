@@ -1,5 +1,5 @@
 [requires]
-h5cpp/0.1.0@ess-dmsc/testing
+h5cpp/0.1.3@ess-dmsc/stable
 librdkafka/0.11.5@ess-dmsc/stable
 gtest/3121b20-dm3@ess-dmsc/stable
 cli11/1.6.0@bincrafters/stable
