@@ -5,8 +5,8 @@ gtest/3121b20-dm3@ess-dmsc/stable
 cli11/1.6.0@bincrafters/stable
 google-benchmark/4c2af07-dm3@ess-dmsc/stable
 spdlog/1.3.1@bincrafters/stable
-FlatBuffers/1.10.0-dm1@ess-dmsc/stable
-streaming-data-types/6cd05e4@ess-dmsc/stable
+flatbuffers/1.10.0@google/stable
+streaming-data-types/fb4d8474@ess-dmsc/stable
 
 [generators]
 cmake
