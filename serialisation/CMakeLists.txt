@@ -39,7 +39,7 @@ include_directories(
 add_library(serialisation_lib ${SRC_FILES} ${INC_FILES})
 target_include_directories(serialisation_lib PUBLIC ${PROJECT_SOURCE_DIR}/core/include)
 target_link_libraries(serialisation_lib
-        CONAN_PKG::FlatBuffers
+        CONAN_PKG::flatbuffers
         CONAN_PKG::streaming-data-types)
 
 #####################
