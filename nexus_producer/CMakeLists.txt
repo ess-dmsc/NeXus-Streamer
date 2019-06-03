@@ -26,11 +26,11 @@ add_library(eventPublisher_lib
 target_link_libraries(eventPublisher_lib
         CONAN_PKG::librdkafka
         CONAN_PKG::spdlog
-        CONAN_PKG::FlatBuffers)
+        CONAN_PKG::flatbuffers)
 target_include_directories(eventPublisher_lib PUBLIC ${PROJECT_SOURCE_DIR}/core/include)
 target_link_libraries(nexusPublisher_lib
         CONAN_PKG::spdlog
-        CONAN_PKG::FlatBuffers
+        CONAN_PKG::flatbuffers
         nexusFileReader_lib
         serialisation_lib)
 target_include_directories(nexusPublisher_lib PUBLIC ${PROJECT_SOURCE_DIR}/core/include)
