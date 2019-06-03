@@ -58,21 +58,14 @@ builders = pipeline_builder.createBuilders { container ->
                 coverage_on = ""
             }
 
-            def cmake_cmd
-            if (container.key == "centos7") {
-                cmake_cmd = "cmake3"
-            } else {
-                cmake_cmd = "cmake"
-            }
-
             container.sh """
                 cd build
-                ${cmake_cmd} -DCMAKE_BUILD_TYPE=Debug ../${pipeline_builder.project} ${coverage_on}
+                cmake -DCMAKE_BUILD_TYPE=Debug ../${pipeline_builder.project} ${coverage_on}
             """
         } else {
             container.sh """
                 cd build
-                cmake3 -DCMAKE_SKIP_BUILD_RPATH=ON -DCMAKE_BUILD_TYPE=Release ../${pipeline_builder.project}
+                cmake -DCMAKE_SKIP_BUILD_RPATH=ON -DCMAKE_BUILD_TYPE=Release ../${pipeline_builder.project}
             """
         }  // if/else
     }  // stage
