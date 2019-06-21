@@ -24,11 +24,13 @@ void KafkaEventPublisher::setUp(const std::string &broker,
   auto tconf = std::shared_ptr<RdKafka::Conf>(
       RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC));
 
+  std::string const maxMessageSize = "20000000";
+
   conf->set("metadata.broker.list", broker, error_str);
   conf->set("message.send.max.retries", "3", error_str);
-  conf->set("message.max.bytes", "10000000", error_str);
-  conf->set("fetch.message.max.bytes", "10000000", error_str);
-  conf->set("replica.fetch.max.bytes", "10000000", error_str);
+  conf->set("message.max.bytes", maxMessageSize, error_str);
+  conf->set("fetch.message.max.bytes", maxMessageSize, error_str);
+  conf->set("replica.fetch.max.bytes", maxMessageSize, error_str);
   conf->set("api.version.request", "true", error_str);
 
   if (!m_compression.empty()) {

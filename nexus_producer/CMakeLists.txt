@@ -49,7 +49,7 @@ set(publisher-target nexus-streamer)
 add_executable(${publisher-target} ${PROJECT_SOURCE_DIR}/src/main.cpp)
 
 target_link_libraries(${publisher-target}
-        CONAN_PKG::cli11
+        CONAN_PKG::CLI11
         CONAN_PKG::spdlog
         ${core_libraries})
 

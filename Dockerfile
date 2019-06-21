@@ -1,5 +1,7 @@
 FROM ubuntu:18.04
 
+ARG local_conan_server
+
 # Install build dependencies
 ENV BUILD_PACKAGES "build-essential git python python-pip python-setuptools cmake"
 RUN apt-get -y update && apt-get install $BUILD_PACKAGES -y --no-install-recommends
@@ -13,14 +15,15 @@ RUN pip install conan
 # Force conan to create .conan directory and profile
 RUN conan profile new default
 
-# Replace the default profile and remotes with the ones from our Ubuntu 18.04 build node
 RUN conan config install http://github.com/ess-dmsc/conan-configuration.git
 ADD "https://raw.githubusercontent.com/ess-dmsc/docker-ubuntu18.04-build-node/master/files/default_profile" "/root/.conan/profiles/default"
 
 RUN mkdir nexus_streamer
 RUN mkdir nexus_streamer_src
 COPY conan nexus_streamer_src/conan/
-RUN cd nexus_streamer && conan install --build=outdated ../nexus_streamer_src/conan/conanfile.txt
+RUN cd nexus_streamer \
+    && if [ ! -z "$local_conan_server" ]; then conan remote add --insert 0 local-conan-server "$local_conan_server"; fi \
+    && conan install --build=outdated ../nexus_streamer_src/conan/conanfile.txt
 
 # Build NeXus-Streamer
 COPY cmake nexus_streamer_src/cmake/
