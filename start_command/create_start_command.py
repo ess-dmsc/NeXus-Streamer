@@ -15,18 +15,13 @@ class NexusToDictConverter:
         :param truncate_large_datasets: if True truncates datasets with any dimension larger than large
         :param large: dimensions larger than this are considered large
         """
-        self._kafka_streams = {}
         self.truncate_large_datasets = truncate_large_datasets
         self.large = large
 
-    def convert(self, nexus_root: nexus.NXroot, streams: dict = None) -> dict:
+    def convert(self, nexus_root: nexus.NXroot) -> dict:
         """
-        Converts the given nexus_root to dict with correct replacement of
-        the streams
+        Converts the given nexus_root to dict
         """
-        if streams is None:
-            streams = {}
-        self._kafka_streams = streams
         return {
             "children": [self._root_to_dict(entry)
                          for _, entry in nexus_root.entries.items()]
@@ -41,12 +36,13 @@ class NexusToDictConverter:
         root_dict = self._handle_attributes(root, root_dict)
         return root_dict
 
-    @staticmethod
-    def truncate_if_large(size, data):
-        for dim_number, dim_size in enumerate(size):
-            if dim_size > 10:
-                size[dim_number] = 10
-        data.resize(size)
+    def truncate_if_large(self, size, data):
+        if self.truncate_large_datasets:
+            size = list(size)
+            for dim_number, dim_size in enumerate(size):
+                if dim_size > self.large:
+                    size[dim_number] = self.large
+            data.resize(size)
 
     def _get_data_and_type(self, root):
         size = 1
@@ -54,8 +50,7 @@ class NexusToDictConverter:
         dtype = str(root.dtype)
         if isinstance(data, np.ndarray):
             size = data.shape
-            if self.truncate_large_datasets:
-                self.truncate_if_large(size, data)
+            self.truncate_if_large(size, data)
             if dtype[:2] == '|S':
                 data = np.char.decode(data)
             data = data.tolist()
@@ -95,28 +90,65 @@ class NexusToDictConverter:
         # Add the entries
         entries = root.entries
 
-        if root.nxpath in self._kafka_streams:
-            root_dict["children"].append({
-                "type": "stream",
-                "stream": self._kafka_streams[root.nxpath]
-            })
-        elif entries:
-            for entry in entries:
-                child_dict = self._root_to_dict(entries[entry])
-                root_dict["children"].append(child_dict)
+        if not self._handle_stream(root, root_dict):
+            if entries:
+                for entry in entries:
+                    child_dict = self._root_to_dict(entries[entry])
+                    root_dict["children"].append(child_dict)
 
         return root_dict
 
     @staticmethod
-    def _handle_stream(root, root_dict: dict):
-        if 'NX_class' in root.attrs.keys():
-            nx_class = root.attrs['NX_class']
-            if nx_class == 'NXlog':
-                pass
-            elif nx_class == 'NXevent_data':
-                pass
-            elif nx_class == 'NXdata':
-                pass
+    def _get_dtype(root) -> str:
+        """
+        Get the datatype as a string in the format expected by the file writer
+        """
+        dtype = str(root.dtype)
+        if dtype[:2] == '|S':
+            dtype = 'string'
+        elif dtype == "float64":
+            dtype = "double"
+        elif dtype == "float32":
+            dtype = "float"
+        return dtype
+
+    def _handle_stream(self, root, root_dict: dict) -> bool:
+        """
+        Insert information to get this data from Kafka stream if it is of an NXclass supported by the NeXus-Streamer
+        :param root:
+        :param root_dict:
+        :return: true if data will be streamed
+        """
+        stream_info = {}
+        is_stream = False
+        if isinstance(root, nexus.NXlog):
+            stream_info["writer_module"] = "f142"
+            if root.nxname == 'value_log':
+                # For ISIS files the parent of the NXlog has a more useful name
+                # which the NeXus-Streamer uses as the source name
+                stream_info["source"] = root.nxgroup.nxname
+            else:
+                stream_info["source"] = root.nxname
+            stream_info["topic"] = "SAMPLE_ENV_TOPIC"
+            stream_info["dtype"] = self._get_dtype(root.entries['value'])
+            is_stream = True
+        elif isinstance(root, nexus.NXevent_data):
+            stream_info["writer_module"] = "ev42"
+            stream_info["topic"] = "EVENT_DATA_TOPIC"
+            stream_info["source"] = "NeXus-Streamer"
+            is_stream = True
+        elif isinstance(root, nexus.NXdata):
+            return True  # TODO - don't skip histogram data
+            stream_info["writer_module"] = "hs00"
+            stream_info["topic"] = "HISTO_DATA_TOPIC"
+            stream_info["source"] = "NeXus-Streamer"
+            is_stream = True
+        if is_stream:
+            root_dict["children"].append({
+                "type": "stream",
+                "stream": stream_info
+            })
+        return is_stream
 
     def _handle_dataset(self, root):
         data, dataset_type, size = self._get_data_and_type(root)
@@ -129,7 +161,7 @@ class NexusToDictConverter:
             "values": data
         }
         if size != 1:
-            root_dict['dataset']['size'] = size
+            root_dict["dataset"]["size"] = size
 
         return root_dict
 
@@ -191,7 +223,7 @@ if __name__ == '__main__':
     )
     parser.add_argument("-o", "--output-filename", type=str, help="Output filename for the NeXus structure JSON")
     args = parser.parse_args()
-    converter = NexusToDictConverter()
+    converter = NexusToDictConverter(truncate_large_datasets=True, large=100)
 
     nexus_file = nexus.nxload(args.input_filename)
     tree = converter.convert(nexus_file)
