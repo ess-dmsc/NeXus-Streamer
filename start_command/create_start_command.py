@@ -42,7 +42,10 @@ class NexusToDictConverter:
             for dim_number, dim_size in enumerate(size):
                 if dim_size > self.large:
                     size[dim_number] = self.large
-            data.resize(size)
+            data_copy = np.copy(data[...])
+            data_copy.resize(size)
+            return data_copy
+        return data
 
     def _get_data_and_type(self, root):
         size = 1
@@ -50,7 +53,7 @@ class NexusToDictConverter:
         dtype = str(root.dtype)
         if isinstance(data, np.ndarray):
             size = data.shape
-            self.truncate_if_large(size, data)
+            data = self.truncate_if_large(size, data)
             if dtype[:2] == '|S':
                 data = np.char.decode(data)
             data = data.tolist()
