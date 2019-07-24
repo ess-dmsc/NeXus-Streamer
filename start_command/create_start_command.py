@@ -67,6 +67,12 @@ class NexusToDictConverter:
             dtype = "float"
         return data, dtype, size
 
+    @staticmethod
+    def _skip_isis_specific_nodes(root):
+        if root.nxclass[:2] == "IX":
+            return True
+        return False
+
     def _handle_attributes(self, root, root_dict):
         if root.nxclass and root.nxclass is not "NXfield" and root.nxclass is not "NXgroup":
             root_dict["attributes"] = [{"name": "NX_class",
@@ -93,7 +99,7 @@ class NexusToDictConverter:
         # Add the entries
         entries = root.entries
 
-        if not self._handle_stream(root, root_dict):
+        if not self._handle_stream(root, root_dict) and not self._skip_isis_specific_nodes(root):
             if entries:
                 for entry in entries:
                     child_dict = self._root_to_dict(entries[entry])
