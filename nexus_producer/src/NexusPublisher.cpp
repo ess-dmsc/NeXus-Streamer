@@ -1,4 +1,3 @@
-#include <Timer.h>
 #include <algorithm>
 #include <chrono>
 #include <cmath>
@@ -13,6 +12,7 @@
 #include "../../serialisation/include/HistogramData.h"
 #include "../../serialisation/include/RunData.h"
 #include "NexusPublisher.h"
+#include "Timer.h"
 
 namespace {
 
@@ -172,7 +172,8 @@ void NexusPublisher::streamData(int runNumber, const OptionalArgs &settings) {
 std::unique_ptr<Timer>
 NexusPublisher::streamHistogramData(const OptionalArgs &settings) {
   std::unique_ptr<Timer> histogramStreamer;
-  if (!m_fileReader->hasHistogramData() || settings.histogramUpdatePeriodMs == 0) {
+  if (!m_fileReader->hasHistogramData() ||
+      settings.histogramUpdatePeriodMs == 0) {
     return histogramStreamer;
   }
 

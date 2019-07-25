@@ -1,10 +1,10 @@
-#include "RunData.h"
-
 #include <array>
 #include <ctime>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+
+#include "RunData.h"
 
 void RunData::setStartTime(const std::string &inputTime) {
   m_startTime = timeStringToUint64(inputTime);

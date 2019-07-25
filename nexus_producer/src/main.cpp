@@ -1,14 +1,15 @@
-#include "../../nexus_file_reader/include/NexusFileReader.h"
-#include "../../serialisation/include/DetectorSpectrumMapData.h"
-#include "KafkaEventPublisher.h"
-#include "NexusPublisher.h"
-#include "OptionalArgs.h"
 #include <CLI/CLI.hpp>
 #include <chrono>
 #include <iostream>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 #include <thread>
+
+#include "../../nexus_file_reader/include/NexusFileReader.h"
+#include "../../serialisation/include/DetectorSpectrumMapData.h"
+#include "KafkaEventPublisher.h"
+#include "NexusPublisher.h"
+#include "OptionalArgs.h"
 
 uint64_t getTimeNowNanosecondsFromEpoch() {
   auto now = std::chrono::system_clock::now();

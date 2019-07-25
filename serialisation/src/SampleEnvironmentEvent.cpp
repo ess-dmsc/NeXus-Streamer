@@ -1,5 +1,6 @@
-#include "SampleEnvironmentEvent.h"
 #include <cmath>
+
+#include "SampleEnvironmentEvent.h"
 
 uint64_t SampleEnvironmentEvent::getTimestamp() {
   auto nanosecondsPastRunStart = static_cast<uint64_t>(m_time * 1e9);

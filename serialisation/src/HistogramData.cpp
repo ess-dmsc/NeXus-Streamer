@@ -1,7 +1,8 @@
-#include "HistogramData.h"
+#include <hs00_event_histogram_generated.h>
+
 #include "../../core/include/HistogramFrame.h"
 #include "../../core/include/Message.h"
-#include "hs00_event_histogram_generated.h"
+#include "HistogramData.h"
 
 Streamer::Message createHistogramMessage(const HistogramFrame &histogram,
                                          uint64_t timestampUnix) {

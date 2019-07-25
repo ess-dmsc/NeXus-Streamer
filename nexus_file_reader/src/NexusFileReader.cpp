@@ -1,10 +1,11 @@
+#include <fmt/format.h>
+
 #include "../include/NexusFileReader.h"
 #include "../../core/include/EventDataFrame.h"
 #include "../../core/include/HistogramFrame.h"
 #include "../../serialisation/include/SampleEnvironmentEventDouble.h"
 #include "../../serialisation/include/SampleEnvironmentEventInt.h"
 #include "../../serialisation/include/SampleEnvironmentEventLong.h"
-#include <fmt/format.h>
 
 namespace {
 uint64_t secondsToNanoseconds(double seconds) {

@@ -1,13 +1,14 @@
 #pragma once
 
-#include "../../serialisation/include/SampleEnvironmentEvent.h"
-#include "FileReader.h"
 #include <h5cpp/hdf5.hpp>
 #include <memory>
 #include <random>
 #include <spdlog/spdlog.h>
 #include <unordered_map>
 #include <vector>
+
+#include "../../serialisation/include/SampleEnvironmentEvent.h"
+#include "FileReader.h"
 
 class NexusFileReader : public FileReader {
 public:

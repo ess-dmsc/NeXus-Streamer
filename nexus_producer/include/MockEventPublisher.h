@@ -1,7 +1,8 @@
 #pragma once
 
-#include "EventPublisher.h"
 #include <gmock/gmock.h>
+
+#include "EventPublisher.h"
 
 class MockEventPublisher : public EventPublisher {
 public:
