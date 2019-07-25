@@ -2,4 +2,4 @@
 
 #include <string>
 
-bool JsonDescriptionIsValid(const std::string &textForValidation);
+bool isValidJson(const std::string &textForValidation);
