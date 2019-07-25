@@ -50,6 +50,7 @@ bool RunData::decodeMessage(const uint8_t *buf) {
   if (runData->info_type_type() == InfoTypes::RunStop) {
     auto runStopData = static_cast<const RunStop *>(runData->info_type());
     setStopTime(runStopData->stop_time());
+    setRunID(runStopData->run_id()->str());
 
     return true;
   }
@@ -75,7 +76,8 @@ Streamer::Message RunData::getRunStartBuffer() {
 Streamer::Message RunData::getRunStopBuffer() {
   flatbuffers::FlatBufferBuilder builder;
 
-  auto messageRunStop = CreateRunStop(builder, m_stopTime);
+  auto runID = builder.CreateString(m_runID);
+  auto messageRunStop = CreateRunStop(builder, m_stopTime, runID);
   auto messageRunInfo =
       CreateRunInfo(builder, InfoTypes::RunStop, messageRunStop.Union());
 
