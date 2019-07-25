@@ -172,7 +172,7 @@ void NexusPublisher::streamData(int runNumber, const OptionalArgs &settings) {
 std::unique_ptr<Timer>
 NexusPublisher::streamHistogramData(const OptionalArgs &settings) {
   std::unique_ptr<Timer> histogramStreamer;
-  if (!m_fileReader->hasHistogramData()) {
+  if (!m_fileReader->hasHistogramData() || settings.histogramUpdatePeriodMs == 0) {
     return histogramStreamer;
   }
 

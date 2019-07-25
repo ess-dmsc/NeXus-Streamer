@@ -62,9 +62,10 @@ int main(int argc, char **argv) {
                  "Generates this number of fake events per pulse per "
                  "NXevent_data instead of "
                  "publishing real data from file");
-  App.add_option(
-      "--histogram-update-period", settings.histogramUpdatePeriodMs,
-      "A histogram data message with this period (in integer milliseconds)");
+  App.add_option("--histogram-update-period", settings.histogramUpdatePeriodMs,
+                 "Publish a histogram data message with this period (in "
+                 "integer milliseconds) default 0 means do not stream "
+                 "histograms");
   App.add_option(
          "-x,--disable-map",
          [&settings](CLI::results_t Results) {
