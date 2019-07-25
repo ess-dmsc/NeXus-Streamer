@@ -3,5 +3,5 @@
 #include "JSONDescriptionLoader.h"
 
 bool JsonDescriptionIsValid(const std::string &textForValidation) {
-  return true;
+  return false;
 }
