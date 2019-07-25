@@ -4,7 +4,7 @@
 #include <spdlog/spdlog.h>
 
 #include "../../nexus_file_reader/include/FileReader.h"
-#include "EventPublisher.h"
+#include "Publisher.h"
 #include "OptionalArgs.h"
 
 class EventData;
@@ -13,7 +13,7 @@ class Timer;
 
 class NexusPublisher {
 public:
-  NexusPublisher(std::shared_ptr<EventPublisher> publisher,
+  NexusPublisher(std::shared_ptr<Publisher> publisher,
                  std::shared_ptr<FileReader> fileReader,
                  const OptionalArgs &settings);
   size_t createAndSendRunMessage(int runNumber);
@@ -33,7 +33,7 @@ private:
   size_t createAndSendRunStopMessage();
   void reportProgress(float progress);
 
-  std::shared_ptr<EventPublisher> m_publisher;
+  std::shared_ptr<Publisher> m_publisher;
   std::shared_ptr<FileReader> m_fileReader;
   bool m_quietMode = false;
   std::string m_detSpecMapFilename;

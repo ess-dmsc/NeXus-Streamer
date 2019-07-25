@@ -5,7 +5,7 @@
 #include "../../core/include/HistogramFrame.h"
 #include "../../serialisation/include/DetectorSpectrumMapData.h"
 #include "../../serialisation/include/EventData.h"
-#include "MockEventPublisher.h"
+#include "MockPublisher.h"
 #include "NexusPublisher.h"
 #include "OptionalArgs.h"
 
@@ -83,7 +83,7 @@ public:
   NexusPublisher createStreamer(const bool quiet) {
     const auto settings = createSettings(quiet);
 
-    auto publisher = std::make_shared<MockEventPublisher>();
+    auto publisher = std::make_shared<MockPublisher>();
 
     std::shared_ptr<FileReader> fakeFileReader =
         std::make_shared<FakeFileReader>();
@@ -115,7 +115,7 @@ TEST_F(NexusPublisherTest, test_stream_data) {
 
   const auto settings = createSettings(true);
 
-  auto publisher = std::make_shared<MockEventPublisher>();
+  auto publisher = std::make_shared<MockPublisher>();
   publisher->setUp(settings.broker, settings.instrumentName);
 
   const int numberOfFrames = 1;
@@ -138,7 +138,7 @@ TEST_F(NexusPublisherTest, test_det_spec_not_sent_when_pair_is_specified) {
   std::pair<int32_t, int32_t> minMaxDetectorNum = {0, 2};
   const auto settings = createSettings(true, minMaxDetectorNum);
 
-  auto publisher = std::make_shared<MockEventPublisher>();
+  auto publisher = std::make_shared<MockPublisher>();
   publisher->setUp(settings.broker, settings.instrumentName);
 
   const int numberOfFrames = 1;
@@ -160,7 +160,7 @@ TEST_F(NexusPublisherTest, test_data_is_streamed_in_slow_mode) {
   bool slowMode = true;
   const auto settings = createSettings(true, {0, 0}, slowMode);
 
-  auto publisher = std::make_shared<MockEventPublisher>();
+  auto publisher = std::make_shared<MockPublisher>();
   publisher->setUp(settings.broker, settings.instrumentName);
 
   const int numberOfFrames = 1;
@@ -183,7 +183,7 @@ TEST_F(NexusPublisherTest,
 
   const auto settings = createSettings(true);
 
-  auto publisher = std::make_shared<MockEventPublisher>();
+  auto publisher = std::make_shared<MockPublisher>();
   publisher->setUp(settings.broker, settings.instrumentName);
 
   const int numberOfFrames = 1;

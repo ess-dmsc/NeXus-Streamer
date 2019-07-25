@@ -26,7 +26,7 @@ int64_t getTimeNowInNanoseconds() {
 
 void createAndSendHistogramMessage(
     const std::vector<HistogramFrame> &histograms,
-    const std::shared_ptr<EventPublisher> &publisher) {
+    const std::shared_ptr<Publisher> &publisher) {
   // One histogram per NXdata group in the file
   for (const auto &histogram : histograms) {
     auto message = createHistogramMessage(
@@ -50,7 +50,7 @@ void createAndSendHistogramMessage(
  * @return - a NeXusPublisher object, call streamData() on it to start streaming
  * data
  */
-NexusPublisher::NexusPublisher(std::shared_ptr<EventPublisher> publisher,
+NexusPublisher::NexusPublisher(std::shared_ptr<Publisher> publisher,
                                std::shared_ptr<FileReader> fileReader,
                                const OptionalArgs &settings)
     : m_publisher(std::move(publisher)), m_fileReader(std::move(fileReader)),

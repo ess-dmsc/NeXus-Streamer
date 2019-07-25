@@ -2,9 +2,9 @@
 
 #include <gmock/gmock.h>
 
-#include "EventPublisher.h"
+#include "Publisher.h"
 
-class MockEventPublisher : public EventPublisher {
+class MockPublisher : public Publisher {
 public:
   MOCK_METHOD2(setUp, void(const std::string &broker,
                            const std::string &instrumentName));

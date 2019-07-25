@@ -1,7 +1,7 @@
-#include "KafkaEventPublisher.h"
+#include "KafkaPublisher.h"
 #include "../../core/include/Message.h"
 
-KafkaEventPublisher::~KafkaEventPublisher() {
+KafkaPublisher::~KafkaPublisher() {
   flushSendQueue();
   RdKafka::wait_destroyed(5000);
 }
@@ -12,7 +12,7 @@ KafkaEventPublisher::~KafkaEventPublisher() {
  * @param broker_str - the IP or hostname of the broker
  * @param topic_str - the name of the datastream (topic) to publish the data to
  */
-void KafkaEventPublisher::setUp(const std::string &broker,
+void KafkaPublisher::setUp(const std::string &broker,
                                 const std::string &instrumentName) {
 
   m_logger->info("Setting up Kafka producer");
@@ -66,7 +66,7 @@ void KafkaEventPublisher::setUp(const std::string &broker,
 /**
  * Wait for all messages in the current producer queue to be published
  */
-void KafkaEventPublisher::flushSendQueue() {
+void KafkaPublisher::flushSendQueue() {
   auto error = m_producer_ptr->flush(2000);
   if (error != RdKafka::ERR_NO_ERROR) {
     m_logger->error("Producer queue flush failed.");
@@ -80,7 +80,7 @@ void KafkaEventPublisher::flushSendQueue() {
  * @param topicConfig - configuration of the topic
  * @return topic handle
  */
-std::shared_ptr<RdKafka::Topic> KafkaEventPublisher::createTopicHandle(
+std::shared_ptr<RdKafka::Topic> KafkaPublisher::createTopicHandle(
     const std::string &topicPrefix, const std::string &topicSuffix,
     std::shared_ptr<RdKafka::Conf> topicConfig) {
   std::string topic_str = topicPrefix + topicSuffix;
@@ -100,27 +100,27 @@ std::shared_ptr<RdKafka::Topic> KafkaEventPublisher::createTopicHandle(
  * @param buf - pointer to the message buffer
  * @param messageSize - the size of the message in bytes
  */
-void KafkaEventPublisher::sendEventMessage(Streamer::Message &message) {
+void KafkaPublisher::sendEventMessage(Streamer::Message &message) {
   sendMessage(message, m_topic_ptr);
 }
 
-void KafkaEventPublisher::sendRunMessage(Streamer::Message &message) {
+void KafkaPublisher::sendRunMessage(Streamer::Message &message) {
   sendMessage(message, m_runTopic_ptr);
 }
 
-void KafkaEventPublisher::sendDetSpecMessage(Streamer::Message &message) {
+void KafkaPublisher::sendDetSpecMessage(Streamer::Message &message) {
   sendMessage(message, m_detSpecTopic_ptr);
 }
 
-void KafkaEventPublisher::sendSampleEnvMessage(Streamer::Message &message) {
+void KafkaPublisher::sendSampleEnvMessage(Streamer::Message &message) {
   sendMessage(message, m_sampleEnvTopic_ptr);
 }
 
-void KafkaEventPublisher::sendHistogramMessage(Streamer::Message &message) {
+void KafkaPublisher::sendHistogramMessage(Streamer::Message &message) {
   sendMessage(message, m_histogramTopic_ptr);
 }
 
-void KafkaEventPublisher::sendMessage(Streamer::Message &message,
+void KafkaPublisher::sendMessage(Streamer::Message &message,
                                       std::shared_ptr<RdKafka::Topic> topic) {
   RdKafka::ErrorCode resp;
   do {
@@ -145,7 +145,7 @@ void KafkaEventPublisher::sendMessage(Streamer::Message &message,
   } while (resp == RdKafka::ERR__QUEUE_FULL);
 }
 
-int64_t KafkaEventPublisher::getCurrentOffset() {
+int64_t KafkaPublisher::getCurrentOffset() {
 
   int64_t lowOffset = 0;
   int64_t highOffset = 0;

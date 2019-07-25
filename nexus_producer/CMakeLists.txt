@@ -1,15 +1,18 @@
 project(nexus-publisher)
 
-set( SRC_FILES  src/NexusPublisher.cpp
+set( SRC_FILES
+        src/NexusPublisher.cpp
         src/Timer.cpp)
 
-set( INC_FILES  include/EventPublisher.h
-                include/NexusPublisher.h
-                include/OptionalArgs.h
+set( INC_FILES
+        include/Publisher.h
+        include/NexusPublisher.h
+        include/OptionalArgs.h
         include/Timer.h)
 
-set( TEST_FILES test/NexusPublisherTest.cpp
-                test/TimerTest.cpp)
+set( TEST_FILES
+        test/NexusPublisherTest.cpp
+        test/TimerTest.cpp)
 
 #####################
 ## Libraries       ##
@@ -21,7 +24,7 @@ include_directories(
 add_library(nexusPublisher_lib ${SRC_FILES} ${INC_FILES})
 
 add_library(eventPublisher_lib
-        src/KafkaEventPublisher.cpp include/KafkaEventPublisher.h)
+        src/KafkaPublisher.cpp include/KafkaPublisher.h)
 
 target_link_libraries(eventPublisher_lib
         CONAN_PKG::librdkafka
@@ -65,5 +68,5 @@ if(UNIX)
 endif()
 
 add_library(producerUnitTests
-        ${TEST_FILES} include/MockEventPublisher.h)
+        ${TEST_FILES} include/MockPublisher.h)
 target_link_libraries(producerUnitTests ${tests_LINK_LIBRARIES})

@@ -6,9 +6,9 @@ namespace Streamer {
 class Message;
 }
 
-class EventPublisher {
+class Publisher {
 public:
-  virtual ~EventPublisher() = default;
+  virtual ~Publisher() = default;
   virtual void setUp(const std::string &broker,
                      const std::string &instrumentName) = 0;
   virtual void sendEventMessage(Streamer::Message &message) = 0;

@@ -7,7 +7,7 @@
 
 #include "../../nexus_file_reader/include/NexusFileReader.h"
 #include "../../serialisation/include/DetectorSpectrumMapData.h"
-#include "KafkaEventPublisher.h"
+#include "KafkaPublisher.h"
 #include "NexusPublisher.h"
 #include "OptionalArgs.h"
 
@@ -98,7 +98,7 @@ int main(int argc, char **argv) {
   auto detectorNumbers = getDetectorNumbers(settings);
   auto runStartTime = getTimeNowNanosecondsFromEpoch();
 
-  auto publisher = std::make_shared<KafkaEventPublisher>(settings.compression);
+  auto publisher = std::make_shared<KafkaPublisher>(settings.compression);
   auto fileReader = std::make_shared<NexusFileReader>(
       hdf5::file::open(settings.filename), runStartTime,
       settings.fakeEventsPerPulse, detectorNumbers);
