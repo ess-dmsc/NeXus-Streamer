@@ -39,7 +39,7 @@ TEST(RunDataTest, get_RunInfo) {
   EXPECT_NO_THROW(rundata.setRunID("42"));
   EXPECT_NO_THROW(rundata.setStartTime("2016-08-11T08:50:18"));
 
-  EXPECT_EQ("Run number: 42, Instrument name: SANS2D, Start time: "
+  EXPECT_EQ("Run ID: 42, Instrument name: SANS2D, Start time: "
             "2016-08-11T08:50:18",
             rundata.runInfo());
 }
@@ -65,6 +65,7 @@ TEST(RunDataTest, encode_and_decode_RunData) {
 TEST(RunDataTest, encode_and_decode_RunStop) {
   auto rundata = RunData();
   EXPECT_NO_THROW(rundata.setStopTime("2016-08-11T08:50:18"));
+  EXPECT_NO_THROW(rundata.setRunID("42"));
 
   auto buffer = rundata.getRunStopBuffer();
 
@@ -72,6 +73,7 @@ TEST(RunDataTest, encode_and_decode_RunStop) {
   EXPECT_TRUE(receivedRunData.decodeMessage(
       reinterpret_cast<const uint8_t *>(buffer.data())));
   EXPECT_EQ(1470905418000000000, receivedRunData.getStopTime());
+  EXPECT_EQ(receivedRunData.getRunID(), "42");
 }
 
 TEST(RunDataTest, check_buffer_includes_file_identifier) {
