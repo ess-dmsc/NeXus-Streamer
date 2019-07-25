@@ -101,7 +101,7 @@ RunData NexusPublisher::createRunMessageData(int runNumber) {
   auto runData = RunData();
   runData.setNumberOfPeriods(m_fileReader->getNumberOfPeriods());
   runData.setInstrumentName(m_fileReader->getInstrumentName());
-  runData.setRunNumber(runNumber);
+  runData.setRunID(std::to_string(runNumber));
   runData.setStartTime(static_cast<uint64_t>(getTimeNowInNanoseconds()));
   return runData;
 }

@@ -42,7 +42,7 @@ bool RunData::decodeMessage(const uint8_t *buf) {
     auto runStartData = static_cast<const RunStart *>(runData->info_type());
     setStartTimeInNanoseconds(runStartData->start_time());
     setInstrumentName(runStartData->instrument_name()->str());
-    setRunNumber(runStartData->run_number());
+    setRunID(runStartData->run_id()->str());
     setNumberOfPeriods(runStartData->n_periods());
 
     return true;
@@ -61,7 +61,8 @@ Streamer::Message RunData::getRunStartBuffer() {
   flatbuffers::FlatBufferBuilder builder;
 
   auto instrumentName = builder.CreateString(m_instrumentName);
-  auto messageRunStart = CreateRunStart(builder, m_startTime, m_runNumber,
+  auto runID = builder.CreateString(m_runID);
+  auto messageRunStart = CreateRunStart(builder, m_startTime, runID,
                                         instrumentName, m_numberOfPeriods);
   auto messageRunInfo =
       CreateRunInfo(builder, InfoTypes::RunStart, messageRunStart.Union());
@@ -86,7 +87,7 @@ Streamer::Message RunData::getRunStopBuffer() {
 std::string RunData::runInfo() {
   std::stringstream ssRunInfo;
   ssRunInfo.imbue(std::locale());
-  ssRunInfo << "Run number: " << m_runNumber << ", "
+  ssRunInfo << "Run ID: " << m_runID << ", "
             << "Instrument name: " << m_instrumentName << ", "
             << "Start time: ";
   // convert nanoseconds to seconds
