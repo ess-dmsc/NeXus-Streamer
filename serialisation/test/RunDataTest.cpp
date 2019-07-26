@@ -46,20 +46,27 @@ TEST(RunDataTest, get_RunInfo) {
 
 TEST(RunDataTest, encode_and_decode_RunData) {
   auto rundata = RunData();
-  EXPECT_NO_THROW(rundata.setInstrumentName("SANS2D"));
-  EXPECT_NO_THROW(rundata.setRunID("42"));
+  const std::string inputRunID = "42";
+  const std::string inputNexusStructure = "{}";
+  const int inputNumberOfPeriods = 1;
+  const std::string inputInstrumentName = "SANS2D";
+
+  EXPECT_NO_THROW(rundata.setInstrumentName(inputInstrumentName));
+  EXPECT_NO_THROW(rundata.setRunID(inputRunID));
   EXPECT_NO_THROW(rundata.setStartTime("2016-08-11T08:50:18"));
-  EXPECT_NO_THROW(rundata.setNumberOfPeriods(1));
+  EXPECT_NO_THROW(rundata.setNumberOfPeriods(inputNumberOfPeriods));
+  EXPECT_NO_THROW(rundata.setNexusStructure(inputNexusStructure));
 
   auto buffer = rundata.getRunStartBuffer();
 
   auto receivedRunData = RunData();
   EXPECT_TRUE(receivedRunData.decodeMessage(
       reinterpret_cast<const uint8_t *>(buffer.data())));
-  EXPECT_EQ("42", receivedRunData.getRunID());
-  EXPECT_EQ("SANS2D", receivedRunData.getInstrumentName());
-  EXPECT_EQ(1470905418000000000, receivedRunData.getStartTime());
-  EXPECT_EQ(1, receivedRunData.getNumberOfPeriods());
+  EXPECT_EQ(receivedRunData.getRunID(), inputRunID);
+  EXPECT_EQ(receivedRunData.getInstrumentName(), inputInstrumentName);
+  EXPECT_EQ(receivedRunData.getStartTime(), 1470905418000000000);
+  EXPECT_EQ(receivedRunData.getNumberOfPeriods(), inputNumberOfPeriods);
+  EXPECT_EQ(receivedRunData.getNexusStructure(), inputNexusStructure);
 }
 
 TEST(RunDataTest, encode_and_decode_RunStop) {
