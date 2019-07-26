@@ -8,6 +8,10 @@ Part of the ESS data streaming pipeline.
 
 - [Further documentation](documentation/README.md)
 
+### Geometry
+A file can be provided with a json description of the NeXus file, using `--json-description`, this can include full geometry information about the instrument, which can be used by Mantid.
+Further documentation and a utility for automatically generating the JSON description is included [here](generate_json/README.md).
+
 ## Getting Started
 
 ### Prerequisites
@@ -47,7 +51,7 @@ build_type=Release
 ```
 
 
-### Installing
+### Building
 As usual for a CMake project:
 ```
 cmake <path-to-source>
