@@ -44,6 +44,7 @@ bool RunData::decodeMessage(const uint8_t *buf) {
     setInstrumentName(runStartData->instrument_name()->str());
     setRunID(runStartData->run_id()->str());
     setNumberOfPeriods(runStartData->n_periods());
+    setNexusStructure(runStartData->nexus_structure()->str());
 
     return true;
   }
@@ -63,8 +64,10 @@ Streamer::Message RunData::getRunStartBuffer() {
 
   auto instrumentName = builder.CreateString(m_instrumentName);
   auto runID = builder.CreateString(m_runID);
-  auto messageRunStart = CreateRunStart(builder, m_startTime, runID,
-                                        instrumentName, m_numberOfPeriods);
+  auto nexusStructure = builder.CreateString(m_nexusStructure);
+  auto messageRunStart =
+      CreateRunStart(builder, m_startTime, runID, instrumentName,
+                     m_numberOfPeriods, nexusStructure);
   auto messageRunInfo =
       CreateRunInfo(builder, InfoTypes::RunStart, messageRunStart.Union());
 

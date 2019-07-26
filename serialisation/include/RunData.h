@@ -25,12 +25,16 @@ public:
   void setNumberOfPeriods(int32_t numberOfPeriods) {
     m_numberOfPeriods = numberOfPeriods;
   }
+  void setNexusStructure(const std::string &nexusStructure) {
+    m_nexusStructure = nexusStructure;
+  };
 
   std::string getRunID() { return m_runID; }
   std::string getInstrumentName() { return m_instrumentName; }
   uint64_t getStartTime() { return m_startTime; }
   uint64_t getStopTime() { return m_stopTime; }
   int32_t getNumberOfPeriods() { return m_numberOfPeriods; }
+  std::string getNexusStructure() { return m_nexusStructure; };
 
   std::string runInfo();
 
@@ -43,4 +47,5 @@ private:
   std::string m_runID;
   std::string m_instrumentName;
   int32_t m_numberOfPeriods = 0;
+  std::string m_nexusStructure;
 };
