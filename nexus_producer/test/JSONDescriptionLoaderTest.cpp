@@ -22,8 +22,14 @@ TEST(JSONDescriptionLoaderTest, isValidJson_reports_true_for_valid_json) {
   ASSERT_NO_THROW(JSONDescriptionLoader::checkIsValidJson(validJson));
 }
 
-TEST(JSONDescriptionLoaderTest, replaceString_replaces_text_in_string) {
+TEST(JSONDescriptionLoaderTest, replaceString_replaces_single_text_match_in_string) {
   std::string inputString = "Hello all";
   JSONDescriptionLoader::replaceString(inputString, "all", "world!");
   ASSERT_EQ(inputString, "Hello world!");
+}
+
+TEST(JSONDescriptionLoaderTest, replaceString_replaces_multiple_text_matches_in_string) {
+  std::string inputString = "??? con???enate ???erpillar";
+  JSONDescriptionLoader::replaceString(inputString, "???", "cat");
+  ASSERT_EQ(inputString, "cat concatenate caterpillar");
 }

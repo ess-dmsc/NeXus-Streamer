@@ -32,4 +32,15 @@ std::string loadFromFile(const std::string &filepath) {
   checkIsValidJson(json_string);
   return json_string;
 }
+
+std::string loadJsonDescription(const std::string &filepath,
+                                const std::string &sampleEnvTopic,
+                                const std::string &eventTopic,
+                                const std::string &histoTopic) {
+  std::string description = loadFromFile(filepath);
+  replaceString(description, "SAMPLE_ENV_TOPIC", sampleEnvTopic);
+  replaceString(description, "EVENT_DATA_TOPIC", eventTopic);
+  replaceString(description, "HISTO_DATA_TOPIC", histoTopic);
+  return description;
+}
 }
