@@ -73,7 +73,8 @@ int main(int argc, char **argv) {
                  "this should match the contents of the nexus_structure field "
                  "described here:"
                  "https://github.com/ess-dmsc/kafka-to-nexus/blob/master/"
-                 "documentation/commands.md");
+                 "documentation/commands.md")
+      ->check(CLI::ExistingFile);
   App.add_option(
          "-x,--disable-map",
          [&settings](CLI::results_t Results) {
