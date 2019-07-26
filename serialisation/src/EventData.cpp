@@ -1,8 +1,8 @@
 #include <ev42_events_generated.h>
 #include <is84_isis_events_generated.h>
 
-#include "EventData.h"
 #include "../../core/include/Message.h"
+#include "EventData.h"
 
 bool EventData::decodeMessage(const uint8_t *buf) {
   auto messageData = GetEventMessage(buf);
