@@ -10,7 +10,8 @@ set( INC_FILES
         include/NexusPublisher.h
         include/OptionalArgs.h
         include/Timer.h
-        include/JSONDescriptionLoader.h)
+        include/JSONDescriptionLoader.h
+        include/TopicNames.h)
 
 set( TEST_FILES
         test/NexusPublisherTest.cpp

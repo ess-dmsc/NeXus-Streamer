@@ -3,6 +3,7 @@
 #include <streambuf>
 
 #include "JSONDescriptionLoader.h"
+#include "TopicNames.h"
 
 namespace JSONDescriptionLoader {
 void checkIsValidJson(const std::string &textForValidation) {
@@ -34,13 +35,12 @@ std::string loadFromFile(const std::string &filepath) {
 }
 
 std::string loadJsonDescription(const std::string &filepath,
-                                const std::string &sampleEnvTopic,
-                                const std::string &eventTopic,
-                                const std::string &histoTopic) {
+                                const std::string &instrumentName) {
   std::string description = loadFromFile(filepath);
-  replaceString(description, "SAMPLE_ENV_TOPIC", sampleEnvTopic);
-  replaceString(description, "EVENT_DATA_TOPIC", eventTopic);
-  replaceString(description, "HISTO_DATA_TOPIC", histoTopic);
+  auto topicNames = TopicNames(instrumentName);
+  replaceString(description, "SAMPLE_ENV_TOPIC", topicNames.sampleEnv);
+  replaceString(description, "EVENT_DATA_TOPIC", topicNames.event);
+  replaceString(description, "HISTO_DATA_TOPIC", topicNames.histogram);
   return description;
 }
 }

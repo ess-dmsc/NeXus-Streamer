@@ -102,8 +102,8 @@ RunData NexusPublisher::createRunMessageData(int runNumber) {
   runData.setInstrumentName(m_fileReader->getInstrumentName());
   runData.setRunID(std::to_string(runNumber));
   if (!m_settings.jsonDescription.empty()) {
-    runData.setNexusStructure(
-        JSONDescriptionLoader::loadFromFile(m_settings.jsonDescription));
+    runData.setNexusStructure(JSONDescriptionLoader::loadJsonDescription(
+        m_settings.jsonDescription, m_settings.instrumentName));
   }
   runData.setStartTime(static_cast<uint64_t>(getTimeNowInNanoseconds()));
   return runData;

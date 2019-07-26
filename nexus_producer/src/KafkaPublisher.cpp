@@ -1,5 +1,6 @@
 #include "KafkaPublisher.h"
 #include "../../core/include/Message.h"
+#include "TopicNames.h"
 
 KafkaPublisher::~KafkaPublisher() {
   flushSendQueue();
@@ -13,7 +14,7 @@ KafkaPublisher::~KafkaPublisher() {
  * @param topic_str - the name of the datastream (topic) to publish the data to
  */
 void KafkaPublisher::setUp(const std::string &broker,
-                                const std::string &instrumentName) {
+                           const std::string &instrumentName) {
 
   m_logger->info("Setting up Kafka producer");
 
@@ -51,12 +52,12 @@ void KafkaPublisher::setUp(const std::string &broker,
   }
 
   // Create topics
-  m_topic_ptr = createTopicHandle(instrumentName, "_events", tconf);
-  m_runTopic_ptr = createTopicHandle(instrumentName, "_runInfo", tconf);
-  m_detSpecTopic_ptr = createTopicHandle(instrumentName, "_detSpecMap", tconf);
-  m_sampleEnvTopic_ptr = createTopicHandle(instrumentName, "_sampleEnv", tconf);
-  m_histogramTopic_ptr =
-      createTopicHandle(instrumentName, "_histograms", tconf);
+  auto topicNames = TopicNames(instrumentName);
+  m_topic_ptr = createTopicHandle(topicNames.event, tconf);
+  m_runTopic_ptr = createTopicHandle(topicNames.runInfo, tconf);
+  m_detSpecTopic_ptr = createTopicHandle(topicNames.detSpecMap, tconf);
+  m_sampleEnvTopic_ptr = createTopicHandle(topicNames.sampleEnv, tconf);
+  m_histogramTopic_ptr = createTopicHandle(topicNames.histogram, tconf);
 
   // This ensures everything is ready when we need to query offset information
   // later
@@ -80,13 +81,12 @@ void KafkaPublisher::flushSendQueue() {
  * @param topicConfig - configuration of the topic
  * @return topic handle
  */
-std::shared_ptr<RdKafka::Topic> KafkaPublisher::createTopicHandle(
-    const std::string &topicPrefix, const std::string &topicSuffix,
-    std::shared_ptr<RdKafka::Conf> topicConfig) {
-  std::string topic_str = topicPrefix + topicSuffix;
+std::shared_ptr<RdKafka::Topic>
+KafkaPublisher::createTopicHandle(const std::string &topicName,
+                                  std::shared_ptr<RdKafka::Conf> topicConfig) {
   std::string error_str;
   auto topic_ptr = std::shared_ptr<RdKafka::Topic>(RdKafka::Topic::create(
-      m_producer_ptr.get(), topic_str, topicConfig.get(), error_str));
+      m_producer_ptr.get(), topicName, topicConfig.get(), error_str));
   if (topic_ptr == nullptr) {
     m_logger->error("Failed to create topic: {}", error_str);
     throw std::runtime_error("Failed to create topic");
@@ -121,7 +121,7 @@ void KafkaPublisher::sendHistogramMessage(Streamer::Message &message) {
 }
 
 void KafkaPublisher::sendMessage(Streamer::Message &message,
-                                      std::shared_ptr<RdKafka::Topic> topic) {
+                                 std::shared_ptr<RdKafka::Topic> topic) {
   RdKafka::ErrorCode resp;
   do {
 

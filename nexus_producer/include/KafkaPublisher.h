@@ -14,8 +14,7 @@ public:
   ~KafkaPublisher() override;
 
   std::shared_ptr<RdKafka::Topic>
-  createTopicHandle(const std::string &topicPrefix,
-                    const std::string &topicSuffix,
+  createTopicHandle(const std::string &topicName,
                     std::shared_ptr<RdKafka::Conf> tconf);
   void setUp(const std::string &broker,
              const std::string &instrumentName) override;
