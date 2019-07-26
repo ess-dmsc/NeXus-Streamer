@@ -161,7 +161,7 @@ void NexusPublisher::streamData(int runNumber, const OptionalArgs &settings) {
     histogramStreamer->waitForStop();
   }
 
-  totalBytesSent += createAndSendRunStopMessage();
+  totalBytesSent += createAndSendRunStopMessage(runNumber);
   reportProgress(1.0);
   std::cout << std::endl;
 
@@ -288,7 +288,7 @@ size_t NexusPublisher::createAndSendRunMessage(int runNumber) {
  * @param rawbuf - a buffer for the message
  * @return - size of the buffer
  */
-size_t NexusPublisher::createAndSendRunStopMessage() {
+size_t NexusPublisher::createAndSendRunStopMessage(int runNumber) {
   auto runData = RunData();
   // Flush producer queue to ensure the run stop is after all messages are
   // published
@@ -297,6 +297,7 @@ size_t NexusPublisher::createAndSendRunStopMessage() {
   // + 1 as we want to include any messages which were sent in the current
   // nanosecond
   // (in the extremely unlikely event that it is possible to happen)
+  runData.setRunID(std::to_string(runNumber));
 
   auto buffer = runData.getRunStopBuffer();
   m_publisher->sendRunMessage(buffer);

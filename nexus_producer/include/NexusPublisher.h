@@ -30,7 +30,7 @@ private:
   RunData createRunMessageData(int runNumber);
   size_t createAndSendMessage(size_t frameNumber);
   void createAndSendSampleEnvMessages(size_t frameNumber);
-  size_t createAndSendRunStopMessage();
+  size_t createAndSendRunStopMessage(int runNumber);
   void reportProgress(float progress);
 
   std::shared_ptr<Publisher> m_publisher;
