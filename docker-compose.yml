@@ -9,6 +9,7 @@ services:
     environment:
       CONFIG_FILE: "/example_config.ini"
       KAFKA_BROKER: "localhost"
+      SEND_GEOMETRY: 0
     volumes:
       - ./docker/example_config.ini:/example_config.ini
 

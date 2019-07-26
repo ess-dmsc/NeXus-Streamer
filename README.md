@@ -69,7 +69,7 @@ Options:
   -d,--data-path TEXT REQUIRED  Path to data directory
 ```
 
-## Deployment
+## Running via docker
 
 The docker-compose script can be used to launch a single-broker Kafka cluster and the NeXus Streamer.
 Run the following in the root directory of the repository to launch the containers.
@@ -78,6 +78,7 @@ Run the following in the root directory of the repository to launch the containe
 docker-compose up
 ```
 By default the streamer publishes some test data using the instrument name TEST. The Kafka broker is accessible at `localhost:9092`.
+In [docker-compose.yml](docker-compose.yml) note the `SEND_GEOMETRY` option, set to 1 to automatically generate the JSON description of the NeXus file and include this in the run start message sent to Mantid. 
 
 Pre-built containers are available at [Docker Hub](https://hub.docker.com/r/screamingudder/nexus-streamer/) tagged by the last commit on master at the time of building.  
 

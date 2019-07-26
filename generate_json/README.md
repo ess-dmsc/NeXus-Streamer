@@ -12,3 +12,5 @@ and run, for example, with:
 ```
 python generate_json_description.py --input-filename ../data/SANS2D_minimal.nxs --output-filename SANS2D_minimal_json.txt
 ```
+
+If using via docker-compose note the `SEND_GEOMETRY` option in [docker-compose.yml](docker-compose.yml), set to 1 to automatically generate the JSON description of the NeXus file and include this in the run start message sent to Mantid.
