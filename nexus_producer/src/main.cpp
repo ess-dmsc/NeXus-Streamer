@@ -69,9 +69,9 @@ int main(int argc, char **argv) {
                  "histograms");
   App.add_option("--json-description", settings.jsonDescription,
                  "Optionally provide the path to a file containing a json "
-                 "description of the NeXus file,"
+                 "description of the NeXus file, "
                  "this should match the contents of the nexus_structure field "
-                 "described here:"
+                 "described here: "
                  "https://github.com/ess-dmsc/kafka-to-nexus/blob/master/"
                  "documentation/commands.md")
       ->check(CLI::ExistingFile);
