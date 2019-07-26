@@ -19,3 +19,9 @@ TEST(JSONDescriptionLoaderTest, isValidJson_reports_true_for_valid_json) {
   std::string validJson = R"({"field" : 123})";
   ASSERT_NO_THROW(JSONDescriptionLoader::checkIsValidJson(validJson));
 }
+
+TEST(JSONDescriptionLoaderTest, replaceString_replaces_text_in_single_line_string) {
+  std::string inputString = "Hello all";
+  JSONDescriptionLoader::replaceString(inputString, "all", "world!");
+  ASSERT_EQ(inputString, "Hello world!");
+}
