@@ -29,7 +29,11 @@ if [[ ${SEND_GEOMETRY} == 1 ]]; then
     done 3< "${CONFIG_FILE}"
 
     python3 generate_json_description.py -i ${NEXUS_FILENAME} -o nexus_structure_json.txt
-fi
 
-source /nexus_streamer/activate_run.sh
-/nexus_streamer/bin/nexus-streamer -c ${CONFIG_FILE}
+    source /nexus_streamer/activate_run.sh
+    /nexus_streamer/bin/nexus-streamer -c ${CONFIG_FILE} --json-description nexus_structure_json.txt
+
+else
+    source /nexus_streamer/activate_run.sh
+    /nexus_streamer/bin/nexus-streamer -c ${CONFIG_FILE}
+fi
