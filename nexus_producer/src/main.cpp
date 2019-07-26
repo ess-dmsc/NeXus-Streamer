@@ -67,6 +67,13 @@ int main(int argc, char **argv) {
                  "Publish a histogram data message with this period (in "
                  "integer milliseconds) default 0 means do not stream "
                  "histograms");
+  App.add_option("--json-description", settings.jsonDescription,
+                 "Optionally provide the path to a file containing a json "
+                 "description of the NeXus file,"
+                 "this should match the contents of the nexus_structure field "
+                 "described here:"
+                 "https://github.com/ess-dmsc/kafka-to-nexus/blob/master/"
+                 "documentation/commands.md");
   App.add_option(
          "-x,--disable-map",
          [&settings](CLI::results_t Results) {

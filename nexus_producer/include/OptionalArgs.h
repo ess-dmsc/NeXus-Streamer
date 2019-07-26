@@ -9,6 +9,7 @@ struct OptionalArgs {
   std::string broker;
   std::string instrumentName = "test";
   std::string compression;
+  std::string jsonDescription;
   bool slow = false;
   bool quietMode = false;
   bool singleRun = false;

@@ -4,8 +4,8 @@
 #include <spdlog/spdlog.h>
 
 #include "../../nexus_file_reader/include/FileReader.h"
-#include "Publisher.h"
 #include "OptionalArgs.h"
+#include "Publisher.h"
 
 class EventData;
 class RunData;
@@ -33,9 +33,9 @@ private:
   size_t createAndSendRunStopMessage(int runNumber);
   void reportProgress(float progress);
 
+  const OptionalArgs m_settings;
   std::shared_ptr<Publisher> m_publisher;
   std::shared_ptr<FileReader> m_fileReader;
-  bool m_quietMode = false;
   std::string m_detSpecMapFilename;
   std::unordered_map<hsize_t, sEEventVector> m_sEEventMap;
   uint64_t m_messageID = 0;

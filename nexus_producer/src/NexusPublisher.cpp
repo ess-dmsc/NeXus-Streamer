@@ -7,10 +7,10 @@
 #include "../../core/include/EventDataFrame.h"
 #include "../../core/include/HistogramFrame.h"
 #include "../../serialisation/include/DetectorSpectrumMapData.h"
-#include "../../serialisation/include/DetectorSpectrumMapData.h"
 #include "../../serialisation/include/EventData.h"
 #include "../../serialisation/include/HistogramData.h"
 #include "../../serialisation/include/RunData.h"
+#include "JSONDescriptionLoader.h"
 #include "NexusPublisher.h"
 #include "Timer.h"
 
@@ -53,10 +53,9 @@ void createAndSendHistogramMessage(
 NexusPublisher::NexusPublisher(std::shared_ptr<Publisher> publisher,
                                std::shared_ptr<FileReader> fileReader,
                                const OptionalArgs &settings)
-    : m_publisher(std::move(publisher)), m_fileReader(std::move(fileReader)),
-      m_quietMode(settings.quietMode),
+    : m_settings(settings), m_publisher(std::move(publisher)),
+      m_fileReader(std::move(fileReader)),
       m_detSpecMapFilename(settings.detSpecFilename) {
-
   m_sEEventMap = m_fileReader->getSEEventMap();
 }
 
@@ -102,6 +101,10 @@ RunData NexusPublisher::createRunMessageData(int runNumber) {
   runData.setNumberOfPeriods(m_fileReader->getNumberOfPeriods());
   runData.setInstrumentName(m_fileReader->getInstrumentName());
   runData.setRunID(std::to_string(runNumber));
+  if (!m_settings.jsonDescription.empty()) {
+    runData.setNexusStructure(
+        JSONDescriptionLoader::loadFromFile(m_settings.jsonDescription));
+  }
   runData.setStartTime(static_cast<uint64_t>(getTimeNowInNanoseconds()));
   return runData;
 }
@@ -317,7 +320,7 @@ size_t NexusPublisher::createAndSendDetSpecMessage() {
  * @param progress - progress between 0 (starting) and 1 (complete)
  */
 void NexusPublisher::reportProgress(const float progress) {
-  if (!m_quietMode) {
+  if (!m_settings.quietMode) {
     const int barWidth = 70;
     std::cout << "[";
     auto pos = static_cast<int>(barWidth * progress);
