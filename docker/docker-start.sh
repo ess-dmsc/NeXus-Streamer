@@ -24,6 +24,8 @@ if [[ ${SEND_GEOMETRY} == 1 ]]; then
     while read -r -u3 line; do
         if [[ ${line} == *"filename"* ]]; then
           NEXUS_FILENAME=$(echo ${line} | awk -F = '{ print $2 }')
+          # Trim leading and trailing quotes
+          NEXUS_FILENAME="${NEXUS_FILENAME//\"}"
           echo "Generating JSON description of ${NEXUS_FILENAME}"
         fi
     done 3< "${CONFIG_FILE}"

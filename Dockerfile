@@ -37,7 +37,7 @@ RUN cd nexus_streamer && \
     make nexus-streamer -j8
 
 COPY docker/docker-start.sh nexus_streamer/docker-start.sh
-COPY generate_json/generate_json_description.py generate_json_description.py
+COPY generate_json/generate_json_description.py nexus_streamer/generate_json_description.py
 COPY generate_json/requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
     
