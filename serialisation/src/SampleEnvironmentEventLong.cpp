@@ -1,5 +1,6 @@
-#include "SampleEnvironmentEventLong.h"
 #include <cmath>
+
+#include "SampleEnvironmentEventLong.h"
 
 flatbuffers::Offset<LogData> SampleEnvironmentEventLong::getSEEvent(
     flatbuffers::FlatBufferBuilder &builder) {

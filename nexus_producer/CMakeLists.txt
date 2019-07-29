@@ -1,15 +1,22 @@
 project(nexus-publisher)
 
-set( SRC_FILES  src/NexusPublisher.cpp
-        src/Timer.cpp)
+set( SRC_FILES
+        src/NexusPublisher.cpp
+        src/Timer.cpp
+        src/JSONDescriptionLoader.cpp)
 
-set( INC_FILES  include/EventPublisher.h
-                include/NexusPublisher.h
-                include/OptionalArgs.h
-        include/Timer.h)
+set( INC_FILES
+        include/Publisher.h
+        include/NexusPublisher.h
+        include/OptionalArgs.h
+        include/Timer.h
+        include/JSONDescriptionLoader.h
+        include/TopicNames.h)
 
-set( TEST_FILES test/NexusPublisherTest.cpp
-                test/TimerTest.cpp)
+set( TEST_FILES
+        test/NexusPublisherTest.cpp
+        test/TimerTest.cpp
+        test/JSONDescriptionLoaderTest.cpp)
 
 #####################
 ## Libraries       ##
@@ -19,21 +26,22 @@ include_directories(
         ${PROJECT_SOURCE_DIR}/include)
 
 add_library(nexusPublisher_lib ${SRC_FILES} ${INC_FILES})
+target_link_libraries(nexusPublisher_lib
+        CONAN_PKG::spdlog
+        CONAN_PKG::flatbuffers
+        CONAN_PKG::jsonformoderncpp
+        nexusFileReader_lib
+        serialisation_lib)
+target_include_directories(nexusPublisher_lib PUBLIC ${PROJECT_SOURCE_DIR}/core/include)
 
 add_library(eventPublisher_lib
-        src/KafkaEventPublisher.cpp include/KafkaEventPublisher.h)
-
+        src/KafkaPublisher.cpp include/KafkaPublisher.h)
 target_link_libraries(eventPublisher_lib
         CONAN_PKG::librdkafka
         CONAN_PKG::spdlog
         CONAN_PKG::flatbuffers)
 target_include_directories(eventPublisher_lib PUBLIC ${PROJECT_SOURCE_DIR}/core/include)
-target_link_libraries(nexusPublisher_lib
-        CONAN_PKG::spdlog
-        CONAN_PKG::flatbuffers
-        nexusFileReader_lib
-        serialisation_lib)
-target_include_directories(nexusPublisher_lib PUBLIC ${PROJECT_SOURCE_DIR}/core/include)
+
 
 set(core_libraries
         serialisation_lib
@@ -65,5 +73,5 @@ if(UNIX)
 endif()
 
 add_library(producerUnitTests
-        ${TEST_FILES} include/MockEventPublisher.h)
+        ${TEST_FILES} include/MockPublisher.h)
 target_link_libraries(producerUnitTests ${tests_LINK_LIBRARIES})

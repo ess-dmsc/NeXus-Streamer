@@ -5,7 +5,7 @@
 #include "../../core/include/HistogramFrame.h"
 #include "../../serialisation/include/DetectorSpectrumMapData.h"
 #include "../../serialisation/include/EventData.h"
-#include "MockEventPublisher.h"
+#include "MockPublisher.h"
 #include "NexusPublisher.h"
 #include "OptionalArgs.h"
 
@@ -77,13 +77,14 @@ public:
     settings.histogramUpdatePeriodMs = 50;
     settings.minMaxDetectorNums = minMaxDetNum;
     settings.slow = slow;
+    settings.jsonDescription = "fake_filename.txt";
     return settings;
   }
 
   NexusPublisher createStreamer(const bool quiet) {
     const auto settings = createSettings(quiet);
 
-    auto publisher = std::make_shared<MockEventPublisher>();
+    auto publisher = std::make_shared<MockPublisher>();
 
     std::shared_ptr<FileReader> fakeFileReader =
         std::make_shared<FakeFileReader>();
@@ -115,7 +116,7 @@ TEST_F(NexusPublisherTest, test_stream_data) {
 
   const auto settings = createSettings(true);
 
-  auto publisher = std::make_shared<MockEventPublisher>();
+  auto publisher = std::make_shared<MockPublisher>();
   publisher->setUp(settings.broker, settings.instrumentName);
 
   const int numberOfFrames = 1;
@@ -129,7 +130,8 @@ TEST_F(NexusPublisherTest, test_stream_data) {
   std::shared_ptr<FileReader> fakeFileReader =
       std::make_shared<FakeFileReader>();
   NexusPublisher streamer(publisher, fakeFileReader, settings);
-  EXPECT_NO_THROW(streamer.streamData(1, settings));
+  std::string jsonDescription = R"({a_field: "a_value"})";
+  EXPECT_NO_THROW(streamer.streamData(1, settings, jsonDescription));
 }
 
 TEST_F(NexusPublisherTest, test_det_spec_not_sent_when_pair_is_specified) {
@@ -138,7 +140,7 @@ TEST_F(NexusPublisherTest, test_det_spec_not_sent_when_pair_is_specified) {
   std::pair<int32_t, int32_t> minMaxDetectorNum = {0, 2};
   const auto settings = createSettings(true, minMaxDetectorNum);
 
-  auto publisher = std::make_shared<MockEventPublisher>();
+  auto publisher = std::make_shared<MockPublisher>();
   publisher->setUp(settings.broker, settings.instrumentName);
 
   const int numberOfFrames = 1;
@@ -151,7 +153,8 @@ TEST_F(NexusPublisherTest, test_det_spec_not_sent_when_pair_is_specified) {
   std::shared_ptr<FileReader> fakeFileReader =
       std::make_shared<FakeFileReader>();
   NexusPublisher streamer(publisher, fakeFileReader, settings);
-  EXPECT_NO_THROW(streamer.streamData(1, settings));
+  std::string jsonDescription;
+  EXPECT_NO_THROW(streamer.streamData(1, settings, jsonDescription));
 }
 
 TEST_F(NexusPublisherTest, test_data_is_streamed_in_slow_mode) {
@@ -160,7 +163,7 @@ TEST_F(NexusPublisherTest, test_data_is_streamed_in_slow_mode) {
   bool slowMode = true;
   const auto settings = createSettings(true, {0, 0}, slowMode);
 
-  auto publisher = std::make_shared<MockEventPublisher>();
+  auto publisher = std::make_shared<MockPublisher>();
   publisher->setUp(settings.broker, settings.instrumentName);
 
   const int numberOfFrames = 1;
@@ -174,7 +177,8 @@ TEST_F(NexusPublisherTest, test_data_is_streamed_in_slow_mode) {
   std::shared_ptr<FileReader> fakeFileReader =
       std::make_shared<FakeFileReader>();
   NexusPublisher streamer(publisher, fakeFileReader, settings);
-  EXPECT_NO_THROW(streamer.streamData(1, settings));
+  std::string jsonDescription;
+  EXPECT_NO_THROW(streamer.streamData(1, settings, jsonDescription));
 }
 
 TEST_F(NexusPublisherTest,
@@ -183,7 +187,7 @@ TEST_F(NexusPublisherTest,
 
   const auto settings = createSettings(true);
 
-  auto publisher = std::make_shared<MockEventPublisher>();
+  auto publisher = std::make_shared<MockPublisher>();
   publisher->setUp(settings.broker, settings.instrumentName);
 
   const int numberOfFrames = 1;
@@ -199,5 +203,6 @@ TEST_F(NexusPublisherTest,
       std::make_shared<FakeFileReader>(histgramDataInFile);
 
   NexusPublisher streamer(publisher, fakeFileReader, settings);
-  EXPECT_NO_THROW(streamer.streamData(1, settings));
+  std::string jsonDescription;
+  EXPECT_NO_THROW(streamer.streamData(1, settings, jsonDescription));
 }

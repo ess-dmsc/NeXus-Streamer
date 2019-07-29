@@ -1,0 +1,49 @@
+{
+  "children": [
+    {
+      "type": "group",
+      "name": "raw_data_1",
+      "children": [
+        {
+          "type": "group",
+          "name": "detector_1_events",
+          "children": [
+            {
+              "type": "stream",
+              "stream": {
+                "writer_module": "ev42",
+                "topic": "EVENT_DATA_TOPIC",
+                "source": "NeXus-Streamer"
+              }
+            }
+          ],
+          "attributes": [
+            {
+              "name": "NX_class",
+              "values": "NXevent_data"
+            }
+          ]
+        },
+        {
+          "type": "dataset",
+          "name": "name",
+          "dataset": {
+            "type": "string",
+            "size": [
+              1
+            ]
+          },
+          "values": [
+            "SANS2D"
+          ]
+        }
+      ],
+      "attributes": [
+        {
+          "name": "NX_class",
+          "values": "NXentry"
+        }
+      ]
+    }
+  ]
+}

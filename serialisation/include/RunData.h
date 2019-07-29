@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../../core/include/Message.h"
-#include "ba57_run_info_generated.h"
+#include "y2gw_run_info_generated.h"
 
 class RunData {
 
@@ -10,7 +10,7 @@ public:
   Streamer::Message getRunStartBuffer();
   Streamer::Message getRunStopBuffer();
 
-  void setRunNumber(int32_t runNumber) { m_runNumber = runNumber; }
+  void setRunID(const std::string &runID) { m_runID = runID; }
   void setInstrumentName(const std::string &instrumentName) {
     m_instrumentName = instrumentName;
   }
@@ -25,12 +25,16 @@ public:
   void setNumberOfPeriods(int32_t numberOfPeriods) {
     m_numberOfPeriods = numberOfPeriods;
   }
+  void setNexusStructure(const std::string &nexusStructure) {
+    m_nexusStructure = nexusStructure;
+  };
 
-  int32_t getRunNumber() { return m_runNumber; }
+  std::string getRunID() { return m_runID; }
   std::string getInstrumentName() { return m_instrumentName; }
   uint64_t getStartTime() { return m_startTime; }
   uint64_t getStopTime() { return m_stopTime; }
   int32_t getNumberOfPeriods() { return m_numberOfPeriods; }
+  std::string getNexusStructure() { return m_nexusStructure; };
 
   std::string runInfo();
 
@@ -40,7 +44,8 @@ private:
 
   uint64_t m_startTime = 0;
   uint64_t m_stopTime = 0;
-  int32_t m_runNumber = 0;
-  std::string m_instrumentName = "";
+  std::string m_runID;
+  std::string m_instrumentName;
   int32_t m_numberOfPeriods = 0;
+  std::string m_nexusStructure;
 };

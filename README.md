@@ -1,12 +1,16 @@
 [![License (2-Clause BSD)](https://img.shields.io/badge/license-BSD%202--Clause-blue.svg)](https://github.com/ess-dmsc/NeXus-Streamer/blob/master/LICENSE) [![codecov](https://codecov.io/gh/ess-dmsc/NeXus-Streamer/branch/master/graph/badge.svg)](https://codecov.io/gh/ess-dmsc/NeXus-Streamer) [![Build Status](https://jenkins.esss.dk/dm/job/ess-dmsc/job/NeXus-Streamer/job/master/badge/icon)](https://jenkins.esss.dk/dm/job/ess-dmsc/job/NeXus-Streamer/job/master/)
 
 # NeXus Streamer
-Stream event data from a NeXus file to an Apache Kafka cluster. Each message sent over Kafka comprises the event data from a single neutron pulse. Sample environment data are also published.
-Histogram data are also published when NeXus files recorded at ISIS are used.
+Stream event data from a NeXus file to an Apache Kafka cluster. Each message sent over Kafka comprises the event data from a single neutron pulse. Data in `NXlog`s, for example sample environment data, are also published.
+Histogram data from NeXus files recorded at ISIS can also be streamed by setting `--histogram-update-period` to something higher than `0`.
 
 Part of the ESS data streaming pipeline.
 
 - [Further documentation](documentation/README.md)
+
+### Geometry
+A file can be provided with a json description of the NeXus file, using `--json-description`, this can include full geometry information about the instrument, which can be used by Mantid.
+Further documentation and a utility for automatically generating the JSON description is included [here](generate_json/README.md).
 
 ## Getting Started
 
@@ -47,7 +51,7 @@ build_type=Release
 ```
 
 
-### Installing
+### Building
 As usual for a CMake project:
 ```
 cmake <path-to-source>
@@ -65,7 +69,7 @@ Options:
   -d,--data-path TEXT REQUIRED  Path to data directory
 ```
 
-## Deployment
+## Running via docker
 
 The docker-compose script can be used to launch a single-broker Kafka cluster and the NeXus Streamer.
 Run the following in the root directory of the repository to launch the containers.
@@ -74,6 +78,7 @@ Run the following in the root directory of the repository to launch the containe
 docker-compose up
 ```
 By default the streamer publishes some test data using the instrument name TEST. The Kafka broker is accessible at `localhost:9092`.
+In [docker-compose.yml](docker-compose.yml) note the `SEND_GEOMETRY` option, set to 1 to automatically generate the JSON description of the NeXus file and include this in the run start message sent to Mantid. 
 
 Pre-built containers are available at [Docker Hub](https://hub.docker.com/r/screamingudder/nexus-streamer/) tagged by the last commit on master at the time of building.  
 

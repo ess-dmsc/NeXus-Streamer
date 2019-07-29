@@ -1,9 +1,10 @@
 #pragma once
 
-#include "../../serialisation/include/SampleEnvironmentEvent.h"
 #include <cmath>
 #include <h5cpp/hdf5.hpp>
 #include <unordered_map>
+
+#include "../../serialisation/include/SampleEnvironmentEvent.h"
 
 using sEEventVector = std::vector<std::shared_ptr<SampleEnvironmentEvent>>;
 

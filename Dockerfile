@@ -3,15 +3,15 @@ FROM ubuntu:18.04
 ARG local_conan_server
 
 # Install build dependencies
-ENV BUILD_PACKAGES "build-essential git python python-pip python-setuptools cmake"
+ENV BUILD_PACKAGES "build-essential git python3-pip python3-setuptools cmake"
 RUN apt-get -y update && apt-get install $BUILD_PACKAGES -y --no-install-recommends
 
 # Install other runtime dependencies
-ENV RUN_PACKAGES "kafkacat google-perftools"
+ENV RUN_PACKAGES "kafkacat google-perftools mawk python3"
 RUN apt-get -y update && apt-get install $RUN_PACKAGES -y --no-install-recommends && \
     rm -rf /var/lib/apt/lists/*
 
-RUN pip install conan
+RUN pip3 install conan
 # Force conan to create .conan directory and profile
 RUN conan profile new default
 
@@ -36,6 +36,11 @@ RUN cd nexus_streamer && \
     cmake ../nexus_streamer_src -DCONAN=MANUAL -DCMAKE_BUILD_TYPE=Release && \
     make nexus-streamer -j8
 
+COPY docker/docker-start.sh nexus_streamer/docker-start.sh
+COPY generate_json/generate_json_description.py nexus_streamer/generate_json_description.py
+COPY generate_json/requirements.txt requirements.txt
+RUN pip3 install -r requirements.txt
+    
 # Clean up
 RUN conan remove "*" -s -f
 RUN AUTO_ADDED_PACKAGES=`apt-mark showauto`
@@ -44,8 +49,6 @@ RUN rm -rf /tmp/* /var/tmp/*
 
 # Add directory to mount external data for docker image
 RUN mkdir nexus_streamer/data
-
-COPY docker/docker-start.sh nexus_streamer/docker-start.sh
 
 # Add example data
 COPY data/SANS_test.nxs nexus_streamer/SANS_test.nxs

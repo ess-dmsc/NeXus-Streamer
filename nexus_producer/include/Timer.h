@@ -45,7 +45,8 @@ using CallbackFunction = std::function<void()>;
 class Timer {
 public:
   explicit Timer(std::chrono::milliseconds Interval,
-                 std::shared_ptr<Sleeper> Sleeper, int32_t MaxNumIterations)
+                 std::shared_ptr<Sleeper> Sleeper,
+                 const int32_t MaxNumIterations)
       : Running(false), IntervalMS(Interval), SleeperPtr(std::move(Sleeper)),
         MaxIterations(MaxNumIterations), DoIteration(false),
         IterationComplete(true){};

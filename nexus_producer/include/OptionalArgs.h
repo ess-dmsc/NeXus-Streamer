@@ -9,9 +9,10 @@ struct OptionalArgs {
   std::string broker;
   std::string instrumentName = "test";
   std::string compression;
+  std::string jsonDescription;
   bool slow = false;
   bool quietMode = false;
   bool singleRun = false;
   int32_t fakeEventsPerPulse = 0;
-  uint32_t histogramUpdatePeriodMs = 5000;
+  uint32_t histogramUpdatePeriodMs = 0;
 };

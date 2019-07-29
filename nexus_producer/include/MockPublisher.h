@@ -1,9 +1,10 @@
 #pragma once
 
-#include "EventPublisher.h"
 #include <gmock/gmock.h>
 
-class MockEventPublisher : public EventPublisher {
+#include "Publisher.h"
+
+class MockPublisher : public Publisher {
 public:
   MOCK_METHOD2(setUp, void(const std::string &broker,
                            const std::string &instrumentName));

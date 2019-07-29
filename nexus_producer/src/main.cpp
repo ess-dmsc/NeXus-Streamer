@@ -1,14 +1,16 @@
-#include "../../nexus_file_reader/include/NexusFileReader.h"
-#include "../../serialisation/include/DetectorSpectrumMapData.h"
-#include "KafkaEventPublisher.h"
-#include "NexusPublisher.h"
-#include "OptionalArgs.h"
 #include <CLI/CLI.hpp>
 #include <chrono>
 #include <iostream>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 #include <thread>
+
+#include "../../nexus_file_reader/include/NexusFileReader.h"
+#include "../../serialisation/include/DetectorSpectrumMapData.h"
+#include "JSONDescriptionLoader.h"
+#include "KafkaPublisher.h"
+#include "NexusPublisher.h"
+#include "OptionalArgs.h"
 
 uint64_t getTimeNowNanosecondsFromEpoch() {
   auto now = std::chrono::system_clock::now();
@@ -62,9 +64,18 @@ int main(int argc, char **argv) {
                  "Generates this number of fake events per pulse per "
                  "NXevent_data instead of "
                  "publishing real data from file");
-  App.add_option(
-      "--histogram-update-period", settings.histogramUpdatePeriodMs,
-      "A histogram data message with this period (in integer milliseconds)");
+  App.add_option("--histogram-update-period", settings.histogramUpdatePeriodMs,
+                 "Publish a histogram data message with this period (in "
+                 "integer milliseconds) default 0 means do not stream "
+                 "histograms");
+  App.add_option("--json-description", settings.jsonDescription,
+                 "Optionally provide the path to a file containing a json "
+                 "description of the NeXus file, "
+                 "this should match the contents of the nexus_structure field "
+                 "described here: "
+                 "https://github.com/ess-dmsc/kafka-to-nexus/blob/master/"
+                 "documentation/commands.md")
+      ->check(CLI::ExistingFile);
   App.add_option(
          "-x,--disable-map",
          [&settings](CLI::results_t Results) {
@@ -96,7 +107,7 @@ int main(int argc, char **argv) {
   auto detectorNumbers = getDetectorNumbers(settings);
   auto runStartTime = getTimeNowNanosecondsFromEpoch();
 
-  auto publisher = std::make_shared<KafkaEventPublisher>(settings.compression);
+  auto publisher = std::make_shared<KafkaPublisher>(settings.compression);
   auto fileReader = std::make_shared<NexusFileReader>(
       hdf5::file::open(settings.filename), runStartTime,
       settings.fakeEventsPerPulse, detectorNumbers);
@@ -105,11 +116,15 @@ int main(int argc, char **argv) {
   NexusPublisher streamer(publisher, fileReader, settings);
 
   // Publish the same data repeatedly, with incrementing run numbers
+  std::string jsonDescription =
+      JSONDescriptionLoader::loadJsonFromFile(settings.jsonDescription);
+  JSONDescriptionLoader::updateTopicNames(jsonDescription,
+                                          settings.instrumentName);
   if (settings.singleRun) {
-    streamer.streamData(runNumber, settings);
+    streamer.streamData(runNumber, settings, jsonDescription);
   } else {
     while (true) {
-      streamer.streamData(runNumber, settings);
+      streamer.streamData(runNumber, settings, jsonDescription);
       std::this_thread::sleep_for(std::chrono::seconds(2));
       runNumber++;
     }

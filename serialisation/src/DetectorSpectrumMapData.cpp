@@ -1,7 +1,8 @@
-#include "DetectorSpectrumMapData.h"
 #include <flatbuffers/flatbuffers.h>
 #include <fstream>
 #include <sstream>
+
+#include "DetectorSpectrumMapData.h"
 
 bool file_exists(const std::string &name) {
   if (FILE *file = fopen(name.c_str(), "r")) {

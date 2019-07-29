@@ -4,18 +4,17 @@
 #include <memory>
 #include <spdlog/spdlog.h>
 
-#include "EventPublisher.h"
+#include "Publisher.h"
 
-class KafkaEventPublisher : public EventPublisher {
+class KafkaPublisher : public Publisher {
 public:
-  KafkaEventPublisher() = default;
-  explicit KafkaEventPublisher(std::string compression)
+  KafkaPublisher() = default;
+  explicit KafkaPublisher(std::string compression)
       : m_compression(std::move(compression)){};
-  ~KafkaEventPublisher() override;
+  ~KafkaPublisher() override;
 
   std::shared_ptr<RdKafka::Topic>
-  createTopicHandle(const std::string &topicPrefix,
-                    const std::string &topicSuffix,
+  createTopicHandle(const std::string &topicName,
                     std::shared_ptr<RdKafka::Conf> tconf);
   void setUp(const std::string &broker,
              const std::string &instrumentName) override;
