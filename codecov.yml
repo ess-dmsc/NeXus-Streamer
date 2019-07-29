@@ -6,10 +6,7 @@ comment:
   require_changes: no
 coverage:
   status:
-    patch:
-      default:
-        target: auto
-        threshold: 5
+    patch: off
     project:
       default:
         target: auto
