@@ -77,6 +77,7 @@ public:
     settings.histogramUpdatePeriodMs = 50;
     settings.minMaxDetectorNums = minMaxDetNum;
     settings.slow = slow;
+    settings.jsonDescription = "fake_filename.txt";
     return settings;
   }
 
@@ -129,7 +130,7 @@ TEST_F(NexusPublisherTest, test_stream_data) {
   std::shared_ptr<FileReader> fakeFileReader =
       std::make_shared<FakeFileReader>();
   NexusPublisher streamer(publisher, fakeFileReader, settings);
-  std::string jsonDescription;
+  std::string jsonDescription = R"({a_field: "a_value"})";
   EXPECT_NO_THROW(streamer.streamData(1, settings, jsonDescription));
 }
 
