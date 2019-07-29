@@ -7,6 +7,7 @@
 
 #include "../../nexus_file_reader/include/NexusFileReader.h"
 #include "../../serialisation/include/DetectorSpectrumMapData.h"
+#include "JSONDescriptionLoader.h"
 #include "KafkaPublisher.h"
 #include "NexusPublisher.h"
 #include "OptionalArgs.h"
@@ -115,11 +116,15 @@ int main(int argc, char **argv) {
   NexusPublisher streamer(publisher, fileReader, settings);
 
   // Publish the same data repeatedly, with incrementing run numbers
+  std::string jsonDescription =
+      JSONDescriptionLoader::loadJsonFromFile(settings.jsonDescription);
+  JSONDescriptionLoader::updateTopicNames(jsonDescription,
+                                          settings.instrumentName);
   if (settings.singleRun) {
-    streamer.streamData(runNumber, settings);
+    streamer.streamData(runNumber, settings, jsonDescription);
   } else {
     while (true) {
-      streamer.streamData(runNumber, settings);
+      streamer.streamData(runNumber, settings, jsonDescription);
       std::this_thread::sleep_for(std::chrono::seconds(2));
       runNumber++;
     }

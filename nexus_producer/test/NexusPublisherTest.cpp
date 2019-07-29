@@ -129,7 +129,8 @@ TEST_F(NexusPublisherTest, test_stream_data) {
   std::shared_ptr<FileReader> fakeFileReader =
       std::make_shared<FakeFileReader>();
   NexusPublisher streamer(publisher, fakeFileReader, settings);
-  EXPECT_NO_THROW(streamer.streamData(1, settings));
+  std::string jsonDescription;
+  EXPECT_NO_THROW(streamer.streamData(1, settings, jsonDescription));
 }
 
 TEST_F(NexusPublisherTest, test_det_spec_not_sent_when_pair_is_specified) {
@@ -151,7 +152,8 @@ TEST_F(NexusPublisherTest, test_det_spec_not_sent_when_pair_is_specified) {
   std::shared_ptr<FileReader> fakeFileReader =
       std::make_shared<FakeFileReader>();
   NexusPublisher streamer(publisher, fakeFileReader, settings);
-  EXPECT_NO_THROW(streamer.streamData(1, settings));
+  std::string jsonDescription;
+  EXPECT_NO_THROW(streamer.streamData(1, settings, jsonDescription));
 }
 
 TEST_F(NexusPublisherTest, test_data_is_streamed_in_slow_mode) {
@@ -174,7 +176,8 @@ TEST_F(NexusPublisherTest, test_data_is_streamed_in_slow_mode) {
   std::shared_ptr<FileReader> fakeFileReader =
       std::make_shared<FakeFileReader>();
   NexusPublisher streamer(publisher, fakeFileReader, settings);
-  EXPECT_NO_THROW(streamer.streamData(1, settings));
+  std::string jsonDescription;
+  EXPECT_NO_THROW(streamer.streamData(1, settings, jsonDescription));
 }
 
 TEST_F(NexusPublisherTest,
@@ -199,5 +202,6 @@ TEST_F(NexusPublisherTest,
       std::make_shared<FakeFileReader>(histgramDataInFile);
 
   NexusPublisher streamer(publisher, fakeFileReader, settings);
-  EXPECT_NO_THROW(streamer.streamData(1, settings));
+  std::string jsonDescription;
+  EXPECT_NO_THROW(streamer.streamData(1, settings, jsonDescription));
 }

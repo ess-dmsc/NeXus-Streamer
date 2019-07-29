@@ -5,9 +5,9 @@
 namespace JSONDescriptionLoader {
 
 void checkIsValidJson(const std::string &textForValidation);
-std::string loadFromFile(const std::string &filepath);
+std::string loadJsonFromFile(const std::string &filepath);
 void replaceString(std::string &input, const std::string &search,
                    const std::string &replacement);
-std::string loadJsonDescription(const std::string &filepath,
-                                const std::string &instrumentName);
+void updateTopicNames(std::string &description,
+                      const std::string &instrumentName);
 }

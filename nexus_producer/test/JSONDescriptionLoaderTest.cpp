@@ -35,3 +35,33 @@ TEST(JSONDescriptionLoaderTest,
   JSONDescriptionLoader::replaceString(inputString, "???", "cat");
   ASSERT_EQ(inputString, "cat concatenate caterpillar");
 }
+
+TEST(JSONDescriptionLoaderTest,
+     test_updateTopicNames_replaces_topic_placeholders) {
+
+  const std::string instrumentName = "INST";
+
+  const std::string sampleEnvTopic = "SAMPLE_ENV_TOPIC";
+  std::string sampleEnvTopicModify = sampleEnvTopic;
+  JSONDescriptionLoader::updateTopicNames(sampleEnvTopicModify, instrumentName);
+  ASSERT_TRUE(sampleEnvTopicModify.find(sampleEnvTopic) == std::string::npos)
+      << "Expected text to no longer contain topic placeholder";
+  ASSERT_TRUE(sampleEnvTopicModify.find("INST") != std::string::npos)
+      << "Expected text to now contain instrument name";
+
+  const std::string eventDataTopic = "EVENT_DATA_TOPIC";
+  std::string eventDataTopicModify = eventDataTopic;
+  JSONDescriptionLoader::updateTopicNames(eventDataTopicModify, instrumentName);
+  ASSERT_TRUE(eventDataTopicModify.find(eventDataTopic) == std::string::npos)
+      << "Expected text to no longer contain topic placeholder";
+  ASSERT_TRUE(eventDataTopicModify.find("INST") != std::string::npos)
+      << "Expected text to now contain instrument name";
+
+  const std::string histDataTopic = "HISTO_DATA_TOPIC";
+  std::string histDataTopicModify = histDataTopic;
+  JSONDescriptionLoader::updateTopicNames(histDataTopicModify, instrumentName);
+  ASSERT_TRUE(histDataTopicModify.find(histDataTopic) == std::string::npos)
+      << "Expected text to no longer contain topic placeholder";
+  ASSERT_TRUE(histDataTopicModify.find("INST") != std::string::npos)
+      << "Expected text to now contain instrument name";
+}

@@ -25,7 +25,7 @@ void replaceString(std::string &input, const std::string &search,
   }
 }
 
-std::string loadFromFile(const std::string &filepath) {
+std::string loadJsonFromFile(const std::string &filepath) {
   std::ifstream filestream(filepath);
   std::string json_string;
 
@@ -41,20 +41,17 @@ std::string loadFromFile(const std::string &filepath) {
 }
 
 /**
- * Load JSON description from file, replace placeholder topic names inserted by
- * the python script
- * @param filepath Path to a plain text file containing the JSON description of
- * the NeXus file
+ * Replace placeholder topic names inserted by the python script
+ * @param description The read contents of a file containing the JSON
+ * description of the NeXus file, modified by function
  * @param instrumentName The instrument name, used as a prefix in the topic name
  * @return JSON description with correct topic names in any "stream" objects
  */
-std::string loadJsonDescription(const std::string &filepath,
-                                const std::string &instrumentName) {
-  std::string description = loadFromFile(filepath);
+void updateTopicNames(std::string &description,
+                      const std::string &instrumentName) {
   auto topicNames = TopicNames(instrumentName);
   replaceString(description, "SAMPLE_ENV_TOPIC", topicNames.sampleEnv);
   replaceString(description, "EVENT_DATA_TOPIC", topicNames.event);
   replaceString(description, "HISTO_DATA_TOPIC", topicNames.histogram);
-  return description;
 }
 }
