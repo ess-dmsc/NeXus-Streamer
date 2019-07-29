@@ -16,8 +16,6 @@ public:
   NexusPublisher(std::shared_ptr<Publisher> publisher,
                  std::shared_ptr<FileReader> fileReader,
                  const OptionalArgs &settings);
-  size_t createAndSendRunMessage(int runNumber);
-  size_t createAndSendDetSpecMessage();
   std::vector<EventData> createMessageData(hsize_t frameNumber);
   void streamData(int runNumber, const OptionalArgs &settings);
 
@@ -27,6 +25,8 @@ private:
                         uint32_t histogramUpdatePeriodMs,
                         int32_t numberOfTimerIterations);
   std::unique_ptr<Timer> streamHistogramData(const OptionalArgs &settings);
+  size_t createAndSendRunMessage(int runNumber);
+  size_t createAndSendDetSpecMessage();
   RunData createRunMessageData(int runNumber);
   size_t createAndSendMessage(size_t frameNumber);
   void createAndSendSampleEnvMessages(size_t frameNumber);
