@@ -10,12 +10,18 @@ void checkIsValidJson(const std::string &textForValidation) {
   auto jsonObject = nlohmann::json::parse(textForValidation);
 }
 
+/**
+ * Replace all occurrences of a substring in a string
+ * @param input string
+ * @param search substring to search for
+ * @param replacement string
+ */
 void replaceString(std::string &input, const std::string &search,
-                   const std::string &replace) {
+                   const std::string &replacement) {
   size_t position = 0;
   while ((position = input.find(search, position)) != std::string::npos) {
-    input.replace(position, search.length(), replace);
-    position += replace.length();
+    input.replace(position, search.length(), replacement);
+    position += replacement.length();
   }
 }
 
@@ -24,7 +30,7 @@ std::string loadFromFile(const std::string &filepath) {
   std::string json_string;
 
   filestream.seekg(0, std::ios::end);
-  json_string.reserve(filestream.tellg());
+  json_string.reserve(static_cast<size_t>(filestream.tellg()));
   filestream.seekg(0, std::ios::beg);
 
   json_string.assign((std::istreambuf_iterator<char>(filestream)),
@@ -34,6 +40,14 @@ std::string loadFromFile(const std::string &filepath) {
   return json_string;
 }
 
+/**
+ * Load JSON description from file, replace placeholder topic names inserted by
+ * the python script
+ * @param filepath Path to a plain text file containing the JSON description of
+ * the NeXus file
+ * @param instrumentName The instrument name, used as a prefix in the topic name
+ * @return JSON description with correct topic names in any "stream" objects
+ */
 std::string loadJsonDescription(const std::string &filepath,
                                 const std::string &instrumentName) {
   std::string description = loadFromFile(filepath);
