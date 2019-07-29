@@ -66,7 +66,8 @@ NexusPublisher::NexusPublisher(std::shared_ptr<Publisher> publisher,
  * @param frameNumber - the number of the frame for which to construct a message
  * @return - an object containing the data from the specified frame
  */
-std::vector<EventData> NexusPublisher::createMessageData(hsize_t frameNumber) {
+std::vector<EventData>
+NexusPublisher::createMessageData(const hsize_t frameNumber) {
   std::vector<EventData> eventDataVector;
 
   auto protonCharge = m_fileReader->getProtonCharge(frameNumber);
@@ -96,7 +97,7 @@ std::vector<EventData> NexusPublisher::createMessageData(hsize_t frameNumber) {
  * @param runNumber - number identifying the current run
  * @return runData
  */
-RunData NexusPublisher::createRunMessageData(int runNumber) {
+RunData NexusPublisher::createRunMessageData(const int runNumber) {
   auto runData = RunData();
   runData.setNumberOfPeriods(m_fileReader->getNumberOfPeriods());
   runData.setInstrumentName(m_fileReader->getInstrumentName());
@@ -111,7 +112,8 @@ RunData NexusPublisher::createRunMessageData(int runNumber) {
 
 std::unique_ptr<Timer> NexusPublisher::publishHistogramBatch(
     const std::vector<HistogramFrame> &histograms,
-    uint32_t histogramUpdatePeriodMs, int32_t numberOfTimerIterations) {
+    const uint32_t histogramUpdatePeriodMs,
+    const int32_t numberOfTimerIterations) {
   std::unique_ptr<Timer> histogramPublishingTimer;
   if (!histograms.empty()) {
     auto Interval = std::chrono::milliseconds(histogramUpdatePeriodMs);
@@ -245,7 +247,7 @@ NexusPublisher::streamHistogramData(const OptionalArgs &settings) {
  * @param frameNumber - the number of the frame for which data will be sent
  * @return - size of the buffer
  */
-size_t NexusPublisher::createAndSendMessage(size_t frameNumber) {
+size_t NexusPublisher::createAndSendMessage(const size_t frameNumber) {
   auto messageData = createMessageData(frameNumber);
   size_t dataSize = 0;
   for (auto &message : messageData) {
@@ -263,7 +265,7 @@ size_t NexusPublisher::createAndSendMessage(size_t frameNumber) {
  * @param sampleEnvBuf - a buffer for the message
  * @param frameNumber - the number of the frame for which data will be sent
  */
-void NexusPublisher::createAndSendSampleEnvMessages(size_t frameNumber) {
+void NexusPublisher::createAndSendSampleEnvMessages(const size_t frameNumber) {
   for (const auto &sEEvent : m_sEEventMap[frameNumber]) {
     auto buffer = sEEvent->getBuffer();
     m_publisher->sendSampleEnvMessage(buffer);
@@ -277,7 +279,7 @@ void NexusPublisher::createAndSendSampleEnvMessages(size_t frameNumber) {
  * @param runNumber - integer to identify the run
  * @return - size of the buffer
  */
-size_t NexusPublisher::createAndSendRunMessage(int runNumber) {
+size_t NexusPublisher::createAndSendRunMessage(const int runNumber) {
   auto messageData = createRunMessageData(runNumber);
   auto buffer = messageData.getRunStartBuffer();
   m_publisher->sendRunMessage(buffer);
@@ -291,7 +293,7 @@ size_t NexusPublisher::createAndSendRunMessage(int runNumber) {
  * @param rawbuf - a buffer for the message
  * @return - size of the buffer
  */
-size_t NexusPublisher::createAndSendRunStopMessage(int runNumber) {
+size_t NexusPublisher::createAndSendRunStopMessage(const int runNumber) {
   auto runData = RunData();
   // Flush producer queue to ensure the run stop is after all messages are
   // published
