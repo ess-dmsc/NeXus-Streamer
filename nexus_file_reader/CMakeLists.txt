@@ -1,16 +1,19 @@
 project(isis_nexus_streamer)
 
 set( SRC_FILES
-        src/NexusFileReader.cpp)
+        src/NexusFileReader.cpp
+        src/UnitConversion.cpp)
 
 set( INC_FILES
         include/NexusFileReader.h
-        include/FileReader.h)
+        include/FileReader.h
+        include/UnitConversion.h)
 
 set( TEST_FILES
         test/NexusFileReaderTest.cpp
         test/HDF5FileTestHelpers.cpp
-        test/HDF5FileTestHelpers.h)
+        test/HDF5FileTestHelpers.h
+        test/UnitConversionTest.cpp)
 
 #####################
 ## Libraries       ##
