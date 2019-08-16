@@ -2,6 +2,7 @@
 
 #include "../../core/include/EventDataFrame.h"
 #include "../../core/include/HistogramFrame.h"
+#include "../../core/include/OptionalArgs.h"
 #include "../../serialisation/include/SampleEnvironmentEventDouble.h"
 #include "../../serialisation/include/SampleEnvironmentEventInt.h"
 #include "../../serialisation/include/SampleEnvironmentEventLong.h"
@@ -48,11 +49,13 @@ void checkEventDataGroupsHaveConsistentFrames(
  */
 NexusFileReader::NexusFileReader(hdf5::file::File file, uint64_t runStartTime,
                                  const int32_t fakeEventsPerPulse,
-                                 const std::vector<int32_t> &detectorNumbers)
+                                 const std::vector<int32_t> &detectorNumbers,
+                                 const OptionalArgs &settings)
     : m_file(std::move(file)), m_runStart(runStartTime),
       m_fakeEventsPerPulse(fakeEventsPerPulse),
       m_detectorNumbers(detectorNumbers), m_timeOfFlightDist(10000, 100000),
-      m_detectorIDDist(0, static_cast<uint32_t>(detectorNumbers.size() - 1)) {
+      m_detectorIDDist(0, static_cast<uint32_t>(detectorNumbers.size() - 1)),
+      m_settings(settings) {
   if (!m_file.is_valid()) {
     throw std::runtime_error("Failed to open specified NeXus file");
   }
@@ -306,6 +309,11 @@ int32_t NexusFileReader::getNumberOfPeriods() { return 1; }
  * @return - instrument name
  */
 std::string NexusFileReader::getInstrumentName() {
+  if (!m_entryGroup.has_dataset("name")) {
+    m_logger->warn("No name dataset found in entry group, using instrument "
+                   "name provided in command line options instead");
+    return m_settings.instrumentName;
+  }
   auto dataset = m_entryGroup.get_dataset("name");
   std::string instrumentName;
   dataset.read(instrumentName, dataset.datatype(), dataset.dataspace());

@@ -10,11 +10,14 @@
 #include "../../serialisation/include/SampleEnvironmentEvent.h"
 #include "FileReader.h"
 
+struct OptionalArgs;
+
 class NexusFileReader : public FileReader {
 public:
   NexusFileReader(hdf5::file::File file, uint64_t runStartTime,
                   int32_t fakeEventsPerPulse,
-                  const std::vector<int32_t> &detectorNumbers);
+                  const std::vector<int32_t> &detectorNumbers,
+                  const OptionalArgs &settings);
 
   hsize_t getFileSize() override;
   uint64_t getTotalEventCount() override;
@@ -40,8 +43,8 @@ private:
                                        size_t eventGroupNumber);
   std::vector<uint32_t> getEventTofs(hsize_t frameNumber,
                                      size_t eventGroupNumber);
-  void getEntryGroup(const hdf5::node::Group &rootGroup,
-                     hdf5::node::Group &entryGroupOutput);
+  static void getEntryGroup(const hdf5::node::Group &rootGroup,
+                            hdf5::node::Group &entryGroupOutput);
   void getGroups(const hdf5::node::Group &entryGroup,
                  std::vector<hdf5::node::Group> &groupsOutput,
                  const std::string &className,
@@ -50,7 +53,7 @@ private:
       const hdf5::node::Group &group,
       const std::vector<std::string> &requiredDatasets,
       const std::string &className) const;
-  size_t findFrameNumberOfTime(float time);
+  static size_t findFrameNumberOfTime(float time);
   std::vector<hdf5::node::Group> findNXLogs();
   template <typename T>
   T getSingleValueFromDataset(const hdf5::node::Group &group,
@@ -80,4 +83,5 @@ private:
   bool m_isisFile;
 
   std::shared_ptr<spdlog::logger> m_logger = spdlog::get("LOG");
+  OptionalArgs m_settings;
 };
