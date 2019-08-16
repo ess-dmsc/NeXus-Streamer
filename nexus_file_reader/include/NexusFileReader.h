@@ -7,10 +7,9 @@
 #include <unordered_map>
 #include <vector>
 
+#include "../../core/include/OptionalArgs.h"
 #include "../../serialisation/include/SampleEnvironmentEvent.h"
 #include "FileReader.h"
-
-struct OptionalArgs;
 
 class NexusFileReader : public FileReader {
 public:

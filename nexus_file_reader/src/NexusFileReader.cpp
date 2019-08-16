@@ -2,7 +2,6 @@
 
 #include "../../core/include/EventDataFrame.h"
 #include "../../core/include/HistogramFrame.h"
-#include "../../core/include/OptionalArgs.h"
 #include "../../serialisation/include/SampleEnvironmentEventDouble.h"
 #include "../../serialisation/include/SampleEnvironmentEventInt.h"
 #include "../../serialisation/include/SampleEnvironmentEventLong.h"

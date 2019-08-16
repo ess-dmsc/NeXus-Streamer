@@ -3,11 +3,10 @@
 
 #include "../../core/include/EventDataFrame.h"
 #include "../../core/include/HistogramFrame.h"
-#include "../../serialisation/include/DetectorSpectrumMapData.h"
+#include "../../core/include/OptionalArgs.h"
 #include "../../serialisation/include/EventData.h"
 #include "MockPublisher.h"
 #include "NexusPublisher.h"
-#include "OptionalArgs.h"
 
 using ::testing::AtLeast;
 using ::testing::_;

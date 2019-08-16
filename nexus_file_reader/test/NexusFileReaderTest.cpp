@@ -2,6 +2,7 @@
 
 #include "../../core/include/EventDataFrame.h"
 #include "../../core/include/HistogramFrame.h"
+#include "../../core/include/OptionalArgs.h"
 #include "../include/NexusFileReader.h"
 #include "HDF5FileTestHelpers.h"
 
@@ -30,18 +31,20 @@ AllElementsInVectorAreNear(const std::vector<float> &a,
 
   return ::testing::AssertionSuccess();
 }
+
+const auto testOptArgs = OptionalArgs();
 }
 
 TEST(NexusFileReaderTest, error_thrown_for_non_existent_file) {
   EXPECT_THROW(
       NexusFileReader(hdf5::file::open(testDataPath + "not_exist_file.nxs"), 0,
-                      0, {0}),
+                      0, {0}, testOptArgs),
       std::runtime_error);
 }
 
 TEST(NexusFileReaderTest, error_thrown_for_file_with_no_NXentry_group) {
   EXPECT_THROW(NexusFileReader(createInMemoryTestFile("fileWithNoNXentry.nxs"),
-                               0, 0, {0}),
+                               0, 0, {0}, testOptArgs),
                std::runtime_error);
 }
 
@@ -50,7 +53,8 @@ TEST(NexusFileReaderTest,
   auto file = createInMemoryTestFile("fileWithNoEventData.nxs");
   HDF5FileTestHelpers::addNXentryToFile(file);
 
-  EXPECT_THROW(NexusFileReader(file, 0, 0, {0}), std::runtime_error);
+  EXPECT_THROW(NexusFileReader(file, 0, 0, {0}, testOptArgs),
+               std::runtime_error);
 }
 
 TEST(
@@ -60,7 +64,8 @@ TEST(
   HDF5FileTestHelpers::addNXentryToFile(file);
   HDF5FileTestHelpers::addNXeventDataToFile(file);
 
-  EXPECT_THROW(NexusFileReader(file, 0, 0, {0}), std::runtime_error);
+  EXPECT_THROW(NexusFileReader(file, 0, 0, {0}, testOptArgs),
+               std::runtime_error);
 }
 
 TEST(NexusFileReaderTest,
@@ -68,32 +73,33 @@ TEST(NexusFileReaderTest,
   auto file =
       createInMemoryTestFileWithEventData("fileWithRequisiteGroups.nxs");
 
-  EXPECT_NO_THROW(NexusFileReader(file, 0, 0, {0}));
+  EXPECT_NO_THROW(NexusFileReader(file, 0, 0, {0}, testOptArgs));
 }
 
 TEST(NexusFileReaderTest, expect_empty_map_if_no_selog_group_present) {
   auto file =
       createInMemoryTestFileWithEventData("fileWithRequisiteGroups.nxs");
 
-  auto fileReader = NexusFileReader(file, 0, 0, {0});
+  auto fileReader = NexusFileReader(file, 0, 0, {0}, testOptArgs);
   auto sEMap = fileReader.getSEEventMap();
   EXPECT_EQ(sEMap.size(), 0);
 }
 
 TEST(NexusFileReaderTest, nexus_uncompressed_file_open_exists) {
-  EXPECT_NO_THROW(NexusFileReader(
-      hdf5::file::open(testDataPath + "SANS_test_reduced.hdf5"), 0, 0, {0}));
+  EXPECT_NO_THROW(
+      NexusFileReader(hdf5::file::open(testDataPath + "SANS_test_reduced.hdf5"),
+                      0, 0, {0}, testOptArgs));
 }
 
 TEST(NexusFileReaderTest, nexus_read_file_size) {
   auto fileReader = NexusFileReader(
-      hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0});
+      hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0}, testOptArgs);
   EXPECT_EQ(104602171, fileReader.getFileSize());
 }
 
 TEST(NexusFileReaderTest, nexus_read_number_events) {
   auto fileReader = NexusFileReader(
-      hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0});
+      hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0}, testOptArgs);
   EXPECT_EQ(14258850, fileReader.getTotalEventCount());
 }
 
@@ -102,20 +108,20 @@ TEST(NexusFileReaderTest, nexus_fake_number_of_events) {
   const int32_t numberOfFrames = 18132;
   auto fileReader =
       NexusFileReader(hdf5::file::open(testDataPath + "SANS_test.nxs"), 0,
-                      numberOfFakeEventsPerPulse, {0});
+                      numberOfFakeEventsPerPulse, {0}, testOptArgs);
   EXPECT_EQ(numberOfFakeEventsPerPulse * numberOfFrames,
             fileReader.getTotalEventCount());
 }
 
 TEST(NexusFileReaderTest, nexus_read_number_frames) {
   auto fileReader = NexusFileReader(
-      hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0});
+      hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0}, testOptArgs);
   EXPECT_EQ(18132, fileReader.getNumberOfFrames());
 }
 
 TEST(NexusFileReaderTest, get_detIds_first_frame) {
   auto fileReader = NexusFileReader(
-      hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0});
+      hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0}, testOptArgs);
   auto eventData = fileReader.getEventData(0);
   EXPECT_FALSE(eventData.empty());
   EXPECT_EQ(99406, eventData[0].detectorIDs[0]);
@@ -124,7 +130,7 @@ TEST(NexusFileReaderTest, get_detIds_first_frame) {
 
 TEST(NexusFileReaderTest, get_event_tofs) {
   auto fileReader = NexusFileReader(
-      hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0});
+      hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0}, testOptArgs);
   auto eventData = fileReader.getEventData(0);
   EXPECT_FALSE(eventData.empty());
   EXPECT_EQ(11660506, eventData[0].timeOfFlights[0]);
@@ -136,7 +142,7 @@ TEST(NexusFileReaderTest,
   const int32_t numberOfFakeEventsPerPulse = 10;
   auto fileReader =
       NexusFileReader(hdf5::file::open(testDataPath + "SANS_test.nxs"), 0,
-                      numberOfFakeEventsPerPulse, {0});
+                      numberOfFakeEventsPerPulse, {0}, testOptArgs);
   auto eventData = fileReader.getEventData(0);
   EXPECT_FALSE(eventData.empty());
   EXPECT_EQ(numberOfFakeEventsPerPulse, eventData[0].timeOfFlights.size());
@@ -147,7 +153,7 @@ TEST(NexusFileReaderTest,
   const int32_t numberOfFakeEventsPerPulse = 10;
   auto fileReader =
       NexusFileReader(hdf5::file::open(testDataPath + "SANS_test.nxs"), 0,
-                      numberOfFakeEventsPerPulse, {0});
+                      numberOfFakeEventsPerPulse, {0}, testOptArgs);
   auto eventData = fileReader.getEventData(0);
   EXPECT_FALSE(eventData.empty());
   EXPECT_EQ(numberOfFakeEventsPerPulse, eventData[0].detectorIDs.size());
@@ -155,27 +161,27 @@ TEST(NexusFileReaderTest,
 
 TEST(NexusFileReaderTest, get_eventData_too_high_frame_number) {
   auto fileReader = NexusFileReader(
-      hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0});
+      hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0}, testOptArgs);
   auto eventData = fileReader.getEventData(3000000);
   EXPECT_TRUE(eventData.empty());
 }
 
 TEST(NexusFileReaderTest, get_period_number) {
   auto fileReader = NexusFileReader(
-      hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0});
+      hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0}, testOptArgs);
   EXPECT_EQ(0, fileReader.getPeriodNumber());
 }
 
 TEST(NexusFileReaderTest, get_proton_charge) {
   auto fileReader = NexusFileReader(
-      hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0});
+      hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0}, testOptArgs);
   EXPECT_FLOAT_EQ(0.001105368, fileReader.getProtonCharge(0));
   EXPECT_FLOAT_EQ(0.001105368, fileReader.getProtonCharge(7));
 }
 
 TEST(NexusFileReaderTest, get_number_of_events_in_frame) {
   auto fileReader = NexusFileReader(
-      hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0});
+      hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0}, testOptArgs);
   EXPECT_EQ(794, fileReader.getNumberOfEventsInFrame(0, 0));
   EXPECT_EQ(781, fileReader.getNumberOfEventsInFrame(7, 0));
 }
@@ -185,7 +191,7 @@ TEST(NexusFileReaderTest,
   const int32_t numberOfFakeEventsPerPulse = 10;
   auto fileReader =
       NexusFileReader(hdf5::file::open(testDataPath + "SANS_test.nxs"), 0,
-                      numberOfFakeEventsPerPulse, {0});
+                      numberOfFakeEventsPerPulse, {0}, testOptArgs);
   EXPECT_EQ(numberOfFakeEventsPerPulse,
             fileReader.getNumberOfEventsInFrame(0, 0));
   EXPECT_EQ(numberOfFakeEventsPerPulse,
@@ -204,7 +210,7 @@ TEST(NexusFileReaderTest, get_frame_time_respects_units_of_s_and_ns) {
       SecondsFile, {EventTimeZero}, {2}, {3}, {4}, "entry", "detector_1_events",
       "s");
 
-  auto FileReader = NexusFileReader(SecondsFile, 0, 0, {0});
+  auto FileReader = NexusFileReader(SecondsFile, 0, 0, {0}, testOptArgs);
   int64_t ExpectedReturnValueNanoseconds = EventTimeZero * 1000000000LL;
   EXPECT_EQ(ExpectedReturnValueNanoseconds, FileReader.getFrameTime(0));
 
@@ -216,7 +222,7 @@ TEST(NexusFileReaderTest, get_frame_time_respects_units_of_s_and_ns) {
   HDF5FileTestHelpers::addNXeventDataDatasetsToFile(
       NoUnitsFile, {EventTimeZero}, {2}, {3}, {4});
 
-  auto NoUnitsFileReader = NexusFileReader(NoUnitsFile, 0, 0, {0});
+  auto NoUnitsFileReader = NexusFileReader(NoUnitsFile, 0, 0, {0}, testOptArgs);
   EXPECT_EQ(ExpectedReturnValueNanoseconds, NoUnitsFileReader.getFrameTime(0));
 
   // event_time_zero dataset in nanoseconds so frame time should be same as
@@ -229,7 +235,8 @@ TEST(NexusFileReaderTest, get_frame_time_respects_units_of_s_and_ns) {
       NanosecondsFile, {EventTimeZero}, {2}, {3}, {4}, "entry",
       "detector_1_events", "ns");
 
-  auto NanosecondsFileReader = NexusFileReader(NanosecondsFile, 0, 0, {0});
+  auto NanosecondsFileReader =
+      NexusFileReader(NanosecondsFile, 0, 0, {0}, testOptArgs);
   EXPECT_EQ(EventTimeZero, NanosecondsFileReader.getFrameTime(0));
 }
 
@@ -243,7 +250,7 @@ TEST(NexusFileReaderTest,
   HDF5FileTestHelpers::addNXeventDataDatasetsToFile(
       file, {relativeFrameTimeInSeconds}, {2}, {3}, {4});
 
-  auto fileReader = NexusFileReader(file, 0, 0, {0});
+  auto fileReader = NexusFileReader(file, 0, 0, {0}, testOptArgs);
   auto relativeFrameTimeInMilliseconds = relativeFrameTimeInSeconds * 1000;
   EXPECT_EQ(relativeFrameTimeInMilliseconds,
             fileReader.getRelativeFrameTimeMilliseconds(0));
@@ -251,13 +258,13 @@ TEST(NexusFileReaderTest,
 
 TEST(NexusFileReaderTest, get_instrument_name) {
   auto fileReader = NexusFileReader(
-      hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0});
+      hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0}, testOptArgs);
   EXPECT_EQ("SANS2D", fileReader.getInstrumentName());
 }
 
 TEST(NexusFileReaderTest, get_sEEvent_map) {
   auto fileReader = NexusFileReader(
-      hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0});
+      hdf5::file::open(testDataPath + "SANS_test.nxs"), 0, 0, {0}, testOptArgs);
   auto eventMap = fileReader.getSEEventMap();
   auto eventVector = eventMap[10];
   EXPECT_EQ(57, eventVector.size());
@@ -267,8 +274,9 @@ TEST(NexusFileReaderTest, get_sEEvent_map) {
 }
 
 TEST(NexusFileReaderTest, get_number_of_periods) {
-  auto fileReader = NexusFileReader(
-      hdf5::file::open(testDataPath + "SANS_test_reduced.hdf5"), 0, 0, {0});
+  auto fileReader =
+      NexusFileReader(hdf5::file::open(testDataPath + "SANS_test_reduced.hdf5"),
+                      0, 0, {0}, testOptArgs);
   EXPECT_EQ(1, fileReader.getNumberOfPeriods());
 }
 
@@ -279,7 +287,7 @@ TEST(NexusFileReaderTest, file_is_detected_as_from_isis_by_groups_present) {
   HDF5FileTestHelpers::addNXeventDataToFile(file, "raw_data_1");
   HDF5FileTestHelpers::addVMSCompatGroupToFile(file);
   HDF5FileTestHelpers::addNXeventDataDatasetsToFile(file, "raw_data_1");
-  auto fileReader = NexusFileReader(file, 0, 0, {0});
+  auto fileReader = NexusFileReader(file, 0, 0, {0}, testOptArgs);
   EXPECT_TRUE(fileReader.isISISFile());
 }
 
@@ -290,7 +298,7 @@ TEST(NexusFileReaderTest,
   HDF5FileTestHelpers::addNXentryToFile(file, "raw_data_1");
   HDF5FileTestHelpers::addNXeventDataToFile(file, "raw_data_1");
   HDF5FileTestHelpers::addNXeventDataDatasetsToFile(file, "raw_data_1");
-  auto fileReader = NexusFileReader(file, 0, 0, {0});
+  auto fileReader = NexusFileReader(file, 0, 0, {0}, testOptArgs);
   EXPECT_FALSE(fileReader.isISISFile()) << "The is no \"isis_vms_compat\" "
                                            "group in file, so expect to detect "
                                            "that it is not an ISIS file";
@@ -311,7 +319,7 @@ TEST(NexusFileReaderTest,
   HDF5FileTestHelpers::addNXeventDataDatasetsToFile(
       file, {1}, {2}, {0}, {4}, "entry", "detector_2_events");
 
-  auto fileReader = NexusFileReader(file, 0, 0, {0});
+  auto fileReader = NexusFileReader(file, 0, 0, {0}, testOptArgs);
   auto eventData = fileReader.getEventData(0);
   ASSERT_EQ(eventData.size(), 2) << "Expected two event data structs as there "
                                     "are two event groups in the input file";
@@ -338,8 +346,8 @@ TEST(
       file, {1}, {2}, {0}, {4}, "entry", "detector_2_events");
 
   int32_t fakeEventsPerPulsePerEventGroup = 2;
-  auto fileReader =
-      NexusFileReader(file, 0, fakeEventsPerPulsePerEventGroup, {0});
+  auto fileReader = NexusFileReader(file, 0, fakeEventsPerPulsePerEventGroup,
+                                    {0}, testOptArgs);
   auto eventData = fileReader.getEventData(0);
   ASSERT_EQ(eventData.size(), 2) << "Expected two event data structs as there "
                                     "are two event groups in the input file";
@@ -369,7 +377,7 @@ TEST(NexusFileReaderTest,
   HDF5FileTestHelpers::addNXeventDataDatasetsToFile(
       file, det_2_event_time_zero, {2}, {0}, {4}, "entry", "detector_2_events");
 
-  auto fileReader = NexusFileReader(file, 0, 0, {0});
+  auto fileReader = NexusFileReader(file, 0, 0, {0}, testOptArgs);
   auto eventData = fileReader.getEventData(0);
   ASSERT_EQ(eventData.size(), 1)
       << "Expected an event message from only one event data group as the "
@@ -393,7 +401,7 @@ TEST(NexusFileReaderTest, successfully_read_isis_histogram_data) {
                                                    counts, detectorIDs, periods,
                                                    tofBins, tofBinEdges);
 
-  auto fileReader = NexusFileReader(file, 0, 0, {0});
+  auto fileReader = NexusFileReader(file, 0, 0, {0}, testOptArgs);
   auto histoData = fileReader.getHistoData();
   EXPECT_EQ(histoData.size(), 1) << "We expect 1 histogram data object from "
                                     "the 1 NXdata group in the file";
@@ -414,7 +422,7 @@ TEST(NexusFileReaderTest, return_run_duration_from_duration_dataset) {
   std::string units = "second";
   HDF5FileTestHelpers::addDurationDatasetToFile(file, "entry", duration, units);
 
-  auto fileReader = NexusFileReader(file, 0, 0, {0});
+  auto fileReader = NexusFileReader(file, 0, 0, {0}, testOptArgs);
   auto outputDurationMs = fileReader.getRunDurationMs();
   auto outputDurationSeconds = static_cast<float>(outputDurationMs / 1000.0);
 
@@ -430,7 +438,7 @@ TEST(NexusFileReaderTest, run_duration_throws_if_not_units_of_seconds_in_file) {
   std::string units = "elephants";
   HDF5FileTestHelpers::addDurationDatasetToFile(file, "entry", 42.0, units);
 
-  auto fileReader = NexusFileReader(file, 0, 0, {0});
+  auto fileReader = NexusFileReader(file, 0, 0, {0}, testOptArgs);
 
   EXPECT_THROW(fileReader.getRunDurationMs(), std::runtime_error);
 }
@@ -443,7 +451,7 @@ TEST(NexusFileReaderTest, run_duration_throws_if_no_duration_dataset_present) {
       file, "entry", "detector_1", {1, 2, 3, 4}, {1}, 2, 2,
       {5.0, 4005.0, 8005.0, 12005.0, 16005.0, 19995.0});
 
-  auto fileReader = NexusFileReader(file, 0, 0, {0});
+  auto fileReader = NexusFileReader(file, 0, 0, {0}, testOptArgs);
   EXPECT_THROW(fileReader.getRunDurationMs(), std::runtime_error);
 }
 
@@ -455,7 +463,7 @@ TEST(NexusFileReaderTest,
   HDF5FileTestHelpers::addNXentryToFile(file, "entry");
   HDF5FileTestHelpers::addNXeventDataToFile(file, "entry");
   HDF5FileTestHelpers::addNXeventDataDatasetsToFile(file, "entry");
-  auto fileReader = NexusFileReader(file, 0, 0, {0});
+  auto fileReader = NexusFileReader(file, 0, 0, {0}, testOptArgs);
 
   EXPECT_FALSE(fileReader.hasHistogramData());
 }
@@ -468,7 +476,7 @@ TEST(NexusFileReaderTest,
   HDF5FileTestHelpers::addHistogramDataGroupToFile(
       file, "entry", "detector_1", {1, 2, 3, 4}, {1}, 2, 2,
       {5.0, 4005.0, 8005.0, 12005.0, 16005.0, 19995.0});
-  auto fileReader = NexusFileReader(file, 0, 0, {0});
+  auto fileReader = NexusFileReader(file, 0, 0, {0}, testOptArgs);
 
   EXPECT_TRUE(fileReader.hasHistogramData());
 }
