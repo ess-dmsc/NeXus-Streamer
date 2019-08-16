@@ -58,6 +58,8 @@ cmake <path-to-source>
 make
 ```
 
+There are some useful python scripts in the `data` directory for creating test data such as truncating large NeXus files or generating a detector-spectrum map file. 
+
 ## Running the tests
 Build the CMake `UnitTests` target. Then use as follows:
 
