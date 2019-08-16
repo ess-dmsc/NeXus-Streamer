@@ -5,12 +5,12 @@
 #include <spdlog/spdlog.h>
 #include <thread>
 
+#include "../../core/include/OptionalArgs.h"
 #include "../../nexus_file_reader/include/NexusFileReader.h"
 #include "../../serialisation/include/DetectorSpectrumMapData.h"
 #include "JSONDescriptionLoader.h"
 #include "KafkaPublisher.h"
 #include "NexusPublisher.h"
-#include "OptionalArgs.h"
 
 uint64_t getTimeNowNanosecondsFromEpoch() {
   auto now = std::chrono::system_clock::now();
@@ -110,7 +110,7 @@ int main(int argc, char **argv) {
   auto publisher = std::make_shared<KafkaPublisher>(settings.compression);
   auto fileReader = std::make_shared<NexusFileReader>(
       hdf5::file::open(settings.filename), runStartTime,
-      settings.fakeEventsPerPulse, detectorNumbers);
+      settings.fakeEventsPerPulse, detectorNumbers, settings);
   publisher->setUp(settings.broker, settings.instrumentName);
   int runNumber = 1;
   NexusPublisher streamer(publisher, fileReader, settings);
@@ -118,6 +118,9 @@ int main(int argc, char **argv) {
   // Publish the same data repeatedly, with incrementing run numbers
   std::string jsonDescription =
       JSONDescriptionLoader::loadJsonFromFile(settings.jsonDescription);
+  if (jsonDescription.empty()) {
+    Logger->warn("No JSON description of the NeXus file provided");
+  }
   JSONDescriptionLoader::updateTopicNames(jsonDescription,
                                           settings.instrumentName);
   if (settings.singleRun) {
