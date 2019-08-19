@@ -71,8 +71,8 @@ and/or to publish histogram data:
 Timestamped "run" start and stop messages are produced. With these Mantid can join the stream at the start of a run and has various options for behaviour at run stop. This makes use of the offset by timestamp lookup feature and thus requires Kafka version >0.10.2.0 on the brokers.
 It is also important to allow larger than the default message size by adding the following to the kafka configuration file (`server.properties`):
 ```
-replica.fetch.max.bytes=10000000
-message.max.bytes=10000000
+replica.fetch.max.bytes=100000000
+message.max.bytes=100000000
 ```
 
 ## Instrument Name

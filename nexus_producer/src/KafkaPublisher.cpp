@@ -25,7 +25,7 @@ void KafkaPublisher::setUp(const std::string &broker,
   auto tconf = std::shared_ptr<RdKafka::Conf>(
       RdKafka::Conf::create(RdKafka::Conf::CONF_TOPIC));
 
-  std::string const maxMessageSize = "20000000";
+  std::string const maxMessageSize = "100000000";
 
   conf->set("metadata.broker.list", broker, error_str);
   conf->set("message.send.max.retries", "3", error_str);

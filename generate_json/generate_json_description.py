@@ -195,7 +195,7 @@ if __name__ == '__main__':
     )
     parser.add_argument("-o", "--output-filename", type=str, help="Output filename for the NeXus structure JSON")
     args = parser.parse_args()
-    converter = NexusToDictConverter(truncate_large_datasets=True, large=100)
+    converter = NexusToDictConverter()
 
     nexus_file = nexus.nxload(args.input_filename)
     tree = converter.convert(nexus_file)
