@@ -145,12 +145,6 @@ class NexusToDictConverter:
             stream_info["topic"] = "EVENT_DATA_TOPIC"
             stream_info["source"] = "NeXus-Streamer"
             is_stream = True
-        elif isinstance(root, nexus.NXdata):
-            return True  # TODO - don't skip histogram data
-            stream_info["writer_module"] = "hs00"
-            stream_info["topic"] = "HISTO_DATA_TOPIC"
-            stream_info["source"] = "NeXus-Streamer"
-            is_stream = True
         if is_stream:
             root_dict["children"].append({
                 "type": "stream",
