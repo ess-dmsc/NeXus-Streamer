@@ -140,10 +140,11 @@ void NexusPublisher::streamData(int runNumber, const OptionalArgs &settings,
   const auto numberOfFrames = m_fileReader->getNumberOfFrames();
 
   totalBytesSent += createAndSendRunMessage(runNumber, jsonDescription);
-  // Detector-spectrum map message is not necessary if detector number range has
-  // been specified or a JSON description of the NeXus structure given.
+  // Send a detector-spectrum map message if map file was given and a detector
+  // ID range was not.
   if (settings.minMaxDetectorNums.first == 0 &&
-      settings.minMaxDetectorNums.second == 0 && jsonDescription.empty()) {
+      settings.minMaxDetectorNums.second == 0 &&
+      !settings.detSpecFilename.empty()) {
     totalBytesSent += createAndSendDetSpecMessage();
   }
   std::unique_ptr<Timer> histogramStreamer = streamHistogramData(settings);
