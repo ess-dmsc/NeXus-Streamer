@@ -33,7 +33,7 @@ std::vector<int32_t> getDetectorNumbers(const OptionalArgs &settings) {
   } else if (!settings.detSpecFilename.empty()) {
     auto detSpecMap = DetectorSpectrumMapData(settings.detSpecFilename);
     detectorNumbers = detSpecMap.getDetectors();
-  } else {
+  } else if (settings.fakeEventsPerPulse != 0) {
     throw std::runtime_error("Generating fake events without giving detector "
                              "ID range or detector-spectrum map file is not "
                              "yet implemented. Please create an issue on "
