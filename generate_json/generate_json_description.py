@@ -145,12 +145,6 @@ class NexusToDictConverter:
             stream_info["topic"] = "EVENT_DATA_TOPIC"
             stream_info["source"] = "NeXus-Streamer"
             is_stream = True
-        elif isinstance(root, nexus.NXdata):
-            return True  # TODO - don't skip histogram data
-            stream_info["writer_module"] = "hs00"
-            stream_info["topic"] = "HISTO_DATA_TOPIC"
-            stream_info["source"] = "NeXus-Streamer"
-            is_stream = True
         if is_stream:
             root_dict["children"].append({
                 "type": "stream",
@@ -195,7 +189,7 @@ if __name__ == '__main__':
     )
     parser.add_argument("-o", "--output-filename", type=str, help="Output filename for the NeXus structure JSON")
     args = parser.parse_args()
-    converter = NexusToDictConverter(truncate_large_datasets=True, large=100)
+    converter = NexusToDictConverter()
 
     nexus_file = nexus.nxload(args.input_filename)
     tree = converter.convert(nexus_file)

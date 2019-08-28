@@ -29,6 +29,10 @@ std::string loadJsonFromFile(const std::string &filepath) {
   std::ifstream filestream(filepath);
   std::string json_string;
 
+  if (filepath.empty()) {
+    return json_string;
+  }
+
   filestream.seekg(0, std::ios::end);
   json_string.reserve(static_cast<size_t>(filestream.tellg()));
   filestream.seekg(0, std::ios::beg);

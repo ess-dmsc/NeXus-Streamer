@@ -8,7 +8,7 @@ set( SRC_FILES
 set( INC_FILES
         include/Publisher.h
         include/NexusPublisher.h
-        include/OptionalArgs.h
+        ../core/include/OptionalArgs.h
         include/Timer.h
         include/JSONDescriptionLoader.h
         include/TopicNames.h)

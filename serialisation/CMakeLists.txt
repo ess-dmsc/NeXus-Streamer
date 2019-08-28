@@ -9,6 +9,8 @@ set( SRC_FILES
         src/SampleEnvironmentEventInt.cpp
         src/SampleEnvironmentEventLong.cpp
         src/SampleEnvironmentEventDouble.cpp
+        src/SampleEnvironmentEventUInt.cpp
+        src/SampleEnvironmentEventULong.cpp
         )
 
 set( INC_FILES
@@ -20,6 +22,8 @@ set( INC_FILES
         include/SampleEnvironmentEventInt.h
         include/SampleEnvironmentEventLong.h
         include/SampleEnvironmentEventDouble.h
+        include/SampleEnvironmentEventUInt.h
+        include/SampleEnvironmentEventULong.h
         )
 
 set( TEST_FILES

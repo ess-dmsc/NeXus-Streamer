@@ -97,8 +97,9 @@ NexusPublisher::createMessageData(const hsize_t frameNumber) {
  * @param runNumber - number identifying the current run
  * @return runData
  */
-RunData NexusPublisher::createRunMessageData(const int runNumber,
-                                             std::string &jsonDescription) {
+RunData
+NexusPublisher::createRunMessageData(const int runNumber,
+                                     const std::string &jsonDescription) {
   auto runData = RunData();
   runData.setNumberOfPeriods(m_fileReader->getNumberOfPeriods());
   runData.setInstrumentName(m_fileReader->getInstrumentName());
@@ -133,14 +134,17 @@ std::unique_ptr<Timer> NexusPublisher::publishHistogramBatch(
  * Start streaming all the data from the file
  */
 void NexusPublisher::streamData(int runNumber, const OptionalArgs &settings,
-                                std::string &jsonDescription) {
+                                const std::string &jsonDescription) {
   // frame numbers run from 0 to numberOfFrames-1
   int64_t totalBytesSent = 0;
   const auto numberOfFrames = m_fileReader->getNumberOfFrames();
 
   totalBytesSent += createAndSendRunMessage(runNumber, jsonDescription);
+  // Send a detector-spectrum map message if map file was given and a detector
+  // ID range was not.
   if (settings.minMaxDetectorNums.first == 0 &&
-      settings.minMaxDetectorNums.second == 0) {
+      settings.minMaxDetectorNums.second == 0 &&
+      !settings.detSpecFilename.empty()) {
     totalBytesSent += createAndSendDetSpecMessage();
   }
   std::unique_ptr<Timer> histogramStreamer = streamHistogramData(settings);
@@ -280,8 +284,9 @@ void NexusPublisher::createAndSendSampleEnvMessages(const size_t frameNumber) {
  * @param runNumber - integer to identify the run
  * @return - size of the buffer
  */
-size_t NexusPublisher::createAndSendRunMessage(const int runNumber,
-                                               std::string &jsonDescription) {
+size_t
+NexusPublisher::createAndSendRunMessage(const int runNumber,
+                                        const std::string &jsonDescription) {
   auto messageData = createRunMessageData(runNumber, jsonDescription);
   auto buffer = messageData.getRunStartBuffer();
   m_publisher->sendRunMessage(buffer);

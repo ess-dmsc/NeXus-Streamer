@@ -3,8 +3,8 @@
 #include <memory>
 #include <spdlog/spdlog.h>
 
+#include "../../core/include/OptionalArgs.h"
 #include "../../nexus_file_reader/include/FileReader.h"
-#include "OptionalArgs.h"
 #include "Publisher.h"
 
 class EventData;
@@ -18,7 +18,7 @@ public:
                  const OptionalArgs &settings);
   std::vector<EventData> createMessageData(hsize_t frameNumber);
   void streamData(int runNumber, const OptionalArgs &settings,
-                  std::string &jsonDescription);
+                  const std::string &jsonDescription);
 
 private:
   std::unique_ptr<Timer>
@@ -26,9 +26,11 @@ private:
                         uint32_t histogramUpdatePeriodMs,
                         int32_t numberOfTimerIterations);
   std::unique_ptr<Timer> streamHistogramData(const OptionalArgs &settings);
-  size_t createAndSendRunMessage(int runNumber, std::string &jsonDescription);
+  size_t createAndSendRunMessage(int runNumber,
+                                 const std::string &jsonDescription);
   size_t createAndSendDetSpecMessage();
-  RunData createRunMessageData(int runNumber, std::string &jsonDescription);
+  RunData createRunMessageData(int runNumber,
+                               const std::string &jsonDescription);
   size_t createAndSendMessage(size_t frameNumber);
   void createAndSendSampleEnvMessages(size_t frameNumber);
   size_t createAndSendRunStopMessage(int runNumber);

@@ -2,15 +2,14 @@
 #include <chrono>
 #include <iostream>
 #include <spdlog/sinks/stdout_color_sinks.h>
-#include <spdlog/spdlog.h>
 #include <thread>
 
+#include "../../core/include/OptionalArgs.h"
 #include "../../nexus_file_reader/include/NexusFileReader.h"
 #include "../../serialisation/include/DetectorSpectrumMapData.h"
 #include "JSONDescriptionLoader.h"
 #include "KafkaPublisher.h"
 #include "NexusPublisher.h"
-#include "OptionalArgs.h"
 
 uint64_t getTimeNowNanosecondsFromEpoch() {
   auto now = std::chrono::system_clock::now();
@@ -31,11 +30,29 @@ std::vector<int32_t> getDetectorNumbers(const OptionalArgs &settings) {
                              settings.minMaxDetectorNums.first + 1);
     std::iota(detectorNumbers.begin(), detectorNumbers.end(),
               settings.minMaxDetectorNums.first);
-  } else {
+  } else if (!settings.detSpecFilename.empty()) {
     auto detSpecMap = DetectorSpectrumMapData(settings.detSpecFilename);
     detectorNumbers = detSpecMap.getDetectors();
+  } else if (settings.fakeEventsPerPulse != 0) {
+    throw std::runtime_error("Generating fake events without giving detector "
+                             "ID range or detector-spectrum map file is not "
+                             "yet implemented. Please create an issue on "
+                             "github if you need this feature.");
   }
   return detectorNumbers;
+}
+
+std::string getJsonDescription(const OptionalArgs &settings,
+                               std::shared_ptr<spdlog::logger> &logger) {
+  std::string jsonDescription =
+      JSONDescriptionLoader::loadJsonFromFile(settings.jsonDescription);
+  if (jsonDescription.empty()) {
+    logger->warn("No JSON description of the NeXus file provided");
+  } else {
+    JSONDescriptionLoader::updateTopicNames(jsonDescription,
+                                            settings.instrumentName);
+  }
+  return jsonDescription;
 }
 
 int main(int argc, char **argv) {
@@ -101,28 +118,25 @@ int main(int argc, char **argv) {
                  false);
 
   CLI11_PARSE(App, argc, argv);
-  auto Logger = spdlog::stderr_color_mt("LOG");
-  Logger->debug("Application launched");
+  auto logger = spdlog::stderr_color_mt("LOG");
+  logger->debug("Application launched");
 
-  auto detectorNumbers = getDetectorNumbers(settings);
+  const auto detectorNumbers = getDetectorNumbers(settings);
   auto runStartTime = getTimeNowNanosecondsFromEpoch();
-
-  auto publisher = std::make_shared<KafkaPublisher>(settings.compression);
   auto fileReader = std::make_shared<NexusFileReader>(
       hdf5::file::open(settings.filename), runStartTime,
-      settings.fakeEventsPerPulse, detectorNumbers);
+      settings.fakeEventsPerPulse, detectorNumbers, settings);
+  auto publisher = std::make_shared<KafkaPublisher>(settings.compression);
   publisher->setUp(settings.broker, settings.instrumentName);
   int runNumber = 1;
   NexusPublisher streamer(publisher, fileReader, settings);
 
-  // Publish the same data repeatedly, with incrementing run numbers
-  std::string jsonDescription =
-      JSONDescriptionLoader::loadJsonFromFile(settings.jsonDescription);
-  JSONDescriptionLoader::updateTopicNames(jsonDescription,
-                                          settings.instrumentName);
+  const auto jsonDescription = getJsonDescription(settings, logger);
   if (settings.singleRun) {
+    // Publish the data once
     streamer.streamData(runNumber, settings, jsonDescription);
   } else {
+    // Publish the same data repeatedly, with incrementing run numbers
     while (true) {
       streamer.streamData(runNumber, settings, jsonDescription);
       std::this_thread::sleep_for(std::chrono::seconds(2));
