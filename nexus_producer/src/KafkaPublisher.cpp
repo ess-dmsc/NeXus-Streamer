@@ -68,7 +68,7 @@ void KafkaPublisher::setUp(const std::string &broker,
  * Wait for all messages in the current producer queue to be published
  */
 void KafkaPublisher::flushSendQueue() {
-  auto error = m_producer_ptr->flush(2000);
+  auto error = m_producer_ptr->flush(300000);
   if (error != RdKafka::ERR_NO_ERROR) {
     m_logger->error("Producer queue flush failed.");
   }
