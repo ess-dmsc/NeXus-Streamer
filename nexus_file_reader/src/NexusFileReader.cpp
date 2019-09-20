@@ -61,9 +61,7 @@ NexusFileReader::NexusFileReader(hdf5::file::File file, uint64_t runStartTime,
     throw std::runtime_error("Failed to open specified NeXus file");
   }
   getEntryGroup(m_file.root(), m_entryGroup);
-  getGroups(
-      m_entryGroup, m_eventGroups, "NXevent_data",
-      {"event_time_zero", "event_time_offset", "event_id", "event_index"});
+  getEventGroups(m_entryGroup, m_eventGroups);
   getGroups(m_entryGroup, m_histoGroups, "NXdata",
             {"time_of_flight", "counts"});
 
@@ -96,6 +94,28 @@ NexusFileReader::NexusFileReader(hdf5::file::File file, uint64_t runStartTime,
   m_frameStartOffset = m_runStart;
 }
 
+void NexusFileReader::findEventGroupsInDetectors(
+    const hdf5::node::Group &rootGroup,
+    std::vector<hdf5::node::Group> &eventGroupsOutput,
+    const std::vector<std::string> &requiredDatasets) {
+  std::vector<hdf5::node::Group> instrumentGroups;
+  getGroups(rootGroup, instrumentGroups, "NXinstrument", {});
+  if (instrumentGroups.empty()) {
+    return;
+  }
+
+  std::vector<hdf5::node::Group> detectorGroups;
+  getGroups(instrumentGroups[0], detectorGroups, "NXdetector", {});
+  if (detectorGroups.empty()) {
+    return;
+  }
+
+  for (auto &detectorGroup : detectorGroups) {
+    getGroups(detectorGroup, eventGroupsOutput, "NXevent_data",
+              requiredDatasets);
+  }
+}
+
 void NexusFileReader::getEntryGroup(const hdf5::node::Group &rootGroup,
                                     hdf5::node::Group &entryGroupOutput) {
   for (const auto &rootChild : rootGroup.nodes) {
@@ -113,11 +133,26 @@ void NexusFileReader::getEntryGroup(const hdf5::node::Group &rootGroup,
       "Failed to find an NXentry group in the NeXus file root");
 }
 
-void NexusFileReader::getGroups(
+void NexusFileReader::getEventGroups(
     const hdf5::node::Group &entryGroup,
+    std::vector<hdf5::node::Group> &eventGroupsOutput) {
+  const std::vector<std::string> requiredEventDatasets = {
+      "event_time_zero", "event_time_offset", "event_id", "event_index"};
+  // First look in the NXentry
+  getGroups(m_entryGroup, m_eventGroups, "NXevent_data", requiredEventDatasets);
+
+  if (m_eventGroups.empty()) {
+    // Last thing to try is looking for event data in detector groups
+    findEventGroupsInDetectors(m_entryGroup, m_eventGroups,
+                               requiredEventDatasets);
+  }
+}
+
+void NexusFileReader::getGroups(
+    const hdf5::node::Group &parentGroup,
     std::vector<hdf5::node::Group> &groupsOutput, const std::string &className,
     const std::vector<std::string> &requiredDatasets) {
-  for (const auto &entryChild : entryGroup.nodes) {
+  for (const auto &entryChild : parentGroup.nodes) {
     if (entryChild.attributes.exists("NX_class")) {
       auto attr = entryChild.attributes["NX_class"];
       std::string nxClassType;
@@ -143,6 +178,12 @@ void NexusFileReader::checkGroupHasRequiredDatasets(
     if (!group.has_dataset(datasetName)) {
       throw std::runtime_error(
           fmt::format("Required dataset {} missing from {} group at {}",
+                      datasetName, className, group.link().path().name()));
+    }
+    hdf5::node::Dataset dataset = group[datasetName];
+    if (dataset.dataspace().size() == 0) {
+      throw std::runtime_error(
+          fmt::format("Required dataset {} is empty in {} group at {}",
                       datasetName, className, group.link().path().name()));
     }
   }

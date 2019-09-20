@@ -38,13 +38,19 @@ public:
   bool hasHistogramData() override { return !m_histoGroups.empty(); };
 
 private:
+  void getEventGroups(const hdf5::node::Group &entryGroup,
+                      std::vector<hdf5::node::Group> &eventGroupsOutput);
+  void
+  findEventGroupsInDetectors(const hdf5::node::Group &rootGroup,
+                             std::vector<hdf5::node::Group> &groupsOutput,
+                             const std::vector<std::string> &requiredDatasets);
   std::vector<uint32_t> getEventDetIds(hsize_t frameNumber,
                                        size_t eventGroupNumber);
   std::vector<uint32_t> getEventTofs(hsize_t frameNumber,
                                      size_t eventGroupNumber);
   static void getEntryGroup(const hdf5::node::Group &rootGroup,
                             hdf5::node::Group &entryGroupOutput);
-  void getGroups(const hdf5::node::Group &entryGroup,
+  void getGroups(const hdf5::node::Group &parentGroup,
                  std::vector<hdf5::node::Group> &groupsOutput,
                  const std::string &className,
                  const std::vector<std::string> &requiredDatasets);
