@@ -61,20 +61,13 @@ NexusFileReader::NexusFileReader(hdf5::file::File file, uint64_t runStartTime,
     throw std::runtime_error("Failed to open specified NeXus file");
   }
   getEntryGroup(m_file.root(), m_entryGroup);
-  const std::vector<std::string> requiredEventDatasets = {
-      "event_time_zero", "event_time_offset", "event_id", "event_index"};
-  getGroups(m_entryGroup, m_eventGroups, "NXevent_data", requiredEventDatasets);
+  getEventGroups(m_entryGroup, m_eventGroups);
   getGroups(m_entryGroup, m_histoGroups, "NXdata",
             {"time_of_flight", "counts"});
 
   if (m_eventGroups.empty() && m_histoGroups.empty()) {
-    // Last thing to try is looking for event data in detector groups
-    findEventGroupsInDetectors(m_entryGroup, m_eventGroups,
-                               requiredEventDatasets);
-    if (m_eventGroups.empty()) {
-      throw std::runtime_error(
-          "No valid NXevent_data or NXdata groups found in the NXentry group");
-    }
+    throw std::runtime_error(
+        "No valid NXevent_data or NXdata groups found in the NXentry group");
   }
 
   m_isisFile = testIfIsISISFile();
@@ -138,6 +131,21 @@ void NexusFileReader::getEntryGroup(const hdf5::node::Group &rootGroup,
   }
   throw std::runtime_error(
       "Failed to find an NXentry group in the NeXus file root");
+}
+
+void NexusFileReader::getEventGroups(
+    const hdf5::node::Group &entryGroup,
+    std::vector<hdf5::node::Group> &eventGroupsOutput) {
+  const std::vector<std::string> requiredEventDatasets = {
+      "event_time_zero", "event_time_offset", "event_id", "event_index"};
+  // First look in the NXentry
+  getGroups(m_entryGroup, m_eventGroups, "NXevent_data", requiredEventDatasets);
+
+  if (m_eventGroups.empty()) {
+    // Last thing to try is looking for event data in detector groups
+    findEventGroupsInDetectors(m_entryGroup, m_eventGroups,
+                               requiredEventDatasets);
+  }
 }
 
 void NexusFileReader::getGroups(

@@ -38,6 +38,8 @@ public:
   bool hasHistogramData() override { return !m_histoGroups.empty(); };
 
 private:
+  void getEventGroups(const hdf5::node::Group &entryGroup,
+                      std::vector<hdf5::node::Group> &eventGroupsOutput);
   void
   findEventGroupsInDetectors(const hdf5::node::Group &rootGroup,
                              std::vector<hdf5::node::Group> &groupsOutput,
