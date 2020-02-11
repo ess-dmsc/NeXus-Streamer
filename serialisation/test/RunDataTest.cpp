@@ -3,6 +3,7 @@
 #include <gtest/gtest.h>
 #include <pl72_run_start_generated.h>
 
+#include "DetectorSpectrumMapData.h"
 #include "RunData.h"
 
 class RunDataTest : public ::testing::Test {};
@@ -46,7 +47,10 @@ TEST(RunDataTest, encode_and_decode_run_start) {
   inputRunData.broker = "localhost:9092";
   inputRunData.filename = "testfile.nxs";
 
-  auto runStartMessage = serialiseRunStartMessage(inputRunData);
+  nonstd::optional<DetectorSpectrumMapData> optionalDetSpecMap =
+      nonstd::nullopt;
+  auto runStartMessage =
+      serialiseRunStartMessage(inputRunData, optionalDetSpecMap);
   auto outputRunData = deserialiseRunStartMessage(
       reinterpret_cast<const uint8_t *>(runStartMessage.data()));
 
@@ -89,8 +93,33 @@ TEST(RunDataTest, check_stop_message_includes_file_identifier) {
 
 TEST(RunDataTest, check_start_message_includes_file_identifier) {
   auto runData = RunData();
-  auto runMessage = serialiseRunStartMessage(runData);
+  nonstd::optional<DetectorSpectrumMapData> optionalDetSpecMap =
+      nonstd::nullopt;
+  auto runMessage = serialiseRunStartMessage(runData, optionalDetSpecMap);
   auto runIdentifier = RunStartIdentifier();
   EXPECT_TRUE(flatbuffers::BufferHasIdentifier(
       reinterpret_cast<const uint8_t *>(runMessage.data()), runIdentifier));
 }
+
+// TEST(DetectorSpectrumMapDataTest, create_message_buffer) {
+//  extern std::string testDataPath;
+//  auto detSpecMap =
+//      DetectorSpectrumMapData(testDataPath + "spectrum_gastubes_01.dat");
+//
+//  auto buffer = detSpecMap.getBuffer();
+//
+//  auto receivedMapData = DetectorSpectrumMapData();
+//  EXPECT_NO_THROW(receivedMapData.deserialise(
+//      reinterpret_cast<const uint8_t *>(buffer.data())));
+//  EXPECT_EQ(122888, receivedMapData.getNumberOfEntries());
+//
+//  auto detectors = receivedMapData.getDetectors();
+//  EXPECT_EQ(1, detectors[0]);
+//  EXPECT_EQ(1100000, detectors[8]);
+//  EXPECT_EQ(2523511, detectors[122887]);
+//
+//  auto spectra = receivedMapData.getSpectra();
+//  EXPECT_EQ(1, spectra[0]);
+//  EXPECT_EQ(9, spectra[8]);
+//  EXPECT_EQ(122888, spectra[122887]);
+//}

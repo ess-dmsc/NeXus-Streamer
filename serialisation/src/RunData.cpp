@@ -2,6 +2,7 @@
 #include <pl72_run_start_generated.h>
 #include <sstream>
 
+#include "DetectorSpectrumMapData.h"
 #include "RunData.h"
 
 namespace {
@@ -35,7 +36,9 @@ void RunData::setStopTimeFromString(const std::string &inputTime) {
   stopTime = timeStringToUint64(inputTime);
 }
 
-Streamer::Message serialiseRunStartMessage(const RunData &runData) {
+Streamer::Message serialiseRunStartMessage(
+    const RunData &runData,
+    const nonstd::optional<DetectorSpectrumMapData> &detSpecMap) {
   flatbuffers::FlatBufferBuilder builder;
 
   auto instrumentName = builder.CreateString(runData.instrumentName);
@@ -46,10 +49,20 @@ Streamer::Message serialiseRunStartMessage(const RunData &runData) {
   auto broker = builder.CreateString(runData.broker);
   auto filename = builder.CreateString(runData.filename);
 
-  auto messageRunStart =
-      CreateRunStart(builder, runData.startTime, runData.stopTime, runID,
-                     instrumentName, nexusStructure, jobID, broker, serviceID,
-                     filename, runData.numberOfPeriods);
+  flatbuffers::Offset<RunStart> messageRunStart;
+  if (detSpecMap) {
+    auto detectorSpectrumMap = *detSpecMap;
+    messageRunStart = CreateRunStart(
+        builder, runData.startTime, runData.stopTime, runID, instrumentName,
+        nexusStructure, jobID, broker, serviceID, filename,
+        runData.numberOfPeriods, detectorSpectrumMap.addToBuffer(builder));
+  } else {
+    messageRunStart =
+        CreateRunStart(builder, runData.startTime, runData.stopTime, runID,
+                       instrumentName, nexusStructure, jobID, broker, serviceID,
+                       filename, runData.numberOfPeriods);
+  }
+
   FinishRunStartBuffer(builder, messageRunStart);
 
   return Streamer::Message(builder.Release());

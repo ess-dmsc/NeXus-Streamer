@@ -7,6 +7,7 @@ google-benchmark/1.4.1-dm3@ess-dmsc/stable
 spdlog/1.4.2
 streaming-data-types/c670575@ess-dmsc/stable
 jsonformoderncpp/3.6.1@vthiery/stable
+optional-lite/3.2.0@bincrafters/stable
 
 [generators]
 cmake

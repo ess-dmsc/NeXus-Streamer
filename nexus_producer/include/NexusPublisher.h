@@ -28,7 +28,6 @@ private:
   std::unique_ptr<Timer> streamHistogramData(const OptionalArgs &settings);
   size_t createAndSendRunMessage(int runNumber,
                                  const std::string &jsonDescription);
-  size_t createAndSendDetSpecMessage();
   RunData createRunMessageData(int runNumber,
                                const std::string &jsonDescription);
   size_t createAndSendMessage(size_t frameNumber);

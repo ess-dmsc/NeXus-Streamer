@@ -3,9 +3,12 @@
 #include <ctime>
 #include <fmt/format.h>
 #include <iomanip>
+#include <nonstd/optional.hpp>
 
 #include "../../core/include/Message.h"
 #include "UUID.h"
+
+class DetectorSpectrumMapData;
 
 struct RunData {
   uint64_t startTime{0};
@@ -38,7 +41,9 @@ template <> struct fmt::v6::formatter<RunData> {
   }
 };
 
-Streamer::Message serialiseRunStartMessage(const RunData &runData);
+Streamer::Message serialiseRunStartMessage(
+    const RunData &runData,
+    const nonstd::optional<DetectorSpectrumMapData> &detSpecMap);
 Streamer::Message serialiseRunStopMessage(const RunData &runData);
 RunData deserialiseRunStartMessage(const uint8_t *buffer);
 RunData deserialiseRunStopMessage(const uint8_t *buffer);

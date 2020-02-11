@@ -140,13 +140,6 @@ void NexusPublisher::streamData(int runNumber, const OptionalArgs &settings,
   const auto numberOfFrames = m_fileReader->getNumberOfFrames();
 
   totalBytesSent += createAndSendRunMessage(runNumber, jsonDescription);
-  // Send a detector-spectrum map message if map file was given and a detector
-  // ID range was not.
-  if (settings.minMaxDetectorNums.first == 0 &&
-      settings.minMaxDetectorNums.second == 0 &&
-      !settings.detSpecFilename.empty()) {
-    totalBytesSent += createAndSendDetSpecMessage();
-  }
   std::unique_ptr<Timer> histogramStreamer = streamHistogramData(settings);
 
   uint64_t lastFrameTime = 0;
@@ -288,10 +281,24 @@ size_t
 NexusPublisher::createAndSendRunMessage(const int runNumber,
                                         const std::string &jsonDescription) {
   auto messageData = createRunMessageData(runNumber, jsonDescription);
-  auto message = serialiseRunStartMessage(messageData);
+
+  // Add detector-spectrum map to message if map file was given and a detector
+  // ID range was not.
+  nonstd::optional<DetectorSpectrumMapData> optionalDetSpecMap =
+      nonstd::nullopt;
+  if (m_settings.minMaxDetectorNums.first == 0 &&
+      m_settings.minMaxDetectorNums.second == 0 &&
+      !m_settings.detSpecFilename.empty()) {
+    optionalDetSpecMap = nonstd::optional<DetectorSpectrumMapData>(
+        DetectorSpectrumMapData(m_detSpecMapFilename));
+  }
+
+  auto message = serialiseRunStartMessage(messageData, optionalDetSpecMap);
+
   m_publisher->sendRunMessage(message);
   m_logger->info("Publishing new run: {}", messageData);
   m_currentJobID = messageData.jobID;
+
   return message.size();
 }
 
@@ -316,13 +323,6 @@ size_t NexusPublisher::createAndSendRunStopMessage(const int runNumber) {
   auto message = serialiseRunStopMessage(runData);
   m_publisher->sendRunMessage(message);
   return message.size();
-}
-
-size_t NexusPublisher::createAndSendDetSpecMessage() {
-  auto messageData = DetectorSpectrumMapData(m_detSpecMapFilename);
-  auto messageBuffer = messageData.getBuffer();
-  m_publisher->sendDetSpecMessage(messageBuffer);
-  return messageBuffer.size();
 }
 
 /**
