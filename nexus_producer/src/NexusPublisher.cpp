@@ -1,6 +1,4 @@
-#include <algorithm>
 #include <chrono>
-#include <cmath>
 #include <iostream>
 #include <thread>
 

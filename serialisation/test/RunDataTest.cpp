@@ -70,7 +70,7 @@ TEST(RunDataTest, encode_and_decode_run_stop) {
   inputRunData.serviceID = "service42";
 
   auto runStopMessage = serialiseRunStopMessage(inputRunData);
-  auto outputRunData = deserialiseRunStartMessage(
+  auto outputRunData = deserialiseRunStopMessage(
       reinterpret_cast<const uint8_t *>(runStopMessage.data()));
 
   EXPECT_EQ(outputRunData.stopTime, inputRunData.stopTime);
