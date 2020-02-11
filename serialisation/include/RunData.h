@@ -3,6 +3,7 @@
 #include <ctime>
 #include <fmt/format.h>
 #include <iomanip>
+#include <sstream>
 #include <nonstd/optional.hpp>
 
 #include "../../core/include/Message.h"
@@ -27,7 +28,7 @@ struct RunData {
   void setStartTimeInSeconds(time_t inputTime);
 };
 
-template <> struct fmt::v6::formatter<RunData> {
+template <> struct fmt::formatter<RunData> {
   constexpr auto parse(format_parse_context &ctx) { return ctx.begin(); }
 
   template <typename FormatContext>

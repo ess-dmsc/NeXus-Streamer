@@ -8,7 +8,7 @@
 #include "Publisher.h"
 
 class EventData;
-class RunData;
+struct RunData;
 class Timer;
 
 class NexusPublisher {
