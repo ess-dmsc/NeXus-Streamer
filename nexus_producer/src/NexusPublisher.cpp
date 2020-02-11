@@ -101,13 +101,13 @@ RunData
 NexusPublisher::createRunMessageData(const int runNumber,
                                      const std::string &jsonDescription) {
   auto runData = RunData();
-  runData.setNumberOfPeriods(m_fileReader->getNumberOfPeriods());
-  runData.setInstrumentName(m_fileReader->getInstrumentName());
-  runData.setRunID(std::to_string(runNumber));
+  runData.numberOfPeriods = m_fileReader->getNumberOfPeriods();
+  runData.instrumentName = m_fileReader->getInstrumentName();
+  runData.runID = std::to_string(runNumber);
   if (!m_settings.jsonDescription.empty()) {
-    runData.setNexusStructure(jsonDescription);
+    runData.nexusStructure = jsonDescription;
   }
-  runData.setStartTime(static_cast<uint64_t>(getTimeNowInNanoseconds()));
+  runData.startTime = static_cast<uint64_t>(getTimeNowInNanoseconds());
   return runData;
 }
 
@@ -288,10 +288,10 @@ size_t
 NexusPublisher::createAndSendRunMessage(const int runNumber,
                                         const std::string &jsonDescription) {
   auto messageData = createRunMessageData(runNumber, jsonDescription);
-  auto buffer = messageData.getRunStartBuffer();
-  m_publisher->sendRunMessage(buffer);
-  m_logger->info("Publishing new run: {}", messageData.runInfo());
-  return buffer.size();
+  auto message = serialiseRunStartMessage(messageData);
+  m_publisher->sendRunMessage(message);
+  m_logger->info("Publishing new run: {}", messageData);
+  return message.size();
 }
 
 /**
@@ -305,15 +305,15 @@ size_t NexusPublisher::createAndSendRunStopMessage(const int runNumber) {
   // Flush producer queue to ensure the run stop is after all messages are
   // published
   m_publisher->flushSendQueue();
-  runData.setStopTime(static_cast<uint64_t>(getTimeNowInNanoseconds() + 1));
+  runData.stopTime = static_cast<uint64_t>(getTimeNowInNanoseconds() + 1);
   // + 1 as we want to include any messages which were sent in the current
   // nanosecond
   // (in the extremely unlikely event that it is possible to happen)
-  runData.setRunID(std::to_string(runNumber));
+  runData.runID = std::to_string(runNumber);
 
-  auto buffer = runData.getRunStopBuffer();
-  m_publisher->sendRunMessage(buffer);
-  return buffer.size();
+  auto message = serialiseRunStopMessage(runData);
+  m_publisher->sendRunMessage(message);
+  return message.size();
 }
 
 size_t NexusPublisher::createAndSendDetSpecMessage() {

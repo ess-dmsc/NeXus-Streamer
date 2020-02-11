@@ -10,7 +10,7 @@ uint32_t random_character() {
 
 std::string generate_uuid(const size_t length) {
   std::stringstream ss;
-  for (auto i = 0; i < length; i++) {
+  for (size_t i = 0; i < length; i++) {
     std::stringstream hexstream;
     hexstream << std::hex << random_character();
     auto hex_string = hexstream.str();
