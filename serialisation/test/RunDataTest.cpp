@@ -1,95 +1,93 @@
-#include "RunData.h"
+#include <6s4t_run_stop_generated.h>
+#include <fmt/format.h>
 #include <gtest/gtest.h>
+#include <pl72_run_start_generated.h>
+
+#include "RunData.h"
 
 class RunDataTest : public ::testing::Test {};
 
 TEST(RunDataTest, set_and_get_start_time) {
-  auto rundata = RunData();
-  EXPECT_NO_THROW(rundata.setStartTime("2016-08-11T08:50:18"));
-  EXPECT_EQ(1470905418000000000, rundata.getStartTime());
+  auto runData = RunData();
+  runData.setStartTimeFromString("2016-08-11T08:50:18");
+  EXPECT_EQ(1470905418000000000, runData.startTime);
 
-  EXPECT_NO_THROW(rundata.setStartTimeInSeconds(1470905418));
-  EXPECT_EQ(1470905418000000000, rundata.getStartTime());
+  runData.setStartTimeInSeconds(1470905418);
+  EXPECT_EQ(1470905418000000000, runData.startTime);
 }
 
 TEST(RunDataTest, set_and_get_stop_time) {
-  auto rundata = RunData();
-  EXPECT_NO_THROW(rundata.setStopTime("2016-08-13T13:32:09"));
-  EXPECT_EQ(1471095129000000000, rundata.getStopTime());
-
-  EXPECT_NO_THROW(rundata.setStopTime(1471095129000000000));
-  EXPECT_EQ(1471095129000000000, rundata.getStopTime());
+  auto runData = RunData();
+  runData.setStopTimeFromString("2016-08-13T13:32:09");
+  EXPECT_EQ(1471095129000000000, runData.stopTime);
 }
 
-TEST(RunDataTest, set_and_get_run_number) {
-  auto rundata = RunData();
-  EXPECT_NO_THROW(rundata.setRunID("42"));
-  EXPECT_EQ("42", rundata.getRunID());
-}
-
-TEST(RunDataTest, set_and_get_instrument_name) {
-  auto rundata = RunData();
-  EXPECT_NO_THROW(rundata.setInstrumentName("SANS2D"));
-  EXPECT_EQ("SANS2D", rundata.getInstrumentName());
-}
-
-TEST(RunDataTest, get_RunInfo) {
-  auto rundata = RunData();
-  EXPECT_NO_THROW(rundata.setInstrumentName("SANS2D"));
-  EXPECT_NO_THROW(rundata.setRunID("42"));
-  EXPECT_NO_THROW(rundata.setStartTime("2016-08-11T08:50:18"));
+TEST(RunDataTest, get_run_info_as_string) {
+  auto runData = RunData();
+  runData.instrumentName = "SANS2D";
+  runData.runID = "42";
+  runData.setStartTimeFromString("2016-08-11T08:50:18");
 
   EXPECT_EQ("Run ID: 42, Instrument name: SANS2D, Start time: "
             "2016-08-11T08:50:18",
-            rundata.runInfo());
+            fmt::format("{}", runData));
 }
 
-TEST(RunDataTest, encode_and_decode_RunData) {
-  auto rundata = RunData();
-  const std::string inputRunID = "42";
-  const std::string inputNexusStructure = "{}";
-  const int inputNumberOfPeriods = 1;
-  const std::string inputInstrumentName = "SANS2D";
+TEST(RunDataTest, encode_and_decode_run_start) {
+  auto inputRunData = RunData();
+  inputRunData.setStartTimeFromString("2016-08-11T08:50:18");
+  inputRunData.setStopTimeFromString("2016-08-11T08:50:18");
+  inputRunData.runID = "42";
+  inputRunData.instrumentName = "SANS2D";
+  inputRunData.nexusStructure = "{}";
+  inputRunData.jobID = "job42";
+  inputRunData.serviceID = "service42";
+  inputRunData.numberOfPeriods = 3;
 
-  EXPECT_NO_THROW(rundata.setInstrumentName(inputInstrumentName));
-  EXPECT_NO_THROW(rundata.setRunID(inputRunID));
-  EXPECT_NO_THROW(rundata.setStartTime("2016-08-11T08:50:18"));
-  EXPECT_NO_THROW(rundata.setNumberOfPeriods(inputNumberOfPeriods));
-  EXPECT_NO_THROW(rundata.setNexusStructure(inputNexusStructure));
 
-  auto buffer = rundata.getRunStartBuffer();
+  auto runStartMessage = serialiseRunStartMessage(inputRunData);
+  auto outputRunData = deserialiseRunStartMessage(
+      reinterpret_cast<const uint8_t *>(runStartMessage.data()));
 
-  auto receivedRunData = RunData();
-  EXPECT_TRUE(receivedRunData.decodeMessage(
-      reinterpret_cast<const uint8_t *>(buffer.data())));
-  EXPECT_EQ(receivedRunData.getRunID(), inputRunID);
-  EXPECT_EQ(receivedRunData.getInstrumentName(), inputInstrumentName);
-  EXPECT_EQ(receivedRunData.getStartTime(), 1470905418000000000);
-  EXPECT_EQ(receivedRunData.getNumberOfPeriods(), inputNumberOfPeriods);
-  EXPECT_EQ(receivedRunData.getNexusStructure(), inputNexusStructure);
+  EXPECT_EQ(outputRunData.startTime, inputRunData.startTime);
+  EXPECT_EQ(outputRunData.stopTime, inputRunData.stopTime);
+  EXPECT_EQ(outputRunData.runID, inputRunData.runID);
+  EXPECT_EQ(outputRunData.instrumentName, inputRunData.instrumentName);
+  EXPECT_EQ(outputRunData.nexusStructure, inputRunData.nexusStructure);
+  EXPECT_EQ(outputRunData.jobID, inputRunData.jobID);
+  EXPECT_EQ(outputRunData.serviceID, inputRunData.serviceID);
+  EXPECT_EQ(outputRunData.numberOfPeriods, inputRunData.numberOfPeriods);
 }
 
-TEST(RunDataTest, encode_and_decode_RunStop) {
-  auto rundata = RunData();
-  EXPECT_NO_THROW(rundata.setStopTime("2016-08-11T08:50:18"));
-  EXPECT_NO_THROW(rundata.setRunID("42"));
+TEST(RunDataTest, encode_and_decode_run_stop) {
+  auto inputRunData = RunData();
+  inputRunData.setStopTimeFromString("2016-08-11T08:50:18");
+  inputRunData.runID = "42";
+  inputRunData.jobID = "job42";
+  inputRunData.serviceID = "service42";
 
-  auto buffer = rundata.getRunStopBuffer();
+  auto runStopMessage = serialiseRunStopMessage(inputRunData);
+  auto outputRunData = deserialiseRunStartMessage(
+      reinterpret_cast<const uint8_t *>(runStopMessage.data()));
 
-  auto receivedRunData = RunData();
-  EXPECT_TRUE(receivedRunData.decodeMessage(
-      reinterpret_cast<const uint8_t *>(buffer.data())));
-  EXPECT_EQ(1470905418000000000, receivedRunData.getStopTime());
-  EXPECT_EQ(receivedRunData.getRunID(), "42");
+  EXPECT_EQ(outputRunData.stopTime, inputRunData.stopTime);
+  EXPECT_EQ(outputRunData.runID, inputRunData.runID);
+  EXPECT_EQ(outputRunData.jobID, inputRunData.jobID);
+  EXPECT_EQ(outputRunData.serviceID, inputRunData.serviceID);
 }
 
-TEST(RunDataTest, check_buffer_includes_file_identifier) {
-  auto rundata = RunData();
-  EXPECT_NO_THROW(rundata.setStopTime("2016-08-11T08:50:18"));
-
-  auto buffer = rundata.getRunStopBuffer();
-
-  auto runIdentifier = RunInfoIdentifier();
+TEST(RunDataTest, check_stop_message_includes_file_identifier) {
+  auto runData = RunData();
+  auto runMessage = serialiseRunStopMessage(runData);
+  auto runIdentifier = RunStopIdentifier();
   EXPECT_TRUE(flatbuffers::BufferHasIdentifier(
-      reinterpret_cast<const uint8_t *>(buffer.data()), runIdentifier));
+      reinterpret_cast<const uint8_t *>(runMessage.data()), runIdentifier));
+}
+
+TEST(RunDataTest, check_start_message_includes_file_identifier) {
+  auto runData = RunData();
+  auto runMessage = serialiseRunStartMessage(runData);
+  auto runIdentifier = RunStartIdentifier();
+  EXPECT_TRUE(flatbuffers::BufferHasIdentifier(
+      reinterpret_cast<const uint8_t *>(runMessage.data()), runIdentifier));
 }
