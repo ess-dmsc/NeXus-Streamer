@@ -1,30 +1,17 @@
-#include <array>
-#include <ctime>
-#include <iomanip>
-#include <iostream>
+#include <6s4t_run_stop_generated.h>
+#include <pl72_run_start_generated.h>
 #include <sstream>
 
 #include "RunData.h"
 
-void RunData::setStartTime(const std::string &inputTime) {
-  m_startTime = timeStringToUint64(inputTime);
-}
-
-void RunData::setStartTimeInSeconds(time_t inputTime) {
-  m_startTime = secondsToNanoseconds(inputTime);
-}
-
-void RunData::setStopTime(const std::string &inputTime) {
-  m_stopTime = timeStringToUint64(inputTime);
-}
-
-uint64_t RunData::secondsToNanoseconds(time_t timeInSeconds) {
+namespace {
+uint64_t secondsToNanoseconds(time_t timeInSeconds) {
   uint64_t timeInNanoseconds =
       static_cast<uint64_t>(timeInSeconds) * 1000000000L;
   return timeInNanoseconds;
 }
 
-uint64_t RunData::timeStringToUint64(const std::string &inputTime) {
+uint64_t timeStringToUint64(const std::string &inputTime) {
   std::tm tmb = {};
   std::istringstream ss(inputTime);
   ss >> std::get_time(&tmb, "%Y-%m-%dT%H:%M:%S");
@@ -34,6 +21,27 @@ uint64_t RunData::timeStringToUint64(const std::string &inputTime) {
   auto nsSinceEpoch = secondsToNanoseconds(timegm(&tmb));
   return nsSinceEpoch;
 }
+}
+
+void RunDataPOD::setStartTimeFromString(const std::string &inputTime) {
+  startTime = timeStringToUint64(inputTime);
+}
+
+void RunDataPOD::setStartTimeInSeconds(time_t inputTime) {
+  startTime = secondsToNanoseconds(inputTime);
+}
+
+void RunDataPOD::setStopTimeFromString(const std::string &inputTime) {
+  stopTime = timeStringToUint64(inputTime);
+}
+
+Streamer::Message serialiseRunStartMessage(const RunDataPOD &runData) {}
+
+Streamer::Message serialiseRunStopMessage(const RunDataPOD &runData) {}
+
+RunDataPOD deserialiseRunStartMessage(const uint8_t *buffer) {}
+
+RunDataPOD deserialiseRunStopMessage(const uint8_t *buffer) {}
 
 bool RunData::decodeMessage(const uint8_t *buf) {
   auto runData = GetRunInfo(buf);
@@ -87,16 +95,4 @@ Streamer::Message RunData::getRunStopBuffer() {
   FinishRunInfoBuffer(builder, messageRunInfo);
 
   return Streamer::Message(builder.Release());
-}
-
-std::string RunData::runInfo() {
-  std::stringstream ssRunInfo;
-  ssRunInfo.imbue(std::locale());
-  ssRunInfo << "Run ID: " << m_runID << ", "
-            << "Instrument name: " << m_instrumentName << ", "
-            << "Start time: ";
-  // convert nanoseconds to seconds
-  const auto sTime = static_cast<time_t>(m_startTime / 1000000000);
-  ssRunInfo << std::put_time(std::gmtime(&sTime), "%Y-%m-%dT%H:%M:%S");
-  return ssRunInfo.str();
 }
