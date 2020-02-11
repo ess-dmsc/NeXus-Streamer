@@ -43,14 +43,13 @@ Streamer::Message serialiseRunStartMessage(const RunData &runData) {
   auto nexusStructure = builder.CreateString(runData.nexusStructure);
   auto jobID = builder.CreateString(runData.jobID);
   auto serviceID = builder.CreateString(runData.serviceID);
-  auto broker = builder.CreateString("BROKER");
-  auto filename = builder.CreateString("FILENAME");
+  auto broker = builder.CreateString(runData.broker);
+  auto filename = builder.CreateString(runData.filename);
 
-  // FILENAME append runID to original filename
   auto messageRunStart =
       CreateRunStart(builder, runData.startTime, runData.stopTime, runID,
                      instrumentName, nexusStructure, jobID, broker, serviceID,
-                     filename, runData.numberOfPeriods); // DETSPECMAP
+                     filename, runData.numberOfPeriods);
   FinishRunStartBuffer(builder, messageRunStart);
 
   return Streamer::Message(builder.Release());
@@ -81,6 +80,8 @@ RunData deserialiseRunStartMessage(const uint8_t *buffer) {
   runData.jobID = runStartData->job_id()->str();
   runData.serviceID = runStartData->service_id()->str();
   runData.numberOfPeriods = runStartData->n_periods();
+  runData.broker = runStartData->broker()->str();
+  runData.filename = runStartData->filename()->str();
 
   return runData;
 }

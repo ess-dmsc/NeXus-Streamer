@@ -16,6 +16,8 @@ struct RunData {
   std::string nexusStructure;
   std::string jobID{generate_uuid(18)};
   std::string serviceID; // Optional for file writer (we won't populate it)
+  std::string broker;
+  std::string filename;
 
   void setStartTimeFromString(const std::string &inputTime);
   void setStopTimeFromString(const std::string &inputTime);

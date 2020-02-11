@@ -43,7 +43,8 @@ TEST(RunDataTest, encode_and_decode_run_start) {
   inputRunData.jobID = "job42";
   inputRunData.serviceID = "service42";
   inputRunData.numberOfPeriods = 3;
-
+  inputRunData.broker = "localhost:9092";
+  inputRunData.filename = "testfile.nxs";
 
   auto runStartMessage = serialiseRunStartMessage(inputRunData);
   auto outputRunData = deserialiseRunStartMessage(
@@ -57,6 +58,8 @@ TEST(RunDataTest, encode_and_decode_run_start) {
   EXPECT_EQ(outputRunData.jobID, inputRunData.jobID);
   EXPECT_EQ(outputRunData.serviceID, inputRunData.serviceID);
   EXPECT_EQ(outputRunData.numberOfPeriods, inputRunData.numberOfPeriods);
+  EXPECT_EQ(outputRunData.broker, inputRunData.broker);
+  EXPECT_EQ(outputRunData.filename, inputRunData.filename);
 }
 
 TEST(RunDataTest, encode_and_decode_run_stop) {
