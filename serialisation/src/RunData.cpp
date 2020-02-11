@@ -83,7 +83,7 @@ Streamer::Message serialiseRunStopMessage(const RunData &runData) {
 }
 
 RunData deserialiseRunStartMessage(const uint8_t *buffer) {
-  auto runData{RunData()};
+  RunData runData;
   auto runStartData = GetRunStart(buffer);
   runData.startTime = runStartData->start_time();
   runData.stopTime = runStartData->stop_time();
@@ -100,7 +100,7 @@ RunData deserialiseRunStartMessage(const uint8_t *buffer) {
 }
 
 RunData deserialiseRunStopMessage(const uint8_t *buffer) {
-  auto runData{RunData()};
+  RunData runData;
   auto runStopData = GetRunStop(buffer);
   runData.stopTime = runStopData->stop_time();
   runData.runID = runStopData->run_name()->str();

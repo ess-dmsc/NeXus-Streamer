@@ -47,10 +47,11 @@ TEST(RunDataTest, encode_and_decode_run_start) {
   inputRunData.broker = "localhost:9092";
   inputRunData.filename = "testfile.nxs";
 
-  nonstd::optional<DetectorSpectrumMapData> optionalDetSpecMap =
-      nonstd::nullopt;
-  auto runStartMessage =
-      serialiseRunStartMessage(inputRunData, optionalDetSpecMap);
+  extern std::string testDataPath;
+  auto detSpecMap = nonstd::optional<DetectorSpectrumMapData>(
+      DetectorSpectrumMapData(testDataPath + "spectrum_gastubes_01.dat"));
+
+  auto runStartMessage = serialiseRunStartMessage(inputRunData, detSpecMap);
   auto outputRunData = deserialiseRunStartMessage(
       reinterpret_cast<const uint8_t *>(runStartMessage.data()));
 
@@ -64,6 +65,22 @@ TEST(RunDataTest, encode_and_decode_run_start) {
   EXPECT_EQ(outputRunData.numberOfPeriods, inputRunData.numberOfPeriods);
   EXPECT_EQ(outputRunData.broker, inputRunData.broker);
   EXPECT_EQ(outputRunData.filename, inputRunData.filename);
+
+  // Check detector spectrum map data were successfully added to message
+  auto runStartData =
+      GetRunStart(reinterpret_cast<const uint8_t *>(runStartMessage.data()));
+  auto receivedMapData =
+      DetectorSpectrumMapData(runStartData->detector_spectrum_map());
+
+  EXPECT_EQ(122888, receivedMapData.getNumberOfEntries());
+  auto detectors = receivedMapData.getDetectors();
+  EXPECT_EQ(1, detectors[0]);
+  EXPECT_EQ(1100000, detectors[8]);
+  EXPECT_EQ(2523511, detectors[122887]);
+  auto spectra = receivedMapData.getSpectra();
+  EXPECT_EQ(1, spectra[0]);
+  EXPECT_EQ(9, spectra[8]);
+  EXPECT_EQ(122888, spectra[122887]);
 }
 
 TEST(RunDataTest, encode_and_decode_run_stop) {
@@ -100,26 +117,3 @@ TEST(RunDataTest, check_start_message_includes_file_identifier) {
   EXPECT_TRUE(flatbuffers::BufferHasIdentifier(
       reinterpret_cast<const uint8_t *>(runMessage.data()), runIdentifier));
 }
-
-// TEST(DetectorSpectrumMapDataTest, create_message_buffer) {
-//  extern std::string testDataPath;
-//  auto detSpecMap =
-//      DetectorSpectrumMapData(testDataPath + "spectrum_gastubes_01.dat");
-//
-//  auto buffer = detSpecMap.getBuffer();
-//
-//  auto receivedMapData = DetectorSpectrumMapData();
-//  EXPECT_NO_THROW(receivedMapData.deserialise(
-//      reinterpret_cast<const uint8_t *>(buffer.data())));
-//  EXPECT_EQ(122888, receivedMapData.getNumberOfEntries());
-//
-//  auto detectors = receivedMapData.getDetectors();
-//  EXPECT_EQ(1, detectors[0]);
-//  EXPECT_EQ(1100000, detectors[8]);
-//  EXPECT_EQ(2523511, detectors[122887]);
-//
-//  auto spectra = receivedMapData.getSpectra();
-//  EXPECT_EQ(1, spectra[0]);
-//  EXPECT_EQ(9, spectra[8]);
-//  EXPECT_EQ(122888, spectra[122887]);
-//}
