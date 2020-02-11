@@ -56,7 +56,19 @@ Streamer::Message serialiseRunStartMessage(const RunData &runData) {
   return Streamer::Message(builder.Release());
 }
 
-Streamer::Message serialiseRunStopMessage(const RunData &runData) {}
+Streamer::Message serialiseRunStopMessage(const RunData &runData) {
+  flatbuffers::FlatBufferBuilder builder;
+
+  auto runID = builder.CreateString(runData.runID);
+  auto jobID = builder.CreateString(runData.jobID);
+  auto serviceID = builder.CreateString(runData.serviceID);
+
+  auto messageRunStop =
+      CreateRunStop(builder, runData.stopTime, runID, jobID, serviceID);
+  FinishRunStopBuffer(builder, messageRunStop);
+
+  return Streamer::Message(builder.Release());
+}
 
 RunData deserialiseRunStartMessage(const uint8_t *buffer) {
   auto runData{RunData()};
@@ -75,5 +87,11 @@ RunData deserialiseRunStartMessage(const uint8_t *buffer) {
 
 RunData deserialiseRunStopMessage(const uint8_t *buffer) {
   auto runData{RunData()};
-  // auto runStopData = GetRunStop(buffer);
+  auto runStopData = GetRunStop(buffer);
+  runData.stopTime = runStopData->stop_time();
+  runData.runID = runStopData->run_name()->str();
+  runData.jobID = runStopData->job_id()->str();
+  runData.serviceID = runStopData->service_id()->str();
+
+  return runData;
 }
