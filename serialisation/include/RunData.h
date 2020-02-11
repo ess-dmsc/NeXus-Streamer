@@ -30,14 +30,15 @@ template <> struct fmt::formatter<RunData> {
   template <typename FormatContext>
   auto format(const RunData &runData, FormatContext &ctx) {
     const auto sTime = static_cast<time_t>(runData.startTime / 1000000000);
+    std::stringstream timeStream;
+    timeStream << std::put_time(std::gmtime(&sTime), "%Y-%m-%dT%H:%M:%S");
     return format_to(ctx.out(),
                      "Run ID: {}, Instrument name: {}, Start time: {}",
-                     runData.runID, runData.instrumentName,
-                     std::put_time(std::gmtime(&sTime), "%Y-%m-%dT%H:%M:%S"));
+                     runData.runID, runData.instrumentName, timeStream.str());
   }
 };
 
-Streamer::Message serialiseRunStartMessage(RunData &runData);
+Streamer::Message serialiseRunStartMessage(const RunData &runData);
 Streamer::Message serialiseRunStopMessage(const RunData &runData);
 RunData deserialiseRunStartMessage(const uint8_t *buffer);
 RunData deserialiseRunStopMessage(const uint8_t *buffer);
