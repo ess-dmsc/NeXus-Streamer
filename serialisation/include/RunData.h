@@ -3,8 +3,8 @@
 #include <ctime>
 #include <fmt/format.h>
 #include <iomanip>
-#include <sstream>
 #include <nonstd/optional.hpp>
+#include <sstream>
 
 #include "../../core/include/Message.h"
 #include "UUID.h"
@@ -28,7 +28,8 @@ struct RunData {
   void setStartTimeInSeconds(time_t inputTime);
 };
 
-template <> struct fmt::formatter<RunData> {
+namespace fmt {
+template <> struct formatter<RunData> {
   constexpr auto parse(format_parse_context &ctx) { return ctx.begin(); }
 
   template <typename FormatContext>
@@ -41,6 +42,7 @@ template <> struct fmt::formatter<RunData> {
                      runData.runID, runData.instrumentName, timeStream.str());
   }
 };
+}
 
 Streamer::Message serialiseRunStartMessage(
     const RunData &runData,
