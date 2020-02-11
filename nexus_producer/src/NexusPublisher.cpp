@@ -98,13 +98,16 @@ RunData
 NexusPublisher::createRunMessageData(const int runNumber,
                                      const std::string &jsonDescription) {
   auto runData = RunData();
-  runData.numberOfPeriods = m_fileReader->getNumberOfPeriods();
-  runData.instrumentName = m_fileReader->getInstrumentName();
+  runData.startTime = static_cast<uint64_t>(getTimeNowInNanoseconds());
   runData.runID = std::to_string(runNumber);
+  runData.instrumentName = m_fileReader->getInstrumentName();
   if (!m_settings.jsonDescription.empty()) {
     runData.nexusStructure = jsonDescription;
   }
-  runData.startTime = static_cast<uint64_t>(getTimeNowInNanoseconds());
+  runData.broker = m_settings.broker;
+  runData.filename = fmt::format("FromNeXusStreamer_{}.nxs", runNumber);
+  runData.numberOfPeriods = m_fileReader->getNumberOfPeriods();
+
   return runData;
 }
 
@@ -288,6 +291,7 @@ NexusPublisher::createAndSendRunMessage(const int runNumber,
   auto message = serialiseRunStartMessage(messageData);
   m_publisher->sendRunMessage(message);
   m_logger->info("Publishing new run: {}", messageData);
+  m_currentJobID = messageData.jobID;
   return message.size();
 }
 
@@ -307,6 +311,7 @@ size_t NexusPublisher::createAndSendRunStopMessage(const int runNumber) {
   // nanosecond
   // (in the extremely unlikely event that it is possible to happen)
   runData.runID = std::to_string(runNumber);
+  runData.jobID = m_currentJobID;
 
   auto message = serialiseRunStopMessage(runData);
   m_publisher->sendRunMessage(message);

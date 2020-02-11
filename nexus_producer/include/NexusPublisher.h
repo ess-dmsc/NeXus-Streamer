@@ -43,4 +43,6 @@ private:
   std::unordered_map<hsize_t, sEEventVector> m_sEEventMap;
   uint64_t m_messageID = 0;
   std::shared_ptr<spdlog::logger> m_logger = spdlog::get("LOG");
+  // Keep hold of this when start is sent so can specify in run stop message
+  std::string m_currentJobID;
 };
