@@ -24,7 +24,7 @@ struct RunData {
   void setStartTimeInSeconds(time_t inputTime);
 };
 
-template <> struct fmt::formatter<RunData> {
+template <> struct fmt::v6::formatter<RunData> {
   constexpr auto parse(format_parse_context &ctx) { return ctx.begin(); }
 
   template <typename FormatContext>

@@ -13,7 +13,6 @@
 #include "Timer.h"
 
 namespace {
-
 int64_t getTimeNowInNanoseconds() {
   auto now = std::chrono::system_clock::now();
   auto now_epoch = now.time_since_epoch();
