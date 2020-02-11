@@ -1,17 +1,21 @@
 #pragma once
 
-#include "../../core/include/Message.h"
 #include <ctime>
 #include <fmt/format.h>
 #include <iomanip>
+
+#include "../../core/include/Message.h"
+#include "UUID.h"
 
 struct RunDataPOD {
   uint64_t startTime{0};
   uint64_t stopTime{0};
   std::string runID;
   std::string instrumentName;
-  int32_t numberOfPeriods{0};
+  int32_t numberOfPeriods{1};
   std::string nexusStructure;
+  std::string jobID{generate_uuid(18)};
+  std::string serviceID; // Optional for file writer (we won't populate it)
 
   void setStartTimeFromString(const std::string &inputTime);
   void setStopTimeFromString(const std::string &inputTime);
@@ -31,7 +35,7 @@ template <> struct fmt::formatter<RunDataPOD> {
   }
 };
 
-Streamer::Message serialiseRunStartMessage(const RunDataPOD &runData);
+Streamer::Message serialiseRunStartMessage(RunDataPOD &runData);
 Streamer::Message serialiseRunStopMessage(const RunDataPOD &runData);
 RunDataPOD deserialiseRunStartMessage(const uint8_t *buffer);
 RunDataPOD deserialiseRunStopMessage(const uint8_t *buffer);

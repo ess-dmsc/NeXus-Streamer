@@ -35,64 +35,45 @@ void RunDataPOD::setStopTimeFromString(const std::string &inputTime) {
   stopTime = timeStringToUint64(inputTime);
 }
 
-Streamer::Message serialiseRunStartMessage(const RunDataPOD &runData) {}
+Streamer::Message serialiseRunStartMessage(const RunDataPOD &runData) {
+  flatbuffers::FlatBufferBuilder builder;
+
+  auto instrumentName = builder.CreateString(runData.instrumentName);
+  auto runID = builder.CreateString(runData.runID);
+  auto nexusStructure = builder.CreateString(runData.nexusStructure);
+  auto jobID = builder.CreateString(runData.jobID);
+  auto serviceID = builder.CreateString(runData.serviceID);
+  auto broker = builder.CreateString("BROKER");
+  auto filename = builder.CreateString("FILENAME");
+
+  // FILENAME append runID to original filename
+  auto messageRunStart =
+      CreateRunStart(builder, runData.startTime, runData.stopTime, runID,
+                     instrumentName, nexusStructure, jobID, broker, serviceID,
+                     filename, runData.numberOfPeriods); // DETSPECMAP
+  FinishRunStartBuffer(builder, messageRunStart);
+
+  return Streamer::Message(builder.Release());
+}
 
 Streamer::Message serialiseRunStopMessage(const RunDataPOD &runData) {}
 
-RunDataPOD deserialiseRunStartMessage(const uint8_t *buffer) {}
+RunDataPOD deserialiseRunStartMessage(const uint8_t *buffer) {
+  auto runData{RunDataPOD()};
+  auto runStartData = GetRunStart(buffer);
+  runData.startTime = runStartData->start_time();
+  runData.stopTime = runStartData->stop_time();
+  runData.runID = runStartData->run_name()->str();
+  runData.instrumentName = runStartData->instrument_name()->str();
+  runData.nexusStructure = runStartData->nexus_structure()->str();
+  runData.jobID = runStartData->job_id()->str();
+  runData.serviceID = runStartData->service_id()->str();
+  runData.numberOfPeriods = runStartData->n_periods();
 
-RunDataPOD deserialiseRunStopMessage(const uint8_t *buffer) {}
-
-bool RunData::decodeMessage(const uint8_t *buf) {
-  auto runData = GetRunInfo(buf);
-
-  if (runData->info_type_type() == InfoTypes::RunStart) {
-    auto runStartData = static_cast<const RunStart *>(runData->info_type());
-    setStartTimeInNanoseconds(runStartData->start_time());
-    setInstrumentName(runStartData->instrument_name()->str());
-    setRunID(runStartData->run_id()->str());
-    setNumberOfPeriods(runStartData->n_periods());
-    setNexusStructure(runStartData->nexus_structure()->str());
-
-    return true;
-  }
-  if (runData->info_type_type() == InfoTypes::RunStop) {
-    auto runStopData = static_cast<const RunStop *>(runData->info_type());
-    setStopTime(runStopData->stop_time());
-    setRunID(runStopData->run_id()->str());
-
-    return true;
-  }
-
-  return false; // this is not a RunData message
+  return runData;
 }
 
-Streamer::Message RunData::getRunStartBuffer() {
-  flatbuffers::FlatBufferBuilder builder;
-
-  auto instrumentName = builder.CreateString(m_instrumentName);
-  auto runID = builder.CreateString(m_runID);
-  auto nexusStructure = builder.CreateString(m_nexusStructure);
-  auto messageRunStart =
-      CreateRunStart(builder, m_startTime, runID, instrumentName,
-                     m_numberOfPeriods, nexusStructure);
-  auto messageRunInfo =
-      CreateRunInfo(builder, InfoTypes::RunStart, messageRunStart.Union());
-
-  FinishRunInfoBuffer(builder, messageRunInfo);
-
-  return Streamer::Message(builder.Release());
-}
-
-Streamer::Message RunData::getRunStopBuffer() {
-  flatbuffers::FlatBufferBuilder builder;
-
-  auto runID = builder.CreateString(m_runID);
-  auto messageRunStop = CreateRunStop(builder, m_stopTime, runID);
-  auto messageRunInfo =
-      CreateRunInfo(builder, InfoTypes::RunStop, messageRunStop.Union());
-
-  FinishRunInfoBuffer(builder, messageRunInfo);
-
-  return Streamer::Message(builder.Release());
+RunDataPOD deserialiseRunStopMessage(const uint8_t *buffer) {
+  auto runData{RunDataPOD()};
+  // auto runStopData = GetRunStop(buffer);
 }
