@@ -7,7 +7,7 @@
 #include "../../core/include/Message.h"
 #include "UUID.h"
 
-struct RunDataPOD {
+struct RunData {
   uint64_t startTime{0};
   uint64_t stopTime{0};
   std::string runID;
@@ -22,11 +22,11 @@ struct RunDataPOD {
   void setStartTimeInSeconds(time_t inputTime);
 };
 
-template <> struct fmt::formatter<RunDataPOD> {
+template <> struct fmt::formatter<RunData> {
   constexpr auto parse(format_parse_context &ctx) { return ctx.begin(); }
 
   template <typename FormatContext>
-  auto format(const RunDataPOD &runData, FormatContext &ctx) {
+  auto format(const RunData &runData, FormatContext &ctx) {
     const auto sTime = static_cast<time_t>(runData.startTime / 1000000000);
     return format_to(ctx.out(),
                      "Run ID: {}, Instrument name: {}, Start time: {}",
@@ -35,7 +35,7 @@ template <> struct fmt::formatter<RunDataPOD> {
   }
 };
 
-Streamer::Message serialiseRunStartMessage(RunDataPOD &runData);
-Streamer::Message serialiseRunStopMessage(const RunDataPOD &runData);
-RunDataPOD deserialiseRunStartMessage(const uint8_t *buffer);
-RunDataPOD deserialiseRunStopMessage(const uint8_t *buffer);
+Streamer::Message serialiseRunStartMessage(RunData &runData);
+Streamer::Message serialiseRunStopMessage(const RunData &runData);
+RunData deserialiseRunStartMessage(const uint8_t *buffer);
+RunData deserialiseRunStopMessage(const uint8_t *buffer);

@@ -23,19 +23,19 @@ uint64_t timeStringToUint64(const std::string &inputTime) {
 }
 }
 
-void RunDataPOD::setStartTimeFromString(const std::string &inputTime) {
+void RunData::setStartTimeFromString(const std::string &inputTime) {
   startTime = timeStringToUint64(inputTime);
 }
 
-void RunDataPOD::setStartTimeInSeconds(time_t inputTime) {
+void RunData::setStartTimeInSeconds(time_t inputTime) {
   startTime = secondsToNanoseconds(inputTime);
 }
 
-void RunDataPOD::setStopTimeFromString(const std::string &inputTime) {
+void RunData::setStopTimeFromString(const std::string &inputTime) {
   stopTime = timeStringToUint64(inputTime);
 }
 
-Streamer::Message serialiseRunStartMessage(const RunDataPOD &runData) {
+Streamer::Message serialiseRunStartMessage(const RunData &runData) {
   flatbuffers::FlatBufferBuilder builder;
 
   auto instrumentName = builder.CreateString(runData.instrumentName);
@@ -56,10 +56,10 @@ Streamer::Message serialiseRunStartMessage(const RunDataPOD &runData) {
   return Streamer::Message(builder.Release());
 }
 
-Streamer::Message serialiseRunStopMessage(const RunDataPOD &runData) {}
+Streamer::Message serialiseRunStopMessage(const RunData &runData) {}
 
-RunDataPOD deserialiseRunStartMessage(const uint8_t *buffer) {
-  auto runData{RunDataPOD()};
+RunData deserialiseRunStartMessage(const uint8_t *buffer) {
+  auto runData{RunData()};
   auto runStartData = GetRunStart(buffer);
   runData.startTime = runStartData->start_time();
   runData.stopTime = runStartData->stop_time();
@@ -73,7 +73,7 @@ RunDataPOD deserialiseRunStartMessage(const uint8_t *buffer) {
   return runData;
 }
 
-RunDataPOD deserialiseRunStopMessage(const uint8_t *buffer) {
-  auto runData{RunDataPOD()};
+RunData deserialiseRunStopMessage(const uint8_t *buffer) {
+  auto runData{RunData()};
   // auto runStopData = GetRunStop(buffer);
 }
