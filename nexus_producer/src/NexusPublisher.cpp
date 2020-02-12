@@ -13,12 +13,12 @@
 #include "Timer.h"
 
 namespace {
-int64_t getTimeNowInNanoseconds() {
+uint64_t getTimeNowInNanoseconds() {
   auto now = std::chrono::system_clock::now();
   auto now_epoch = now.time_since_epoch();
   auto now_epoch_nanoseconds =
       std::chrono::duration_cast<std::chrono::nanoseconds>(now_epoch).count();
-  return now_epoch_nanoseconds;
+  return static_cast<uint64_t>(now_epoch_nanoseconds);
 }
 
 void createAndSendHistogramMessage(
@@ -26,8 +26,7 @@ void createAndSendHistogramMessage(
     const std::shared_ptr<Publisher> &publisher) {
   // One histogram per NXdata group in the file
   for (const auto &histogram : histograms) {
-    auto message = createHistogramMessage(
-        histogram, static_cast<uint64_t>(getTimeNowInNanoseconds()));
+    auto message = createHistogramMessage(histogram, getTimeNowInNanoseconds());
     publisher->sendHistogramMessage(message);
   }
 }
@@ -98,7 +97,7 @@ RunData
 NexusPublisher::createRunMessageData(const int runNumber,
                                      const std::string &jsonDescription) {
   auto runData = RunData();
-  runData.startTime = static_cast<uint64_t>(getTimeNowInNanoseconds());
+  runData.startTime = getTimeNowInNanoseconds();
   runData.runID = std::to_string(runNumber);
   runData.instrumentName = m_fileReader->getInstrumentName();
   if (!m_settings.jsonDescription.empty()) {
@@ -313,7 +312,7 @@ size_t NexusPublisher::createAndSendRunStopMessage(const int runNumber) {
   // Flush producer queue to ensure the run stop is after all messages are
   // published
   m_publisher->flushSendQueue();
-  runData.stopTime = static_cast<uint64_t>(getTimeNowInNanoseconds() + 1);
+  runData.stopTime = getTimeNowInNanoseconds() + 1;
   // + 1 as we want to include any messages which were sent in the current
   // nanosecond
   // (in the extremely unlikely event that it is possible to happen)
