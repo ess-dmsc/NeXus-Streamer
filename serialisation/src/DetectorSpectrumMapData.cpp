@@ -26,13 +26,13 @@ DetectorSpectrumMapData::DetectorSpectrumMapData(const std::string &filename) {
 
 DetectorSpectrumMapData::DetectorSpectrumMapData(
     const SpectraDetectorMapping *detSpecMapFromMessage) {
-  auto detFBVector = detSpecMapFromMessage->detector_id();
-  auto specFBVector = detSpecMapFromMessage->spectrum();
+  const auto detFBVector = detSpecMapFromMessage->detector_id();
+  const auto specFBVector = detSpecMapFromMessage->spectrum();
   setNumberOfEntries(detSpecMapFromMessage->n_spectra());
   m_detectors.resize(static_cast<size_t>(m_numberOfEntries));
   m_spectra.resize(static_cast<size_t>(m_numberOfEntries));
-  std::copy(detFBVector->begin(), detFBVector->end(), m_detectors.begin());
-  std::copy(specFBVector->begin(), specFBVector->end(), m_spectra.begin());
+  std::copy(detFBVector->cbegin(), detFBVector->cend(), m_detectors.begin());
+  std::copy(specFBVector->cbegin(), specFBVector->cend(), m_spectra.begin());
 }
 
 void DetectorSpectrumMapData::readFile(const std::string &filename) {

@@ -41,13 +41,13 @@ Streamer::Message serialiseRunStartMessage(
     const nonstd::optional<DetectorSpectrumMapData> &detSpecMap) {
   flatbuffers::FlatBufferBuilder builder;
 
-  auto instrumentName = builder.CreateString(runData.instrumentName);
-  auto runID = builder.CreateString(runData.runID);
-  auto nexusStructure = builder.CreateString(runData.nexusStructure);
-  auto jobID = builder.CreateString(runData.jobID);
-  auto serviceID = builder.CreateString(runData.serviceID);
-  auto broker = builder.CreateString(runData.broker);
-  auto filename = builder.CreateString(runData.filename);
+  const auto instrumentName = builder.CreateString(runData.instrumentName);
+  const auto runID = builder.CreateString(runData.runID);
+  const auto nexusStructure = builder.CreateString(runData.nexusStructure);
+  const auto jobID = builder.CreateString(runData.jobID);
+  const auto serviceID = builder.CreateString(runData.serviceID);
+  const auto broker = builder.CreateString(runData.broker);
+  const auto filename = builder.CreateString(runData.filename);
 
   flatbuffers::Offset<RunStart> messageRunStart;
   if (detSpecMap) {
@@ -71,9 +71,9 @@ Streamer::Message serialiseRunStartMessage(
 Streamer::Message serialiseRunStopMessage(const RunData &runData) {
   flatbuffers::FlatBufferBuilder builder;
 
-  auto runID = builder.CreateString(runData.runID);
-  auto jobID = builder.CreateString(runData.jobID);
-  auto serviceID = builder.CreateString(runData.serviceID);
+  const auto runID = builder.CreateString(runData.runID);
+  const auto jobID = builder.CreateString(runData.jobID);
+  const auto serviceID = builder.CreateString(runData.serviceID);
 
   auto messageRunStop =
       CreateRunStop(builder, runData.stopTime, runID, jobID, serviceID);
@@ -84,7 +84,7 @@ Streamer::Message serialiseRunStopMessage(const RunData &runData) {
 
 RunData deserialiseRunStartMessage(const uint8_t *buffer) {
   RunData runData;
-  auto runStartData = GetRunStart(buffer);
+  const auto runStartData = GetRunStart(buffer);
   runData.startTime = runStartData->start_time();
   runData.stopTime = runStartData->stop_time();
   runData.runID = runStartData->run_name()->str();
@@ -101,7 +101,7 @@ RunData deserialiseRunStartMessage(const uint8_t *buffer) {
 
 RunData deserialiseRunStopMessage(const uint8_t *buffer) {
   RunData runData;
-  auto runStopData = GetRunStop(buffer);
+  const auto runStopData = GetRunStop(buffer);
   runData.stopTime = runStopData->stop_time();
   runData.runID = runStopData->run_name()->str();
   runData.jobID = runStopData->job_id()->str();
