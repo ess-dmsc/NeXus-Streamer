@@ -11,6 +11,7 @@ set( SRC_FILES
         src/SampleEnvironmentEventDouble.cpp
         src/SampleEnvironmentEventUInt.cpp
         src/SampleEnvironmentEventULong.cpp
+        src/UUID.cpp
         )
 
 set( INC_FILES
@@ -24,6 +25,7 @@ set( INC_FILES
         include/SampleEnvironmentEventDouble.h
         include/SampleEnvironmentEventUInt.h
         include/SampleEnvironmentEventULong.h
+        include/UUID.h
         )
 
 set( TEST_FILES
@@ -43,6 +45,8 @@ include_directories(
 add_library(serialisation_lib ${SRC_FILES} ${INC_FILES})
 target_include_directories(serialisation_lib PUBLIC ${PROJECT_SOURCE_DIR}/core/include)
 target_link_libraries(serialisation_lib
+        CONAN_PKG::fmt
+        CONAN_PKG::optional-lite
         CONAN_PKG::flatbuffers
         CONAN_PKG::streaming-data-types)
 

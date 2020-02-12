@@ -1,5 +1,6 @@
 #include <flatbuffers/flatbuffers.h>
 #include <fstream>
+#include <pl72_run_start_generated.h>
 #include <sstream>
 
 #include "DetectorSpectrumMapData.h"
@@ -23,6 +24,17 @@ DetectorSpectrumMapData::DetectorSpectrumMapData(const std::string &filename) {
   readFile(filename);
 }
 
+DetectorSpectrumMapData::DetectorSpectrumMapData(
+    const SpectraDetectorMapping *detSpecMapFromMessage) {
+  const auto detFBVector = detSpecMapFromMessage->detector_id();
+  const auto specFBVector = detSpecMapFromMessage->spectrum();
+  setNumberOfEntries(detSpecMapFromMessage->n_spectra());
+  m_detectors.resize(static_cast<size_t>(m_numberOfEntries));
+  m_spectra.resize(static_cast<size_t>(m_numberOfEntries));
+  std::copy(detFBVector->cbegin(), detFBVector->cend(), m_detectors.begin());
+  std::copy(specFBVector->cbegin(), specFBVector->cend(), m_spectra.begin());
+}
+
 void DetectorSpectrumMapData::readFile(const std::string &filename) {
   std::ifstream infile(filename);
   std::string line;
@@ -44,25 +56,9 @@ void DetectorSpectrumMapData::readFile(const std::string &filename) {
   }
 }
 
-void DetectorSpectrumMapData::decodeMessage(const uint8_t *buf) {
-  auto messageData = GetSpectraDetectorMapping(buf);
-
-  auto detFBVector = messageData->detector_id();
-  auto specFBVector = messageData->spectrum();
-  setNumberOfEntries(messageData->n_spectra());
-  m_detectors.resize(static_cast<size_t>(m_numberOfEntries));
-  m_spectra.resize(static_cast<size_t>(m_numberOfEntries));
-  std::copy(detFBVector->begin(), detFBVector->end(), m_detectors.begin());
-  std::copy(specFBVector->begin(), specFBVector->end(), m_spectra.begin());
-}
-
-Streamer::Message DetectorSpectrumMapData::getBuffer() {
-  flatbuffers::FlatBufferBuilder builder;
-
-  auto messageFlatbuf = CreateSpectraDetectorMapping(
-      builder, builder.CreateVector(m_spectra),
-      builder.CreateVector(m_detectors), m_numberOfEntries);
-  FinishSpectraDetectorMappingBuffer(builder, messageFlatbuf);
-
-  return Streamer::Message(builder.Release());
+flatbuffers::Offset<SpectraDetectorMapping>
+DetectorSpectrumMapData::addToBuffer(flatbuffers::FlatBufferBuilder &builder) {
+  return CreateSpectraDetectorMapping(builder, builder.CreateVector(m_spectra),
+                                      builder.CreateVector(m_detectors),
+                                      m_numberOfEntries);
 }

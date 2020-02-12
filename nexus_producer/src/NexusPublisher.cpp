@@ -1,6 +1,4 @@
-#include <algorithm>
 #include <chrono>
-#include <cmath>
 #include <iostream>
 #include <thread>
 
@@ -15,13 +13,12 @@
 #include "Timer.h"
 
 namespace {
-
-int64_t getTimeNowInNanoseconds() {
+uint64_t getTimeNowInNanoseconds() {
   auto now = std::chrono::system_clock::now();
   auto now_epoch = now.time_since_epoch();
   auto now_epoch_nanoseconds =
       std::chrono::duration_cast<std::chrono::nanoseconds>(now_epoch).count();
-  return now_epoch_nanoseconds;
+  return static_cast<uint64_t>(now_epoch_nanoseconds);
 }
 
 void createAndSendHistogramMessage(
@@ -29,8 +26,7 @@ void createAndSendHistogramMessage(
     const std::shared_ptr<Publisher> &publisher) {
   // One histogram per NXdata group in the file
   for (const auto &histogram : histograms) {
-    auto message = createHistogramMessage(
-        histogram, static_cast<uint64_t>(getTimeNowInNanoseconds()));
+    auto message = createHistogramMessage(histogram, getTimeNowInNanoseconds());
     publisher->sendHistogramMessage(message);
   }
 }
@@ -101,13 +97,16 @@ RunData
 NexusPublisher::createRunMessageData(const int runNumber,
                                      const std::string &jsonDescription) {
   auto runData = RunData();
-  runData.setNumberOfPeriods(m_fileReader->getNumberOfPeriods());
-  runData.setInstrumentName(m_fileReader->getInstrumentName());
-  runData.setRunID(std::to_string(runNumber));
+  runData.startTime = getTimeNowInNanoseconds();
+  runData.runID = std::to_string(runNumber);
+  runData.instrumentName = m_fileReader->getInstrumentName();
   if (!m_settings.jsonDescription.empty()) {
-    runData.setNexusStructure(jsonDescription);
+    runData.nexusStructure = jsonDescription;
   }
-  runData.setStartTime(static_cast<uint64_t>(getTimeNowInNanoseconds()));
+  runData.broker = m_settings.broker;
+  runData.filename = fmt::format("FromNeXusStreamer_{}.nxs", runNumber);
+  runData.numberOfPeriods = m_fileReader->getNumberOfPeriods();
+
   return runData;
 }
 
@@ -140,13 +139,6 @@ void NexusPublisher::streamData(int runNumber, const OptionalArgs &settings,
   const auto numberOfFrames = m_fileReader->getNumberOfFrames();
 
   totalBytesSent += createAndSendRunMessage(runNumber, jsonDescription);
-  // Send a detector-spectrum map message if map file was given and a detector
-  // ID range was not.
-  if (settings.minMaxDetectorNums.first == 0 &&
-      settings.minMaxDetectorNums.second == 0 &&
-      !settings.detSpecFilename.empty()) {
-    totalBytesSent += createAndSendDetSpecMessage();
-  }
   std::unique_ptr<Timer> histogramStreamer = streamHistogramData(settings);
 
   uint64_t lastFrameTime = 0;
@@ -288,10 +280,25 @@ size_t
 NexusPublisher::createAndSendRunMessage(const int runNumber,
                                         const std::string &jsonDescription) {
   auto messageData = createRunMessageData(runNumber, jsonDescription);
-  auto buffer = messageData.getRunStartBuffer();
-  m_publisher->sendRunMessage(buffer);
-  m_logger->info("Publishing new run: {}", messageData.runInfo());
-  return buffer.size();
+
+  // Add detector-spectrum map to message if map file was given and a detector
+  // ID range was not.
+  nonstd::optional<DetectorSpectrumMapData> optionalDetSpecMap =
+      nonstd::nullopt;
+  if (m_settings.minMaxDetectorNums.first == 0 &&
+      m_settings.minMaxDetectorNums.second == 0 &&
+      !m_settings.detSpecFilename.empty()) {
+    optionalDetSpecMap = nonstd::optional<DetectorSpectrumMapData>(
+        DetectorSpectrumMapData(m_detSpecMapFilename));
+  }
+
+  auto message = serialiseRunStartMessage(messageData, optionalDetSpecMap);
+
+  m_publisher->sendRunMessage(message);
+  m_logger->info("Publishing new run: {}", messageData);
+  m_currentJobID = messageData.jobID;
+
+  return message.size();
 }
 
 /**
@@ -305,22 +312,16 @@ size_t NexusPublisher::createAndSendRunStopMessage(const int runNumber) {
   // Flush producer queue to ensure the run stop is after all messages are
   // published
   m_publisher->flushSendQueue();
-  runData.setStopTime(static_cast<uint64_t>(getTimeNowInNanoseconds() + 1));
+  runData.stopTime = getTimeNowInNanoseconds() + 1;
   // + 1 as we want to include any messages which were sent in the current
   // nanosecond
   // (in the extremely unlikely event that it is possible to happen)
-  runData.setRunID(std::to_string(runNumber));
+  runData.runID = std::to_string(runNumber);
+  runData.jobID = m_currentJobID;
 
-  auto buffer = runData.getRunStopBuffer();
-  m_publisher->sendRunMessage(buffer);
-  return buffer.size();
-}
-
-size_t NexusPublisher::createAndSendDetSpecMessage() {
-  auto messageData = DetectorSpectrumMapData(m_detSpecMapFilename);
-  auto messageBuffer = messageData.getBuffer();
-  m_publisher->sendDetSpecMessage(messageBuffer);
-  return messageBuffer.size();
+  auto message = serialiseRunStopMessage(runData);
+  m_publisher->sendRunMessage(message);
+  return message.size();
 }
 
 /**

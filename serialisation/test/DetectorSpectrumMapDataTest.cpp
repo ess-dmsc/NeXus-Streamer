@@ -39,26 +39,3 @@ TEST(DetectorSpectrumMapDataTest, read_detector_spectrum_map_spectra) {
   EXPECT_EQ(9, spectra[8]);
   EXPECT_EQ(122888, spectra[122887]);
 }
-
-TEST(DetectorSpectrumMapDataTest, create_message_buffer) {
-  extern std::string testDataPath;
-  auto detSpecMap =
-      DetectorSpectrumMapData(testDataPath + "spectrum_gastubes_01.dat");
-
-  auto buffer = detSpecMap.getBuffer();
-
-  auto receivedMapData = DetectorSpectrumMapData();
-  EXPECT_NO_THROW(receivedMapData.decodeMessage(
-      reinterpret_cast<const uint8_t *>(buffer.data())));
-  EXPECT_EQ(122888, receivedMapData.getNumberOfEntries());
-
-  auto detectors = receivedMapData.getDetectors();
-  EXPECT_EQ(1, detectors[0]);
-  EXPECT_EQ(1100000, detectors[8]);
-  EXPECT_EQ(2523511, detectors[122887]);
-
-  auto spectra = receivedMapData.getSpectra();
-  EXPECT_EQ(1, spectra[0]);
-  EXPECT_EQ(9, spectra[8]);
-  EXPECT_EQ(122888, spectra[122887]);
-}

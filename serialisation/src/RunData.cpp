@@ -1,30 +1,18 @@
-#include <array>
-#include <ctime>
-#include <iomanip>
-#include <iostream>
+#include <6s4t_run_stop_generated.h>
+#include <pl72_run_start_generated.h>
 #include <sstream>
 
+#include "DetectorSpectrumMapData.h"
 #include "RunData.h"
 
-void RunData::setStartTime(const std::string &inputTime) {
-  m_startTime = timeStringToUint64(inputTime);
-}
-
-void RunData::setStartTimeInSeconds(time_t inputTime) {
-  m_startTime = secondsToNanoseconds(inputTime);
-}
-
-void RunData::setStopTime(const std::string &inputTime) {
-  m_stopTime = timeStringToUint64(inputTime);
-}
-
-uint64_t RunData::secondsToNanoseconds(time_t timeInSeconds) {
+namespace {
+uint64_t secondsToNanoseconds(time_t timeInSeconds) {
   uint64_t timeInNanoseconds =
       static_cast<uint64_t>(timeInSeconds) * 1000000000L;
   return timeInNanoseconds;
 }
 
-uint64_t RunData::timeStringToUint64(const std::string &inputTime) {
+uint64_t timeStringToUint64(const std::string &inputTime) {
   std::tm tmb = {};
   std::istringstream ss(inputTime);
   ss >> std::get_time(&tmb, "%Y-%m-%dT%H:%M:%S");
@@ -34,69 +22,90 @@ uint64_t RunData::timeStringToUint64(const std::string &inputTime) {
   auto nsSinceEpoch = secondsToNanoseconds(timegm(&tmb));
   return nsSinceEpoch;
 }
-
-bool RunData::decodeMessage(const uint8_t *buf) {
-  auto runData = GetRunInfo(buf);
-
-  if (runData->info_type_type() == InfoTypes::RunStart) {
-    auto runStartData = static_cast<const RunStart *>(runData->info_type());
-    setStartTimeInNanoseconds(runStartData->start_time());
-    setInstrumentName(runStartData->instrument_name()->str());
-    setRunID(runStartData->run_id()->str());
-    setNumberOfPeriods(runStartData->n_periods());
-    setNexusStructure(runStartData->nexus_structure()->str());
-
-    return true;
-  }
-  if (runData->info_type_type() == InfoTypes::RunStop) {
-    auto runStopData = static_cast<const RunStop *>(runData->info_type());
-    setStopTime(runStopData->stop_time());
-    setRunID(runStopData->run_id()->str());
-
-    return true;
-  }
-
-  return false; // this is not a RunData message
 }
 
-Streamer::Message RunData::getRunStartBuffer() {
+void RunData::setStartTimeFromString(const std::string &inputTime) {
+  startTime = timeStringToUint64(inputTime);
+}
+
+void RunData::setStartTimeInSeconds(time_t inputTime) {
+  startTime = secondsToNanoseconds(inputTime);
+}
+
+void RunData::setStopTimeFromString(const std::string &inputTime) {
+  stopTime = timeStringToUint64(inputTime);
+}
+
+Streamer::Message serialiseRunStartMessage(
+    const RunData &runData,
+    const nonstd::optional<DetectorSpectrumMapData> &detSpecMap) {
   flatbuffers::FlatBufferBuilder builder;
 
-  auto instrumentName = builder.CreateString(m_instrumentName);
-  auto runID = builder.CreateString(m_runID);
-  auto nexusStructure = builder.CreateString(m_nexusStructure);
-  auto messageRunStart =
-      CreateRunStart(builder, m_startTime, runID, instrumentName,
-                     m_numberOfPeriods, nexusStructure);
-  auto messageRunInfo =
-      CreateRunInfo(builder, InfoTypes::RunStart, messageRunStart.Union());
+  const auto instrumentName = builder.CreateString(runData.instrumentName);
+  const auto runID = builder.CreateString(runData.runID);
+  const auto nexusStructure = builder.CreateString(runData.nexusStructure);
+  const auto jobID = builder.CreateString(runData.jobID);
+  const auto serviceID = builder.CreateString(runData.serviceID);
+  const auto broker = builder.CreateString(runData.broker);
+  const auto filename = builder.CreateString(runData.filename);
 
-  FinishRunInfoBuffer(builder, messageRunInfo);
+  flatbuffers::Offset<RunStart> messageRunStart;
+  if (detSpecMap) {
+    auto detectorSpectrumMap = *detSpecMap;
+    messageRunStart = CreateRunStart(
+        builder, runData.startTime, runData.stopTime, runID, instrumentName,
+        nexusStructure, jobID, broker, serviceID, filename,
+        runData.numberOfPeriods, detectorSpectrumMap.addToBuffer(builder));
+  } else {
+    messageRunStart =
+        CreateRunStart(builder, runData.startTime, runData.stopTime, runID,
+                       instrumentName, nexusStructure, jobID, broker, serviceID,
+                       filename, runData.numberOfPeriods);
+  }
+
+  FinishRunStartBuffer(builder, messageRunStart);
 
   return Streamer::Message(builder.Release());
 }
 
-Streamer::Message RunData::getRunStopBuffer() {
+Streamer::Message serialiseRunStopMessage(const RunData &runData) {
   flatbuffers::FlatBufferBuilder builder;
 
-  auto runID = builder.CreateString(m_runID);
-  auto messageRunStop = CreateRunStop(builder, m_stopTime, runID);
-  auto messageRunInfo =
-      CreateRunInfo(builder, InfoTypes::RunStop, messageRunStop.Union());
+  const auto runID = builder.CreateString(runData.runID);
+  const auto jobID = builder.CreateString(runData.jobID);
+  const auto serviceID = builder.CreateString(runData.serviceID);
 
-  FinishRunInfoBuffer(builder, messageRunInfo);
+  auto messageRunStop =
+      CreateRunStop(builder, runData.stopTime, runID, jobID, serviceID);
+  FinishRunStopBuffer(builder, messageRunStop);
 
   return Streamer::Message(builder.Release());
 }
 
-std::string RunData::runInfo() {
-  std::stringstream ssRunInfo;
-  ssRunInfo.imbue(std::locale());
-  ssRunInfo << "Run ID: " << m_runID << ", "
-            << "Instrument name: " << m_instrumentName << ", "
-            << "Start time: ";
-  // convert nanoseconds to seconds
-  const auto sTime = static_cast<time_t>(m_startTime / 1000000000);
-  ssRunInfo << std::put_time(std::gmtime(&sTime), "%Y-%m-%dT%H:%M:%S");
-  return ssRunInfo.str();
+RunData deserialiseRunStartMessage(const uint8_t *buffer) {
+  RunData runData;
+  const auto runStartData = GetRunStart(buffer);
+  runData.startTime = runStartData->start_time();
+  runData.stopTime = runStartData->stop_time();
+  runData.runID = runStartData->run_name()->str();
+  runData.instrumentName = runStartData->instrument_name()->str();
+  runData.nexusStructure = runStartData->nexus_structure()->str();
+  runData.jobID = runStartData->job_id()->str();
+  runData.serviceID = runStartData->service_id()->str();
+  runData.numberOfPeriods = runStartData->n_periods();
+  runData.broker = runStartData->broker()->str();
+  runData.filename = runStartData->filename()->str();
+
+  return runData;
+}
+
+RunData deserialiseRunStopMessage(const uint8_t *buffer) {
+  RunData runData;
+  const auto runStopData = GetRunStop(buffer);
+  runData.stopTime = runStopData->stop_time();
+  runData.runID = runStopData->run_name()->str();
+  runData.jobID = runStopData->job_id()->str();
+  runData.serviceID = runStopData->service_id()->str();
+
+  return runData;
 }

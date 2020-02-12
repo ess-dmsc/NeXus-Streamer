@@ -7,9 +7,8 @@ class DetectorSpectrumMapData {
 public:
   DetectorSpectrumMapData() = default;
   explicit DetectorSpectrumMapData(const std::string &filename);
-
-  Streamer::Message getBuffer();
-  void decodeMessage(const uint8_t *buf);
+  explicit DetectorSpectrumMapData(
+      const SpectraDetectorMapping *detSpecMapFromMessage);
 
   int32_t getNumberOfEntries() { return m_numberOfEntries; }
   std::vector<int32_t> getDetectors() { return m_detectors; }
@@ -18,6 +17,9 @@ public:
   void setNumberOfEntries(int32_t numberOfEntries) {
     m_numberOfEntries = numberOfEntries;
   }
+
+  flatbuffers::Offset<SpectraDetectorMapping>
+  addToBuffer(flatbuffers::FlatBufferBuilder &builder);
 
 private:
   void readFile(const std::string &filename);

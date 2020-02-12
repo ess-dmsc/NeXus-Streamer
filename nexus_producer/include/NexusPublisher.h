@@ -8,7 +8,7 @@
 #include "Publisher.h"
 
 class EventData;
-class RunData;
+struct RunData;
 class Timer;
 
 class NexusPublisher {
@@ -28,7 +28,6 @@ private:
   std::unique_ptr<Timer> streamHistogramData(const OptionalArgs &settings);
   size_t createAndSendRunMessage(int runNumber,
                                  const std::string &jsonDescription);
-  size_t createAndSendDetSpecMessage();
   RunData createRunMessageData(int runNumber,
                                const std::string &jsonDescription);
   size_t createAndSendMessage(size_t frameNumber);
@@ -43,4 +42,6 @@ private:
   std::unordered_map<hsize_t, sEEventVector> m_sEEventMap;
   uint64_t m_messageID = 0;
   std::shared_ptr<spdlog::logger> m_logger = spdlog::get("LOG");
+  // Keep hold of this when start is sent so can specify in run stop message
+  std::string m_currentJobID;
 };
