@@ -70,7 +70,7 @@ target_link_libraries(eventDataUnitTests ${eventData_tests_LINK_LIBRARIES})
 ######################
 
 add_executable(benchmark_serialisation test/BenchmarkSerialisation.cpp)
-target_link_libraries(benchmark_serialisation CONAN_PKG::google-benchmark serialisation_lib)
+target_link_libraries(benchmark_serialisation CONAN_PKG::benchmark serialisation_lib)
 if(WIN32)
     target_link_libraries(benchmark_serialisation shlwapi.lib)
 endif(WIN32)
