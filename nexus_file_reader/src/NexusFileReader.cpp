@@ -40,7 +40,7 @@ void checkEventDataGroupsHaveConsistentFrames(
     }
   }
 }
-}
+} // namespace
 
 /**
  * Create a object to read the specified file

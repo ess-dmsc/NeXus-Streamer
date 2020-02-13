@@ -42,7 +42,7 @@ template <> struct formatter<RunData> {
                      runData.runID, runData.instrumentName, timeStream.str());
   }
 };
-}
+} // namespace fmt
 
 Streamer::Message serialiseRunStartMessage(
     const RunData &runData,

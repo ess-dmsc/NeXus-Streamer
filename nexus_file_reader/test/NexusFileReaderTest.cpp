@@ -24,8 +24,8 @@ AllElementsInVectorAreNear(const std::vector<float> &a,
 
   for (size_t i = 0; i < a.size(); ++i) {
     if (a[i] < (b[i] - delta) || a[i] > (b[i] + delta)) {
-      return ::testing::AssertionFailure() << "Vectors differ by more than "
-                                           << delta;
+      return ::testing::AssertionFailure()
+      << "Vectors differ by more than " << delta;
     }
   }
 
@@ -33,7 +33,7 @@ AllElementsInVectorAreNear(const std::vector<float> &a,
 }
 
 const auto testOptArgs = OptionalArgs();
-}
+} // namespace
 
 TEST(NexusFileReaderTest, error_thrown_for_non_existent_file) {
   EXPECT_THROW(
