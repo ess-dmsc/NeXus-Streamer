@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 
-#include "HistogramData.h"
 #include "../../core/include/HistogramFrame.h"
 #include "../../core/include/Message.h"
+#include "HistogramData.h"
 #include "hs00_event_histogram_generated.h"
 
 namespace {
