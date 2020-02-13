@@ -69,7 +69,7 @@ builders = pipeline_builder.createBuilders { container ->
             """
         }  // if/else
         container.sh """
-                conan upload "*" --all -c -r ess-dmsc-local
+                conan upload '*' --all -c -r ess-dmsc-local
         """
     }  // stage
 
