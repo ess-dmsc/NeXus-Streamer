@@ -1,7 +1,7 @@
 [requires]
 h5cpp/0.3.3@ess-dmsc/stable
 librdkafka/1.2.0@ess-dmsc/stable
-gtest/1.8.1@bincrafters/stable
+gtest/1.10.0
 CLI11/1.9.0@cliutils/stable
 google-benchmark/1.4.1-dm3@ess-dmsc/stable
 spdlog/1.4.2
