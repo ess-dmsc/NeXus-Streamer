@@ -22,7 +22,7 @@ uint64_t timeStringToUint64(const std::string &inputTime) {
   auto nsSinceEpoch = secondsToNanoseconds(timegm(&tmb));
   return nsSinceEpoch;
 }
-}
+} // namespace
 
 void RunData::setStartTimeFromString(const std::string &inputTime) {
   startTime = timeStringToUint64(inputTime);

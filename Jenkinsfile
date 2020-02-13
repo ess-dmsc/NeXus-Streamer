@@ -4,7 +4,7 @@ import ecdcpipeline.PipelineBuilder
 
 project = "NeXus-Streamer"
 
-// Set number of old artefacts to keep.
+// Set number of old artifacts to keep.
 properties([
     buildDiscarder(
         logRotator(
@@ -16,16 +16,16 @@ properties([
     )
 ])
 
-clangformat_os = "debian9"
+clangformat_os = "debian10"
 test_and_coverage_os = "centos7"
 archive_os = "centos7"
 release_os = "centos7-release"
 
 container_build_nodes = [
-  'centos7': ContainerBuildNode.getDefaultContainerBuildNode('centos7'),
-  'centos7-release': ContainerBuildNode.getDefaultContainerBuildNode('centos7'),
-  'debian9': ContainerBuildNode.getDefaultContainerBuildNode('debian9'),
-  'ubuntu1804': ContainerBuildNode.getDefaultContainerBuildNode('ubuntu1804')
+  'centos7': ContainerBuildNode.getDefaultContainerBuildNode('centos7-gcc8'),
+  'centos7-release': ContainerBuildNode.getDefaultContainerBuildNode('centos7-gcc8'),
+  'debian10': ContainerBuildNode.getDefaultContainerBuildNode('debian10'),
+  'ubuntu1804': ContainerBuildNode.getDefaultContainerBuildNode('ubuntu1804-gcc8')
 ]
 
 pipeline_builder = new PipelineBuilder(this, container_build_nodes)

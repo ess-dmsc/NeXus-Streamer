@@ -125,4 +125,4 @@ void addDurationDatasetToFile(hdf5::file::File &file,
   durationDataset.write(duration);
   write_attribute(durationDataset, "units", units);
 }
-}
+} // namespace HDF5FileTestHelpers

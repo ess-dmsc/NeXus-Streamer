@@ -1,8 +1,9 @@
+#include <gtest/gtest.h>
+
 #include "../../core/include/HistogramFrame.h"
 #include "../../core/include/Message.h"
 #include "HistogramData.h"
 #include "hs00_event_histogram_generated.h"
-#include <gtest/gtest.h>
 
 namespace {
 ::testing::AssertionResult
@@ -15,14 +16,14 @@ AllElementsInVectorAreNear(const std::vector<float> &a,
 
   for (size_t i = 0; i < a.size(); ++i) {
     if (a[i] < (b[i] - delta) || a[i] > (b[i] + delta)) {
-      return ::testing::AssertionFailure() << "Vectors differ by more than "
-                                           << delta;
+      return ::testing::AssertionFailure()
+             << "Vectors differ by more than " << delta;
     }
   }
 
   return ::testing::AssertionSuccess();
 }
-}
+} // namespace
 
 class HistogramDataTest : public ::testing::Test {};
 

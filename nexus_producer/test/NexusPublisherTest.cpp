@@ -8,8 +8,10 @@
 #include "MockPublisher.h"
 #include "NexusPublisher.h"
 
+// clang-format off
 using ::testing::AtLeast;
 using ::testing::_;
+// clang-format on
 
 class FakeFileReader : public FileReader {
 public:

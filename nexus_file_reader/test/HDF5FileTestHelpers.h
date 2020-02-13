@@ -46,4 +46,4 @@ void addHistogramDataGroupToFile(hdf5::file::File &file,
 void addDurationDatasetToFile(hdf5::file::File &file,
                               const std::string &entryName, float duration,
                               const std::string &units);
-}
+} // namespace HDF5FileTestHelpers

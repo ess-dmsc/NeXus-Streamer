@@ -58,4 +58,4 @@ void updateTopicNames(std::string &description,
   replaceString(description, "EVENT_DATA_TOPIC", topicNames.event);
   replaceString(description, "HISTO_DATA_TOPIC", topicNames.histogram);
 }
-}
+} // namespace JSONDescriptionLoader

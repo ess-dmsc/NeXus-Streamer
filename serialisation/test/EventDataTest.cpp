@@ -1,7 +1,8 @@
-#include "../../core/include/Message.h"
-#include "EventData.h"
 #include <ev42_events_generated.h>
 #include <gtest/gtest.h>
+
+#include "../../core/include/Message.h"
+#include "EventData.h"
 
 class EventDataTest : public ::testing::Test {};
 
