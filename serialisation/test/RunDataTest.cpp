@@ -11,16 +11,16 @@ class RunDataTest : public ::testing::Test {};
 TEST(RunDataTest, set_and_get_start_time) {
   auto runData = RunData();
   runData.setStartTimeFromString("2016-08-11T08:50:18");
-  EXPECT_EQ(1470905418000000000, runData.startTime);
+  EXPECT_EQ(1470905418000, runData.startTime);
 
   runData.setStartTimeInSeconds(1470905418);
-  EXPECT_EQ(1470905418000000000, runData.startTime);
+  EXPECT_EQ(1470905418000, runData.startTime);
 }
 
 TEST(RunDataTest, set_and_get_stop_time) {
   auto runData = RunData();
   runData.setStopTimeFromString("2016-08-13T13:32:09");
-  EXPECT_EQ(1471095129000000000, runData.stopTime);
+  EXPECT_EQ(1471095129000, runData.stopTime);
 }
 
 TEST(RunDataTest, get_run_info_as_string) {

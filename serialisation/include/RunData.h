@@ -34,7 +34,7 @@ template <> struct formatter<RunData> {
 
   template <typename FormatContext>
   auto format(const RunData &runData, FormatContext &ctx) {
-    const auto sTime = static_cast<time_t>(runData.startTime / 1000000000);
+    const auto sTime = static_cast<time_t>(runData.startTime / 1000);
     std::stringstream timeStream;
     timeStream << std::put_time(std::gmtime(&sTime), "%Y-%m-%dT%H:%M:%S");
     return format_to(ctx.out(),

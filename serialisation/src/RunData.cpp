@@ -6,10 +6,10 @@
 #include "RunData.h"
 
 namespace {
-uint64_t secondsToNanoseconds(time_t timeInSeconds) {
-  uint64_t timeInNanoseconds =
-      static_cast<uint64_t>(timeInSeconds) * 1000000000L;
-  return timeInNanoseconds;
+uint64_t secondsToMilliseconds(time_t timeInSeconds) {
+  uint64_t timeInMilliseconds =
+      static_cast<uint64_t>(timeInSeconds) * 1000L;
+  return timeInMilliseconds;
 }
 
 uint64_t timeStringToUint64(const std::string &inputTime) {
@@ -19,7 +19,7 @@ uint64_t timeStringToUint64(const std::string &inputTime) {
 #if (defined(_MSC_VER))
 #define timegm _mkgmtime
 #endif
-  auto nsSinceEpoch = secondsToNanoseconds(timegm(&tmb));
+  auto nsSinceEpoch = secondsToMilliseconds(timegm(&tmb));
   return nsSinceEpoch;
 }
 } // namespace
@@ -29,7 +29,7 @@ void RunData::setStartTimeFromString(const std::string &inputTime) {
 }
 
 void RunData::setStartTimeInSeconds(time_t inputTime) {
-  startTime = secondsToNanoseconds(inputTime);
+  startTime = secondsToMilliseconds(inputTime);
 }
 
 void RunData::setStopTimeFromString(const std::string &inputTime) {
