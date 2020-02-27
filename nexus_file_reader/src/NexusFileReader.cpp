@@ -48,11 +48,12 @@ void checkEventDataGroupsHaveConsistentFrames(
  * @param filename - the full path of the NeXus file
  * @return - an object with which to read information from the file
  */
-NexusFileReader::NexusFileReader(hdf5::file::File file, uint64_t runStartTime,
+NexusFileReader::NexusFileReader(hdf5::file::File file,
+                                 uint64_t runStartTimeNanoseconds,
                                  const int32_t fakeEventsPerPulse,
                                  const std::vector<int32_t> &detectorNumbers,
                                  const OptionalArgs &settings)
-    : m_file(std::move(file)), m_runStart(runStartTime),
+    : m_file(std::move(file)), m_runStart(runStartTimeNanoseconds),
       m_fakeEventsPerPulse(fakeEventsPerPulse),
       m_detectorNumbers(detectorNumbers), m_timeOfFlightDist(10000, 100000),
       m_detectorIDDist(0, static_cast<uint32_t>(detectorNumbers.size() - 1)),

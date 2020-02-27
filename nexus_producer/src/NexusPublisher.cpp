@@ -13,12 +13,12 @@
 #include "Timer.h"
 
 namespace {
-uint64_t getTimeNowInNanoseconds() {
+uint64_t getTimeNowInMilliseconds() {
   auto now = std::chrono::system_clock::now();
   auto now_epoch = now.time_since_epoch();
-  auto now_epoch_nanoseconds =
-      std::chrono::duration_cast<std::chrono::nanoseconds>(now_epoch).count();
-  return static_cast<uint64_t>(now_epoch_nanoseconds);
+  auto now_epoch_milliseconds =
+      std::chrono::duration_cast<std::chrono::milliseconds>(now_epoch).count();
+  return static_cast<uint64_t>(now_epoch_milliseconds);
 }
 
 void createAndSendHistogramMessage(
@@ -26,7 +26,8 @@ void createAndSendHistogramMessage(
     const std::shared_ptr<Publisher> &publisher) {
   // One histogram per NXdata group in the file
   for (const auto &histogram : histograms) {
-    auto message = createHistogramMessage(histogram, getTimeNowInNanoseconds());
+    auto message =
+        createHistogramMessage(histogram, getTimeNowInMilliseconds());
     publisher->sendHistogramMessage(message);
   }
 }
@@ -97,7 +98,7 @@ RunData
 NexusPublisher::createRunMessageData(const int runNumber,
                                      const std::string &jsonDescription) {
   auto runData = RunData();
-  runData.startTime = getTimeNowInNanoseconds();
+  runData.startTime = getTimeNowInMilliseconds();
   runData.runID = std::to_string(runNumber);
   runData.instrumentName = m_fileReader->getInstrumentName();
   if (!m_settings.jsonDescription.empty()) {
@@ -121,7 +122,7 @@ std::unique_ptr<Timer> NexusPublisher::publishHistogramBatch(
     histogramPublishingTimer = std::make_unique<Timer>(
         Interval, IntervalSleeper, numberOfTimerIterations);
     histogramPublishingTimer->addCallback(
-        [histograms, &publisher = this->m_publisher]() {
+        [ histograms, &publisher = this->m_publisher ]() {
           createAndSendHistogramMessage(histograms, publisher);
         });
     histogramPublishingTimer->start();
@@ -312,7 +313,7 @@ size_t NexusPublisher::createAndSendRunStopMessage(const int runNumber) {
   // Flush producer queue to ensure the run stop is after all messages are
   // published
   m_publisher->flushSendQueue();
-  runData.stopTime = getTimeNowInNanoseconds() + 1;
+  runData.stopTime = getTimeNowInMilliseconds() + 1;
   // + 1 as we want to include any messages which were sent in the current
   // nanosecond
   // (in the extremely unlikely event that it is possible to happen)
