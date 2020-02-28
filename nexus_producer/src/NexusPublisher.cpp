@@ -315,8 +315,7 @@ size_t NexusPublisher::createAndSendRunStopMessage(const int runNumber) {
   m_publisher->flushSendQueue();
   runData.stopTime = getTimeNowInMilliseconds() + 1;
   // + 1 as we want to include any messages which were sent in the current
-  // nanosecond
-  // (in the extremely unlikely event that it is possible to happen)
+  // millisecond
   runData.runID = std::to_string(runNumber);
   runData.jobID = m_currentJobID;
 
