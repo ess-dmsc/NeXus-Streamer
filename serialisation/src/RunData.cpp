@@ -7,8 +7,7 @@
 
 namespace {
 uint64_t secondsToMilliseconds(time_t timeInSeconds) {
-  uint64_t timeInMilliseconds =
-      static_cast<uint64_t>(timeInSeconds) * 1000L;
+  uint64_t timeInMilliseconds = static_cast<uint64_t>(timeInSeconds) * 1000L;
   return timeInMilliseconds;
 }
 

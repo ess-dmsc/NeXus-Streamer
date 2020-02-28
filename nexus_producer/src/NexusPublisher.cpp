@@ -122,7 +122,7 @@ std::unique_ptr<Timer> NexusPublisher::publishHistogramBatch(
     histogramPublishingTimer = std::make_unique<Timer>(
         Interval, IntervalSleeper, numberOfTimerIterations);
     histogramPublishingTimer->addCallback(
-        [ histograms, &publisher = this->m_publisher ]() {
+        [histograms, &publisher = this->m_publisher]() {
           createAndSendHistogramMessage(histograms, publisher);
         });
     histogramPublishingTimer->start();
