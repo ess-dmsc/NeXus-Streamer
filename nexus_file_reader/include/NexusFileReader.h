@@ -13,7 +13,7 @@
 
 class NexusFileReader : public FileReader {
 public:
-  NexusFileReader(hdf5::file::File file, uint64_t runStartTime,
+  NexusFileReader(hdf5::file::File file, uint64_t runStartTimeNanoseconds,
                   int32_t fakeEventsPerPulse,
                   const std::vector<int32_t> &detectorNumbers,
                   const OptionalArgs &settings);
