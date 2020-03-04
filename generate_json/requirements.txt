@@ -1,2 +1,3 @@
 nexusformat
 numpy
+ipython
