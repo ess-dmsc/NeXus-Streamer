@@ -31,18 +31,16 @@ remotes can be listed with `conan remote list`.
 
 If conan does not pick up your compiler settings, you can manually specify these by editing your conan profile.
 
-for example to build with gcc 6.3 on Centos7 with c++11 support:
+for example to build with gcc 8.3 on Centos7:
 
 ```
-[build_requires]
-cmake_installer/3.10.0@conan/stable
 [settings]
 os=Linux
 os_build=Linux
 arch=x86_64
 arch_build=x86_64
 compiler=gcc
-compiler.version=6.3
+compiler.version=8.3
 compiler.libcxx=libstdc++11
 build_type=Release
 [options]
