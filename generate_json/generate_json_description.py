@@ -27,12 +27,15 @@ class NexusToDictConverter:
         }
 
     def _root_to_dict(self, root: nexus.NXgroup) -> dict:
-        if hasattr(root, 'entries'):
-            root_dict = self._handle_group(root)
-        else:
-            root_dict = self._handle_dataset(root)
+        try:
+            if hasattr(root, 'entries'):
+                root_dict = self._handle_group(root)
+            else:
+                root_dict = self._handle_dataset(root)
 
-        root_dict = self._handle_attributes(root, root_dict)
+            root_dict = self._handle_attributes(root, root_dict)
+        except nexus.tree.NeXusError:
+            root_dict = {}
         return root_dict
 
     def truncate_if_large(self, size, data):
@@ -195,7 +198,7 @@ if __name__ == '__main__':
     )
     parser.add_argument("-o", "--output-filename", type=str, help="Output filename for the NeXus structure JSON")
     args = parser.parse_args()
-    converter = NexusToDictConverter()
+    converter = NexusToDictConverter(truncate_large_datasets=True)
 
     nexus_file = nexus.nxload(args.input_filename)
     tree = converter.convert(nexus_file)
