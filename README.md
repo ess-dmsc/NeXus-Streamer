@@ -11,6 +11,7 @@ Part of the ESS data streaming pipeline.
 ### Geometry
 A file can be provided with a json description of the NeXus file, using `--json-description`, this can include full geometry information about the instrument, which can be used by Mantid.
 Further documentation and a utility for automatically generating the JSON description is included [here](generate_json/README.md).
+A simple example NeXus file with geometry for a source, sample and detector is included at `data/SANS2D_minimal_with_geometry.nxs` 
 
 ## Getting Started
 
