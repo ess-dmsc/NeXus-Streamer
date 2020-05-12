@@ -11,8 +11,9 @@ nexus-streamer <OPTIONS>
 
 Options:
   -h,--help                   Print this help message and exit
-  -f,--filename FILE REQUIRED Full path of the NeXus file
-  -d,--det-spec-map FILE      Full path of the detector-spectrum map
+  -f,--filename TEXT:FILE REQUIRED
+                              Full path of the NeXus file
+  -d,--det-spec-map TEXT:FILE Full path of the detector-spectrum map
   -b,--broker TEXT REQUIRED   Hostname or IP of Kafka broker
   -i,--instrument TEXT REQUIRED
                               Used as prefix for topic names
@@ -20,15 +21,17 @@ Options:
   -e,--fake-events-per-pulse INT
                               Generates this number of fake events per pulse per NXevent_data instead of publishing real data from file
   --histogram-update-period UINT
-                              A histogram data message with this period (in integer milliseconds)
+                              Publish a histogram data message with this period (in integer milliseconds) default 0 means do not stream histograms
+  --json-description TEXT:FILE
+                              Optionally provide the path to a file containing a json description of the NeXus file, this should match the contents of the nexus_structure field described here: https://github.com/ess-dmsc/kafka-to-nexus/blob/master/documentation/commands.md
   -x,--disable-map INT INT    Use MIN and MAX detector numbers in inclusive range instead of using a det-spec map file
   -s,--slow                   Publish data at approx realistic rate (detected from file)
   -q,--quiet                  Less chatty on stdout
   -z,--single-run             Publish only a single run (otherwise repeats until interrupted)
-  -c,--config-file TEXT       Read configuration from an ini file
+  -c,--config-file            Read configuration from an ini file
 ```
 Arguments not marked with `REQUIRED` are Optional.
-A detector-spectrum map must be provided for use with Mantid.
+A detector-spectrum map must be provided for use with Mantid if no JSON description is provided or if the IDs in the file's event data do not correspond to numbers in the detector_number dataset of the corresponding detector in the JSON description.
 
 Usage example:
 ```
