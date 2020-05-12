@@ -58,7 +58,7 @@ The minimum requirements of a NeXus file to be streamed are:
 - A `name` dataset for the instrument name in the `NXentry` group
 
 to publish event data:
-- An `NXevent_data` group (with any name) in the `NXentry` containing `event_id`, `event_index`, `event_time_zero` and `event_time_offset` datasets. See `/data/SANS2D_minimal.nxs` as an example.
+- An `NXevent_data` group (with any name) in the `NXentry` or in an `NXdetector`, which itself must be in an `NXinstrument`, containing `event_id`, `event_index`, `event_time_zero` and `event_time_offset` datasets. See `/data/SANS2D_minimal.nxs` as an example.
 
 and/or to publish histogram data:
 - A scalar float dataset named `duration` in the `NXentry` with a `units` attribute of "s", "seconds" or "second". This is the duration of the run and is used if slow mode is specified.
@@ -69,6 +69,8 @@ and/or to publish histogram data:
   - 3D `counts` dataset of 32-bit integers, first dimension is periods, second is detector IDs (or spectrum indicies), third is time-of-flight bins edges.
   
   This supports histogram data files recorded at ISIS. See `data/minimal_histogram_example.nxs`.
+  
+  If instrument geometry is provided by using `--json-description` then there must be an `NXsample` in the `NXentry`.
 
 ## Broker Configuration
 Timestamped "run" start and stop messages are produced. With these Mantid can join the stream at the start of a run and has various options for behaviour at run stop. This makes use of the offset by timestamp lookup feature and thus requires Kafka version >0.10.2.0 on the brokers.
