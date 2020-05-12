@@ -7,6 +7,8 @@ Histogram data from NeXus files recorded at ISIS can also be streamed by setting
 Part of the ESS data streaming pipeline.
 
 - [Further documentation](documentation/README.md)
+  - [Usage](documentation/usage.md)
+  - [Profiling](documentation/profiling.md)
 
 ### Geometry
 A file can be provided with a json description of the NeXus file, using `--json-description`, this can include full geometry information about the instrument, which can be used by Mantid.
