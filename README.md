@@ -90,12 +90,6 @@ Pre-built containers are available at [Docker Hub](https://hub.docker.com/r/scre
 * [Conan](https://conan.io/) - Package manager for C++
 * [Docker](https://docker.com) - Container platform
 
-## Contributing
-TBD
-
-## Versioning
-TBD
-
 ## Authors
 
 * **Matthew D Jones** - *Initial work* - [matthew-d-jones](https://github.com/matthew-d-jones)
