@@ -32,7 +32,7 @@ target_link_libraries(nexusPublisher_lib
         CONAN_PKG::jsonformoderncpp
         nexusFileReader_lib
         serialisation_lib)
-target_include_directories(nexusPublisher_lib PUBLIC ${PROJECT_SOURCE_DIR}/core/include)
+target_include_directories(nexusPublisher_lib PUBLIC ${PROJECT_SOURCE_DIR}/core/include ${VERSION_INCLUDE_DIR})
 
 add_library(eventPublisher_lib
         src/KafkaPublisher.cpp include/KafkaPublisher.h)

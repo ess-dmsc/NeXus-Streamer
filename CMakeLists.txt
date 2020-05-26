@@ -4,8 +4,9 @@ project(NeXus-Streamer)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic-errors -Werror")
 set(CMAKE_CXX_STANDARD 14)
 
+set(SRC_CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(CMAKE_MODULE_PATH
-        ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+        ${CMAKE_MODULE_PATH} ${SRC_CMAKE_MODULE_PATH})
 
 if(CMAKE_COMPILER_IS_GNUCXX AND COV)
     include(CodeCoverage)
@@ -45,6 +46,19 @@ else()
 endif()
 
 find_package(Gperftools)
+
+#####################
+## Versioning      ##
+#####################
+
+include(${SRC_CMAKE_MODULE_PATH}/Versioning.cmake)
+set_version()
+set(VERSION_INCLUDE_DIR ${CMAKE_BINARY_DIR}/version)
+create_version_header(
+        ${SRC_CMAKE_MODULE_PATH}/templates/Version.h.in
+        ${VERSION_INCLUDE_DIR}/Version.h
+)
+
 
 #####################
 ## Doxygen         ##
