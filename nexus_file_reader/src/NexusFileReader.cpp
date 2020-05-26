@@ -158,8 +158,9 @@ void NexusFileReader::getGroups(
       auto attr = entryChild.attributes["NX_class"];
       std::string nxClassType;
       attr.read(nxClassType, attr.datatype());
-      // The following line looks pointless but solves an issue that can occur with fixed length strings
-      // where superfluous null termination causes the comparison with className to fail
+      // The following line looks pointless but solves an issue that can occur
+      // with fixed length strings where superfluous null termination causes the
+      // comparison with className to fail
       std::string nxClassTypeTruncated(nxClassType.c_str());
       if (nxClassTypeTruncated == className) {
         try {
