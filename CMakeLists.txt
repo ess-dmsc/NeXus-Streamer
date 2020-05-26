@@ -47,6 +47,19 @@ endif()
 find_package(Gperftools)
 
 #####################
+## Versioning      ##
+#####################
+
+include(${SRC_CMAKE_MODULE_PATH}/Versioning.cmake)
+set_version()
+set(VERSION_INCLUDE_DIR ${CMAKE_BINARY_DIR}/version)
+create_version_header(
+        ${SRC_CMAKE_MODULE_PATH}/templates/Version.h.in
+        ${VERSION_INCLUDE_DIR}/Version.h
+)
+
+
+#####################
 ## Doxygen         ##
 #####################
 
