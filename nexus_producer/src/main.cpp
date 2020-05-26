@@ -10,6 +10,7 @@
 #include "JSONDescriptionLoader.h"
 #include "KafkaPublisher.h"
 #include "NexusPublisher.h"
+#include "Version.h"
 
 uint64_t getTimeNowNanosecondsFromEpoch() {
   auto now = std::chrono::system_clock::now();
@@ -61,7 +62,9 @@ int main(int argc, char **argv) {
                "from a NeXus file into Kafka"};
 
   OptionalArgs settings;
+  bool printVersion{false};
 
+  App.add_flag("--version", printVersion, "Print application version and exit");
   App.add_option("-f,--filename", settings.filename,
                  "Full path of the NeXus file")
       ->check(CLI::ExistingFile)
@@ -117,9 +120,22 @@ int main(int argc, char **argv) {
   App.set_config("-c,--config-file", "", "Read configuration from an ini file",
                  false);
 
+  try {
+    App.parse(argc, argv);
+  } catch (const CLI::ParseError &e) {
+    // Do nothing, we only care about the version flag in this first pass.
+  }
+
+  if (printVersion) {
+    fmt::print("{}\n", GetVersion());
+    return 0;
+  }
+  App.clear();
+
   CLI11_PARSE(App, argc, argv);
+
   auto logger = spdlog::stderr_color_mt("LOG");
-  logger->debug("Application launched");
+  logger->info("Launched NeXus-Streamer version: {}", GetVersion());
 
   const auto detectorNumbers = getDetectorNumbers(settings);
   auto runStartTime = getTimeNowNanosecondsFromEpoch();
