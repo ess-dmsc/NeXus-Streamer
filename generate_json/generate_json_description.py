@@ -76,7 +76,7 @@ class NexusToDictConverter:
         return False
 
     def _handle_attributes(self, root, root_dict):
-        if root.nxclass and root.nxclass is not "NXfield" and root.nxclass is not "NXgroup":
+        if root.nxclass and root.nxclass != "NXfield" and root.nxclass != "NXgroup":
             root_dict["attributes"] = [{"name": "NX_class",
                                         "values": root.nxclass}]
         if root.attrs:
