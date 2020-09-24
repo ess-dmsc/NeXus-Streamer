@@ -70,7 +70,7 @@ and/or to publish histogram data:
   
   This supports histogram data files recorded at ISIS. See `data/minimal_histogram_example.nxs`.
   
-  If instrument geometry is provided by using `--json-description` then Mantid requires that there is at least an `NXentry` containing an `NXsample` and `NXinstrument`, as well as an `NXsource` and at least one `NXdetector` in the `NXinstrument`. Each `NXdetector` must have a shape description: either an `NXoff_geometry` or `NXcylindrical_geometry`. See `data/minimal_example_with_geometry.nxs`.
+If instrument geometry is provided by using `--json-description` then Mantid requires that there is at least an `NXentry` containing an `NXsample` and `NXinstrument`, as well as an `NXsource` and at least one `NXdetector` in the `NXinstrument`. Each `NXdetector` must have a shape description: either an `NXoff_geometry` or `NXcylindrical_geometry`. See `data/minimal_example_with_geometry.nxs`.
 
 ## Broker Configuration
 Timestamped "run" start and stop messages are produced. With these Mantid can join the stream at the start of a run and has various options for behaviour at run stop. This makes use of the offset by timestamp lookup feature and thus requires Kafka version >0.10.2.0 on the brokers.
