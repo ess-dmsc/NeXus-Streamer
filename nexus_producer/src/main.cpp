@@ -21,8 +21,7 @@ uint64_t getTimeNowNanosecondsFromEpoch() {
 
 std::vector<int32_t> getDetectorNumbers(const OptionalArgs &settings) {
   std::vector<int32_t> detectorNumbers;
-  if (settings.minMaxDetectorNums.first > 0 &&
-      settings.minMaxDetectorNums.second > 0) {
+  if (settings.minMaxDetectorNums.second > 0) {
     // Allocate space in vector equal to the difference between the minimum and
     // maximum detector number. Then use iota to fill with sequential values
     // until the vector is full.
