@@ -1,5 +1,5 @@
 [requires]
-h5cpp/2cfb0ad@ess-dmsc/stable
+h5cpp/0.4.0@ess-dmsc/stable
 librdkafka/1.6.0
 gtest/1.10.0
 CLI11/1.9.0@cliutils/stable
@@ -15,7 +15,7 @@ virtualrunenv
 
 [options]
 hdf5:shared=True
-h5cpp:with_boost=False
+h5cpp:with_boost=True
 
 [imports]
 lib, * -> ./lib
