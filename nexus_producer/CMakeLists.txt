@@ -29,7 +29,7 @@ add_library(nexusPublisher_lib ${SRC_FILES} ${INC_FILES})
 target_link_libraries(nexusPublisher_lib
         CONAN_PKG::spdlog
         CONAN_PKG::flatbuffers
-        CONAN_PKG::jsonformoderncpp
+        CONAN_PKG::nlohmann_json
         nexusFileReader_lib
         serialisation_lib)
 target_include_directories(nexusPublisher_lib PUBLIC ${PROJECT_SOURCE_DIR}/core/include ${VERSION_INCLUDE_DIR})
