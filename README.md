@@ -21,9 +21,8 @@ A simple example NeXus file with geometry for a source, sample and detector is i
 Dependencies are managed by [Conan](https://conan.io/). Conan can be installed using pip and CMake handles running Conan.
 The following remote repositories are required to be configured:
 
-- https://api.bintray.com/conan/ess-dmsc/conan
-- https://api.bintray.com/conan/conan-community/conan
-- https://api.bintray.com/conan/bincrafters/public-conan
+- https://conan.bintray.com
+- https://artifactoryconan.esss.dk/artifactory/api/conan/ecdc
 
 You can add them by running
 ```
