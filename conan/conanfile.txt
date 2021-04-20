@@ -1,13 +1,13 @@
 [requires]
 h5cpp/2cfb0ad@ess-dmsc/stable
-librdkafka/1.2.0@ess-dmsc/stable
+librdkafka/1.6.0
 gtest/1.10.0
-CLI11/1.9.0@cliutils/stable
-benchmark/1.5.0
-spdlog/1.4.2
+CLI11/1.9.1
+benchmark/1.5.2
+spdlog/1.8.5
 streaming-data-types/c670575@ess-dmsc/stable
-jsonformoderncpp/3.6.1@vthiery/stable
-optional-lite/3.2.0@bincrafters/stable
+nlohmann_json/3.9.1
+optional-lite/3.4.0
 
 [generators]
 cmake
