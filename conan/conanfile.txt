@@ -15,7 +15,7 @@ virtualrunenv
 
 [options]
 hdf5:shared=True
-librdkafka:shared=True
+h5cpp:with_boost=False
 
 [imports]
 lib, * -> ./lib
