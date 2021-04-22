@@ -19,7 +19,7 @@ properties([
 clangformat_os = "debian10"
 test_and_coverage_os = "centos7"
 archive_os = "centos7"
-release_os = "centos7-release"
+release_os = "ubuntu1804"
 
 container_build_nodes = [
   'centos7': ContainerBuildNode.getDefaultContainerBuildNode('centos7-gcc8'),
