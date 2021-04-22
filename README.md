@@ -22,6 +22,7 @@ Dependencies are managed by [Conan](https://conan.io/). Conan can be installed u
 The following remote repositories are required to be configured:
 
 - https://conan.bintray.com
+- https://bincrafters.jfrog.io/artifactory/api/conan/public-conan
 - https://artifactoryconan.esss.dk/artifactory/api/conan/ecdc
 
 You can add them by running
