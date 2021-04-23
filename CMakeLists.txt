@@ -124,7 +124,7 @@ file(GLOB TEST_SRC_FILES
 add_executable(UnitTests ${TEST_SRC_FILES})
 
 target_link_libraries(UnitTests
-        CONAN_PKG::CLI11
+        CONAN_PKG::cli11
         producerUnitTests
         eventDataUnitTests
         fileReaderUnitTests)
