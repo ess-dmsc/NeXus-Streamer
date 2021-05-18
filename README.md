@@ -1,6 +1,11 @@
 [![License (2-Clause BSD)](https://img.shields.io/badge/license-BSD%202--Clause-blue.svg)](https://github.com/ess-dmsc/NeXus-Streamer/blob/master/LICENSE) [![codecov](https://codecov.io/gh/ess-dmsc/NeXus-Streamer/branch/master/graph/badge.svg)](https://codecov.io/gh/ess-dmsc/NeXus-Streamer) [![Build Status](https://jenkins.esss.dk/dm/job/ess-dmsc/job/NeXus-Streamer/job/master/badge/icon)](https://jenkins.esss.dk/dm/job/ess-dmsc/job/NeXus-Streamer/job/master/)
 
 # NeXus Streamer
+
+**PLEASE USE https://github.com/ess-dmsc/nexus-streamer-python INSTEAD**
+
+**This repository will be archived once the new implementation supports all used features**
+
 Stream event data from a NeXus file to an Apache Kafka cluster. Each message sent over Kafka comprises the event data from a single neutron pulse. Data in `NXlog`s, for example sample environment data, are also published.
 Histogram data from NeXus files recorded at ISIS can also be streamed by setting `--histogram-update-period` to something higher than `0`.
 
