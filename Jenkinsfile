@@ -115,16 +115,6 @@ builders = pipeline_builder.createBuilders { container ->
             archiveArtifacts "${pipeline_builder.project}-${container.key}.tar.gz"
         }  // stage
     }  // if
-
-    if (container.key == clangformat_os) {
-        container.sh """
-            clang-format -version
-            cd ${pipeline_builder.project}
-            find . \\\\( -name '*.cpp' -or -name '*.cxx' -or -name '*.h' -or -name '*.hpp' \\\\) \\
-                -exec clangformatdiff.sh {} +
-        """
-    }  // if
-
 }  // createBuilders
 
 node('docker') {
