@@ -3,7 +3,7 @@ h5cpp/0.4.0@ess-dmsc/stable
 librdkafka/1.6.0
 gtest/1.10.0
 cli11/1.9.1
-benchmark/1.5.2
+benchmark/1.7.1
 spdlog/1.8.5
 streaming-data-types/6a41aee@ess-dmsc/stable
 nlohmann_json/3.9.1
