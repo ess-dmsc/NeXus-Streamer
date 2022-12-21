@@ -16,16 +16,16 @@ properties([
     )
 ])
 
-clangformat_os = "debian10"
+clangformat_os = "debian11"
 test_and_coverage_os = "centos7"
 archive_os = "centos7"
 release_os = "centos7-release"
 
 container_build_nodes = [
-  'centos7': ContainerBuildNode.getDefaultContainerBuildNode('centos7-gcc8'),
-  'centos7-release': ContainerBuildNode.getDefaultContainerBuildNode('centos7-gcc8'),
-  'debian10': ContainerBuildNode.getDefaultContainerBuildNode('debian10'),
-  'ubuntu1804': ContainerBuildNode.getDefaultContainerBuildNode('ubuntu1804-gcc8')
+  'centos7': ContainerBuildNode.getDefaultContainerBuildNode('centos7-gcc11'),
+  'centos7-release': ContainerBuildNode.getDefaultContainerBuildNode('centos7-gcc11'),
+  'debian11': ContainerBuildNode.getDefaultContainerBuildNode('debian11'),
+  'ubuntu2204': ContainerBuildNode.getDefaultContainerBuildNode('ubuntu2204')
 ]
 
 pipeline_builder = new PipelineBuilder(this, container_build_nodes)
