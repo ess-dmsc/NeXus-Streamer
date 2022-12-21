@@ -86,18 +86,10 @@ builders = pipeline_builder.createBuilders { container ->
                 cd build
                 . ./activate_run.sh
                 ./bin/UnitTests -d ../${pipeline_builder.project}/data/ --gtest_output=xml:${test_output}
-                make coverage
-                lcov --directory . --capture --output-file coverage.info
-                lcov --remove coverage.info '*_generated.h' '*/.conan/data/*' '*/usr/*' '*Test.cpp' '*gmock*' '*gtest*' --output-file coverage.info
             """
 
             container.copyFrom('build', '.')
             junit "build/${test_output}"
-
-            withCredentials([string(credentialsId: 'nexus-streamer-codecov-token', variable: 'TOKEN')]) {
-                sh "cp ${pipeline_builder.project}/codecov.yml codecov.yml"
-                sh "curl -s https://codecov.io/bash | bash -s - -f build/coverage.info -t ${TOKEN} -C ${scm_vars.GIT_COMMIT}"
-            }  // withCredentials
         } else {
             // Run tests.
             container.sh """
