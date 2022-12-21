@@ -53,7 +53,7 @@ builders = pipeline_builder.createBuilders { container ->
         if (container.key != release_os) {
             def coverage_on
             if (container.key == test_and_coverage_os) {
-                coverage_on = "-DCOV=1"
+                coverage_on = ""
             } else {
                 coverage_on = ""
             }
